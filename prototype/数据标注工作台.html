@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>算法训练平台 — 数据标注工作台</title>
+<style>
+  /* ===== CSS Variables (From 风格.png palette) ===== */
+  :root {
+    --sidebar-bg: #001529;
+    --sidebar-hover: #002140;
+    --sidebar-active: #1890ff;
+    --sidebar-text: #ffffffb3;
+    --sidebar-text-active: #fff;
+    --header-bg: #fff;
+    --header-height: 48px;
+    --sidebar-width: 220px;
+    --bg: #f0f2f5;
+    --card-bg: #fff;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    --primary: #1890ff;
+    --primary-light: #e6f7ff;
+    --success: #52c41a;
+    --warning: #faad14;
+    --danger: #ff4d4f;
+    --text: #262626;
+    --text-secondary: #8c8c8c;
+    --text-muted: #bfbfbf;
+    --border: #f0f0f0;
+    --border-light: #f5f5f5;
+    --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    --radius: 6px;
+    --transition: 0.2s ease;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  /* ===== Sidebar ===== */
+  .sidebar {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+  }
+
+  .sidebar-logo {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .sidebar-logo .logo-icon {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, #1890ff, #36cfc9);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 14px;
+    margin-right: 10px;
+  }
+  .sidebar-logo .logo-text { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; }
+
+  .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+  .sidebar-group { margin-bottom: 4px; }
+  .sidebar-group-title {
+    padding: 8px 20px;
+    font-size: 11px; color: rgba(255,255,255,0.35);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .sidebar-item {
+    display: flex; align-items: center;
+    padding: 10px 20px;
+    cursor: pointer; transition: var(--transition);
+    color: var(--sidebar-text);
+    text-decoration: none; font-size: 13px;
+    border-left: 3px solid transparent;
+    margin: 1px 0;
+  }
+  .sidebar-item:hover { background: var(--sidebar-hover); color: #fff; }
+  .sidebar-item.active {
+    background: var(--sidebar-active);
+    color: var(--sidebar-text-active);
+    border-left-color: #fff;
+  }
+  .sidebar-item .badge {
+    margin-left: auto;
+    background: var(--danger);
+    color: #fff;
+    font-size: 10px; padding: 1px 6px; border-radius: 10px;
+    min-width: 18px; text-align: center;
+  }
+
+  /* ===== Main ===== */
+  .main {
+    flex: 1; display: flex; flex-direction: column;
+    min-width: 0;
+  }
+
+  /* ===== Header ===== */
+  .header {
+    height: var(--header-height);
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 20px; gap: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    z-index: 10;
+  }
+  .header .breadcrumb { font-size: 12px; color: var(--text-secondary); }
+  .header .breadcrumb span { color: var(--text); font-weight: 500; }
+  .header .breadcrumb .sep { margin: 0 6px; color: var(--text-muted); }
+  .header-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .header-actions .user-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+
+  /* ===== Content Area ===== */
+  .content {
+    flex: 1; display: flex; flex-direction: column;
+    overflow: hidden;
+    padding: 12px 16px; gap: 12px;
+  }
+
+  /* ===== Top Info Bar ===== */
+  .info-bar {
+    display: flex; gap: 12px; align-items: center;
+  }
+  .info-card {
+    background: var(--card-bg); border-radius: var(--radius);
+    padding: 10px 16px; box-shadow: var(--card-shadow);
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px;
+  }
+  .info-card .info-label { color: var(--text-secondary); }
+  .info-card .info-value { font-weight: 600; color: var(--text); font-size: 14px; }
+  .info-card .info-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .info-dot.green { background: var(--success); }
+  .info-dot.blue { background: var(--primary); }
+  .info-dot.orange { background: var(--warning); }
+  .info-actions { margin-left: auto; display: flex; gap: 8px; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 14px; border-radius: var(--radius);
+    font-size: 12px; cursor: pointer; border: 1px solid transparent;
+    font-family: var(--font); transition: var(--transition);
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
+  .btn-default { background: #fff; color: var(--text); border-color: #d9d9d9; }
+  .btn-default:hover { color: var(--primary); border-color: var(--primary); }
+  .btn-text { background: transparent; color: var(--primary); border: none; padding: 4px 8px; }
+  .btn-text:hover { background: var(--primary-light); }
+  .btn-sm { padding: 3px 8px; font-size: 11px; }
+  .btn-lg { padding: 8px 20px; font-size: 14px; }
+
+  /* ===== Workspace ===== */
+  .workspace {
+    flex: 1; display: flex; gap: 12px;
+    min-height: 0;
+  }
+
+  /* ---- Left: Canvas Panel ---- */
+  .canvas-panel {
+    flex: 1; min-width: 0; min-height: 0;
+    background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--card-shadow);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .canvas-toolbar {
+    height: 40px; display: flex; align-items: center; padding: 0 12px;
+    border-bottom: 1px solid var(--border);
+    gap: 6px; background: #fafafa;
+  }
+  .canvas-toolbar .tool-group { display: flex; gap: 4px; }
+  .canvas-toolbar .tool-btn {
+    height: 28px; border: 1px solid transparent;
+    background: transparent; border-radius: 4px;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--text-secondary); transition: var(--transition);
+    padding: 0 10px; gap: 4px; font-family: var(--font);
+    white-space: nowrap;
+  }
+  .canvas-toolbar .tool-btn:hover { background: #e6f7ff; color: var(--primary); }
+  .canvas-toolbar .tool-btn.active { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+  .canvas-toolbar .tb-sep { width: 1px; height: 20px; background: var(--border); margin: 0 6px; }
+
+  .canvas-wrapper {
+    flex: 1; position: relative; overflow: hidden;
+    cursor: crosshair;
+    background: #e8e8e8;
+    /* Grid background */
+    background-image:
+      linear-gradient(45deg, #ddd 25%, transparent 25%),
+      linear-gradient(-45deg, #ddd 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #ddd 75%),
+      linear-gradient(-45deg, transparent 75%, #ddd 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+  .canvas-wrapper.panning { cursor: grab; }
+  .canvas-wrapper.panning:active { cursor: grabbing; }
+
+  #mainCanvas {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .canvas-footer {
+    height: 44px; display: flex; align-items: center; padding: 0 16px;
+    border-top: 1px solid var(--border);
+    justify-content: space-between;
+    background: #fafafa;
+  }
+  .nav-group { display: flex; align-items: center; gap: 8px; }
+  .nav-counter { font-size: 12px; color: var(--text-secondary); }
+  .nav-counter strong { color: var(--text); font-size: 14px; }
+
+  .canvas-footer .zoom-control { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-secondary); }
+
+  /* ---- Right: Side Panel ---- */
+  .side-panel {
+    width: 300px; min-width: 300px; min-height: 0;
+    display: flex; flex-direction: column; gap: 10px;
+    overflow: hidden;
+  }
+
+  .panel-card {
+    background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--card-shadow);
+    flex-shrink: 1;
+    display: flex; flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .panel-card-header {
+    padding: 10px 14px; font-weight: 600; font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fafafa;
+  }
+  .panel-card-header .count { font-size: 11px; color: var(--text-secondary); font-weight: 400; }
+
+  /* Label List */
+  .label-list { padding: 8px; flex: 1; overflow-y: auto; }
+  .label-item {
+    display: flex; align-items: center; padding: 7px 10px; gap: 8px;
+    border-radius: 4px; cursor: pointer; transition: var(--transition);
+    margin-bottom: 2px; font-size: 12px;
+  }
+  .label-item:hover { background: #f5f5f5; }
+  .label-item.active { background: var(--primary-light); border: 1px solid var(--primary); padding: 6px 9px; }
+  .label-color { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+  .label-shortcut { margin-left: auto; font-size: 10px; color: var(--text-muted); background: #f5f5f5; padding: 1px 5px; border-radius: 3px; }
+  .label-del-btn {
+    width: 18px; height: 18px; border-radius: 3px; border: none;
+    background: transparent; cursor: pointer; font-size: 11px;
+    display: none; align-items: center; justify-content: center;
+    color: var(--text-muted); margin-left: 2px;
+  }
+  .label-item:hover .label-del-btn { display: flex; }
+  .label-del-btn:hover { background: #fff1f0; color: var(--danger); }
+
+  /* Regions List */
+  .region-list { padding: 4px 8px; max-height: 260px; overflow-y: auto; }
+  .region-item {
+    display: flex; align-items: center; padding: 6px 8px; gap: 8px;
+    border-radius: 4px; cursor: pointer; transition: var(--transition);
+    font-size: 12px; border: 1px solid transparent;
+    margin-bottom: 2px;
+  }
+  .region-item:hover { background: #fafafa; }
+  .region-item.selected { background: var(--primary-light); border-color: var(--primary); }
+  .region-item .region-idx { color: var(--text-muted); font-size: 10px; min-width: 18px; }
+  .region-item .region-label { flex: 1; font-weight: 500; }
+  .region-item .region-conf {
+    font-size: 10px; padding: 1px 6px; border-radius: 8px;
+    background: #f6ffed; color: var(--success);
+  }
+  .region-item .region-actions { display: flex; gap: 4px; }
+  .region-item .region-act-btn {
+    width: 22px; height: 22px; border-radius: 3px; border: none;
+    background: transparent; cursor: pointer; font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); transition: var(--transition);
+  }
+  .region-item .region-act-btn:hover { background: #f0f0f0; color: var(--text); }
+  .region-item .region-act-btn.del:hover { background: #fff1f0; color: var(--danger); }
+
+  /* Details Panel */
+  .detail-content { padding: 12px 14px; font-size: 12px; }
+  .detail-row { display: flex; margin-bottom: 8px; align-items: center; }
+  .detail-row .dl { width: 56px; color: var(--text-secondary); flex-shrink: 0; }
+  .detail-row .dv { flex: 1; color: var(--text); font-weight: 500; }
+  .detail-row input, .detail-row select {
+    width: 100%; padding: 4px 8px; border: 1px solid #d9d9d9;
+    border-radius: 4px; font-size: 12px; font-family: var(--font);
+  }
+  .detail-empty { color: var(--text-muted); text-align: center; padding: 24px; font-size: 12px; }
+
+  /* ===== Toast ===== */
+  .toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background: #262626; color: #fff; padding: 10px 24px; border-radius: var(--radius);
+    font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ===== Modal ===== */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.45); z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal {
+    background: #fff; border-radius: 8px;
+    width: 420px; max-height: 80vh; overflow: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .modal-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    font-weight: 600; font-size: 15px;
+  }
+  .modal-body { padding: 20px; }
+  .modal-footer {
+    padding: 12px 20px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 8px;
+  }
+
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ==================== Sidebar ==================== -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">AI</div>
+    <div class="logo-text">算法训练平台</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-group">
+      <div class="sidebar-group-title">平台导航</div>
+      <a class="sidebar-item" href="#" onclick="navigate('dashboard')">
+        工作台
+      </a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-group-title">项目管理</div>
+      <a class="sidebar-item" href="#" onclick="navigate('projects')">
+        项目列表
+      </a>
+      <a class="sidebar-item" href="#" onclick="navigate('datacenter')">
+        数据中心
+      </a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-group-title">标注与训练</div>
+      <a class="sidebar-item active" href="#" onclick="navigate('annotation')">
+        数据标注
+        <span class="badge">3</span>
+      </a>
+      <a class="sidebar-item" href="#" onclick="navigate('training')">
+        模型训练
+      </a>
+      <a class="sidebar-item" href="#" onclick="navigate('evaluation')">
+        模型评估
+      </a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-group-title">部署管理</div>
+      <a class="sidebar-item" href="#" onclick="navigate('deploy')">
+        模型部署
+      </a>
+      <a class="sidebar-item" href="#" onclick="navigate('versions')">
+        版本管理
+      </a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-group-title">系统设置</div>
+      <a class="sidebar-item" href="#" onclick="navigate('settings')">
+        系统管理
+      </a>
+    </div>
+  </nav>
+</aside>
+
+<!-- ==================== Main Area ==================== -->
+<div class="main">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="breadcrumb">
+      算法训练平台 <span class="sep">›</span> 数据标注 <span class="sep">›</span> <span>保安服检测 — 锚点初标任务</span>
+    </div>
+    <div class="header-actions">
+      <span style="font-size:12px;color:var(--text-secondary);">张三</span>
+      <div class="user-avatar">张</div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Info Bar -->
+    <div class="info-bar">
+      <div class="info-card">
+        <div class="info-dot green"></div>
+        <div>
+          <div class="info-value">标注中</div>
+        </div>
+      </div>
+      <div class="info-card">
+        <span style="color:var(--text-secondary);">项目</span>
+        <strong>保安服检测</strong>
+      </div>
+      <div class="info-card">
+        <span style="color:var(--text-secondary);">标签类别</span>
+        <strong>5 类</strong>
+      </div>
+      <div class="info-card">
+        <span style="color:var(--text-secondary);">已标注</span>
+        <strong style="color:var(--primary);">47 / 200</strong>
+      </div>
+      <div class="info-card">
+        <span style="color:var(--text-secondary);">本图标注框</span>
+        <strong id="bboxCount">0</strong>
+      </div>
+      <div class="info-actions">
+        <button class="btn btn-primary btn-sm" onclick="saveDraft()">保存草稿</button>
+      </div>
+    </div>
+
+    <!-- Workspace -->
+    <div class="workspace">
+
+      <!-- ===== LEFT: Canvas Panel ===== -->
+      <div class="canvas-panel">
+        <!-- Toolbar -->
+        <div class="canvas-toolbar">
+          <div class="tool-group">
+            <button class="tool-btn" id="toolSelect" onclick="setTool('select')">选择</button>
+            <button class="tool-btn active" id="toolBbox" onclick="setTool('bbox')">画框</button>
+            <button class="tool-btn" id="toolPan" onclick="setTool('pan')">平移</button>
+          </div>
+          <div class="tb-sep"></div>
+          <button class="tool-btn" onclick="undo()">撤销</button>
+          <button class="tool-btn" onclick="deleteSelected()">删除</button>
+          <div class="tb-sep"></div>
+          <button class="tool-btn" onclick="zoomOut()">−</button>
+          <span style="font-size:12px;color:var(--text);min-width:42px;text-align:center;font-weight:500;" id="zoomLabel">100%</span>
+          <button class="tool-btn" onclick="zoomIn()">+</button>
+          <button class="tool-btn" onclick="fitToWindow()">适应</button>
+        </div>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper" id="canvasWrapper">
+          <canvas id="mainCanvas"></canvas>
+        </div>
+
+        <!-- Footer -->
+        <div class="canvas-footer">
+          <div class="nav-group">
+            <button class="btn btn-default btn-sm" id="btnPrev" onclick="prevImage()">◀ 上一张</button>
+            <span class="nav-counter">当前：<strong id="currentIdx">23</strong> / 200</span>
+            <button class="btn btn-default btn-sm" id="btnNext" onclick="nextImage()">下一张 ▶</button>
+          </div>
+          <div class="nav-group">
+            <button class="btn btn-default btn-sm" onclick="skipImage()">⏭ 跳过</button>
+            <button class="btn btn-primary btn-sm" id="btnSubmit" onclick="submitImage()">提交并下一张 ▶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== RIGHT: Side Panel ===== -->
+      <div class="side-panel">
+
+        <!-- Label List -->
+        <div class="panel-card">
+          <div class="panel-card-header">
+            标签列表
+            <button class="btn btn-text btn-sm" onclick="showAddLabelModal()" style="margin-left:auto;">+ 添加</button>
+          </div>
+          <div class="label-list" id="labelList"></div>
+        </div>
+
+        <!-- Regions List -->
+        <div class="panel-card">
+          <div class="panel-card-header">
+            标注列表
+            <span class="count" id="regionCount">0 个标注框</span>
+          </div>
+          <div class="region-list" id="regionList">
+            <div style="color:var(--text-muted);text-align:center;padding:24px;font-size:12px;">
+              暂无标注框<br>
+              <span style="font-size:11px;">选择标签后，在画布上拖拽绘制</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Details Panel -->
+        <div class="panel-card">
+          <div class="panel-card-header">
+            详情面板
+          </div>
+          <div class="detail-content" id="detailContent">
+            <div class="detail-empty">
+              点击标注框查看详细属性
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Add Label Modal -->
+<div class="modal-overlay" id="addLabelModal" style="display:none;" onclick="if(event.target==this)closeAddLabelModal()">
+  <div class="modal" style="width:360px;">
+    <div class="modal-header">新建标签</div>
+    <div class="modal-body">
+      <div style="margin-bottom:14px;">
+        <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--text-secondary);">标签名称</label>
+        <input type="text" id="newLabelName" placeholder="如：police / 警察" style="width:100%;padding:6px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;">
+      </div>
+      <div>
+        <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--text-secondary);">标签颜色</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="colorPicker">
+        </div>
+        <input type="hidden" id="newLabelColor" value="#ff4d4f">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default btn-sm" onclick="closeAddLabelModal()">取消</button>
+      <button class="btn btn-primary btn-sm" onclick="addLabel()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+
+<script>
+// ==================== DATA & STATE ====================
+const LABELS = [
+  { id: 0, name: 'police / 警察', color: '#ff4d4f' },
+  { id: 1, name: 'security / 保安', color: '#1890ff' },
+  { id: 2, name: 'worker / 工人', color: '#52c41a' },
+  { id: 3, name: 'vehicle / 车辆', color: '#faad14' },
+  { id: 4, name: 'helmet / 安全帽', color: '#722ed1' },
+];
+const PRESET_COLORS = ['#ff4d4f', '#1890ff', '#52c41a', '#faad14', '#722ed1', '#eb2f96', '#13c2c2', '#fa8c16', '#a0d911', '#2f54eb'];
+let labelIdCounter = 5;
+
+let activeLabel = 0;
+let currentTool = 'bbox';
+let zoom = 1;
+let panX = 0, panY = 0;
+let regions = [];          // { id, x, y, w, h, labelId, conf }
+let selectedRegionId = null;
+let isDrawing = false;
+let drawStartX, drawStartY;
+let isPanning = false;
+let panStartX, panStartY;
+let panStartPanX, panStartPanY;
+let regionIdCounter = 1;
+
+// Mock pre-annotations for demo
+const preAnnotations = [
+  { id: 0, x: 120, y: 85, w: 180, h: 220, labelId: 0, conf: 0.92 },
+  { id: 0, x: 350, y: 150, w: 200, h: 180, labelId: 1, conf: 0.85 },
+  { id: 0, x: 580, y: 60, w: 160, h: 200, labelId: 2, conf: 0.71 },
+  { id: 0, x: 200, y: 350, w: 220, h: 160, labelId: 3, conf: 0.64 },
+  { id: 0, x: 500, y: 380, w: 190, h: 170, labelId: 1, conf: 0.88 },
+  { id: 0, x: 680, y: 300, w: 150, h: 190, labelId: 4, conf: 0.55 },
+];
+
+// All pre-annotations get real IDs on load
+let preAnnoMap = []; // Map preAnno index to region ID
+
+// ==================== CANVAS SETUP ====================
+const canvasWrapper = document.getElementById('canvasWrapper');
+const canvas = document.getElementById('mainCanvas');
+const ctx = canvas.getContext('2d');
+
+// Load the demo image
+const demoImage = new Image();
+demoImage.crossOrigin = 'anonymous';
+// Use a placeholder surveillance image (people in scene)
+demoImage.src = 'data:image/svg+xml,' + encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB"/>
+      <stop offset="100%" style="stop-color:#E0E8F0"/>
+    </linearGradient>
+    <linearGradient id="ground" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B9A6E"/>
+      <stop offset="100%" style="stop-color:#6B7B5A"/>
+    </linearGradient>
+  </defs>
+  <!-- Sky -->
+  <rect width="900" height="600" fill="url(#sky)"/>
+  <!-- Buildings -->
+  <rect x="0" y="100" width="160" height="500" fill="#8899AA" stroke="#667788" stroke-width="1"/>
+  <rect x="0" y="140" width="40" height="40" fill="#AADDFF" opacity="0.7"/>
+  <rect x="60" y="140" width="40" height="40" fill="#AADDFF" opacity="0.7"/>
+  <rect x="0" y="220" width="40" height="40" fill="#AADDFF" opacity="0.7"/>
+  <rect x="60" y="220" width="40" height="40" fill="#AADDFF" opacity="0.5"/>
+  <rect x="0" y="300" width="40" height="40" fill="#AADDFF" opacity="0.7"/>
+  <rect x="60" y="300" width="40" height="40" fill="#AADDFF" opacity="0.9"/>
+  <rect x="0" y="380" width="40" height="40" fill="#AADDFF" opacity="0.6"/>
+  <rect x="60" y="380" width="40" height="40" fill="#AADDFF" opacity="0.8"/>
+
+  <rect x="740" y="80" width="160" height="520" fill="#99AABB" stroke="#778899" stroke-width="1"/>
+  <rect x="760" y="120" width="40" height="40" fill="#BBDDFF" opacity="0.7"/>
+  <rect x="820" y="120" width="40" height="40" fill="#BBDDFF" opacity="0.5"/>
+  <rect x="760" y="200" width="40" height="40" fill="#BBDDFF" opacity="0.8"/>
+  <rect x="820" y="200" width="40" height="40" fill="#BBDDFF" opacity="0.6"/>
+  <rect x="760" y="280" width="40" height="40" fill="#BBDDFF" opacity="0.7"/>
+  <rect x="760" y="360" width="40" height="40" fill="#BBDDFF" opacity="0.9"/>
+
+  <!-- Ground / plaza -->
+  <rect x="0" y="420" width="900" height="180" fill="url(#ground)"/>
+  <!-- Road -->
+  <rect x="0" y="430" width="900" height="60" fill="#555555" opacity="0.4"/>
+
+  <!-- Person 1 - guard/police -->
+  <g transform="translate(180, 200)">
+    <circle cx="40" cy="15" r="14" fill="#FFDDBB"/>
+    <rect x="25" y="30" width="30" height="50" rx="3" fill="#1a3a5c"/>
+    <rect x="30" y="30" width="20" height="20" fill="#1a3a5c" stroke="#ffd700" stroke-width="1"/>
+    <rect x="18" y="35" width="12" height="25" rx="2" fill="#1a3a5c"/>
+    <rect x="50" y="35" width="12" height="25" rx="2" fill="#1a3a5c"/>
+    <rect x="27" y="80" width="12" height="35" rx="2" fill="#333"/>
+    <rect x="41" y="80" width="12" height="35" rx="2" fill="#333"/>
+  </g>
+
+  <!-- Person 2 - guard -->
+  <g transform="translate(420, 230)">
+    <circle cx="40" cy="15" r="13" fill="#FFDDBB"/>
+    <rect x="27" y="30" width="26" height="45" rx="2" fill="#2a4a6c"/>
+    <rect x="20" y="33" width="10" height="22" rx="2" fill="#2a4a6c"/>
+    <rect x="50" y="33" width="10" height="22" rx="2" fill="#2a4a6c"/>
+    <rect x="27" y="75" width="11" height="30" rx="2" fill="#444"/>
+    <rect x="42" y="75" width="11" height="30" rx="2" fill="#444"/>
+  </g>
+
+  <!-- Person 3 - worker with helmet -->
+  <g transform="translate(620, 180)">
+    <circle cx="35" cy="20" r="18" fill="#ffcc00"/>
+    <rect x="20" y="38" width="30" height="46" rx="2" fill="#ff8800"/>
+    <rect x="12" y="40" width="13" height="28" rx="2" fill="#ff8800"/>
+    <rect x="45" y="40" width="13" height="28" rx="2" fill="#ff8800"/>
+    <rect x="20" y="84" width="13" height="30" rx="2" fill="#555"/>
+    <rect x="37" y="84" width="13" height="30" rx="2" fill="#555"/>
+  </g>
+
+  <!-- Person 4 - walking -->
+  <g transform="translate(300, 380)">
+    <circle cx="35" cy="15" r="13" fill="#FFDDBB"/>
+    <rect x="22" y="30" width="26" height="42" rx="2" fill="#336699"/>
+    <rect x="15" y="32" width="10" height="20" rx="2" fill="#336699"/>
+    <rect x="45" y="32" width="10" height="20" rx="2" fill="#336699"/>
+    <rect x="18" y="72" width="11" height="32" rx="2" fill="#444"/>
+    <rect x="41" y="72" width="11" height="32" rx="2" fill="#444"/>
+  </g>
+
+  <!-- Person 5 - worker -->
+  <g transform="translate(550, 400)">
+    <circle cx="30" cy="18" r="16" fill="#ffff00"/>
+    <rect x="15" y="34" width="30" height="40" rx="2" fill="#ff8800"/>
+    <rect x="5" y="36" width="12" height="24" rx="2" fill="#ff8800"/>
+    <rect x="43" y="36" width="12" height="24" rx="2" fill="#ff8800"/>
+    <rect x="15" y="74" width="12" height="28" rx="2" fill="#555"/>
+    <rect x="33" y="74" width="12" height="28" rx="2" fill="#555"/>
+  </g>
+
+  <!-- Person 6 - police -->
+  <g transform="translate(700, 350)">
+    <circle cx="40" cy="14" r="13" fill="#FFDDBB"/>
+    <rect x="26" y="28" width="28" height="46" rx="2" fill="#1a3a5c"/>
+    <rect x="18" y="30" width="11" height="22" rx="2" fill="#1a3a5c"/>
+    <rect x="51" y="30" width="11" height="22" rx="2" fill="#1a3a5c"/>
+    <rect x="26" y="74" width="12" height="28" rx="2" fill="#333"/>
+    <rect x="42" y="74" width="12" height="28" rx="2" fill="#333"/>
+  </g>
+
+  <!-- Car / Vehicle -->
+  <g transform="translate(360, 470)">
+    <rect x="0" y="10" width="120" height="40" rx="8" fill="#cc3333"/>
+    <rect x="15" y="0" width="50" height="25" rx="6" fill="#dd5555"/>
+    <rect x="75" y="0" width="35" height="25" rx="6" fill="#dd5555"/>
+    <rect x="18" y="3" width="18" height="18" rx="3" fill="#AADDFF" opacity="0.6"/>
+    <rect x="78" y="3" width="14" height="18" rx="3" fill="#AADDFF" opacity="0.6"/>
+    <circle cx="30" cy="52" r="12" fill="#222"/>
+    <circle cx="90" cy="52" r="12" fill="#222"/>
+  </g>
+</svg>
+`);
+
+demoImage.onload = function() {
+  initCanvas();
+  loadPreAnnotations();
+  render();
+  renderLabelList();
+  initColorPicker();
+};
+
+// ==================== CANVAS INIT ====================
+function initCanvas() {
+  resizeCanvas();
+  fitToWindow();
+}
+
+function resizeCanvas() {
+  canvas.width = demoImage.naturalWidth || 900;
+  canvas.height = demoImage.naturalHeight || 600;
+}
+
+function fitToWindow() {
+  const wrapperW = canvasWrapper.clientWidth - 40;
+  const wrapperH = canvasWrapper.clientHeight - 40;
+  const scaleX = wrapperW / canvas.width;
+  const scaleY = wrapperH / canvas.height;
+  zoom = Math.min(scaleX, scaleY, 1);
+  panX = 0; panY = 0;
+  updateCanvasTransform();
+  render();
+}
+
+// ==================== RENDER ====================
+function render() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw image
+  ctx.drawImage(demoImage, 0, 0, canvas.width, canvas.height);
+
+  // Draw all regions
+  regions.forEach(r => {
+    const label = LABELS.find(l => l.id === r.labelId) || LABELS[0];
+    const isSelected = r.id === selectedRegionId;
+    const isPreAnno = r.conf !== undefined && r.conf < 1;
+
+    ctx.save();
+    if (isPreAnno) {
+      // Pre-annotation: dashed border
+      ctx.setLineDash([6, 4]);
+      ctx.strokeStyle = label.color;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.7;
+    } else {
+      ctx.setLineDash([]);
+      ctx.strokeStyle = label.color;
+      ctx.lineWidth = isSelected ? 3 : 2;
+    }
+
+    // Fill
+    ctx.fillStyle = label.color + '1A'; // 10% opacity
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+
+    // Stroke
+    ctx.strokeRect(r.x, r.y, r.w, r.h);
+
+    // Selection handles
+    if (isSelected) {
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#fff';
+      ctx.strokeStyle = label.color;
+      ctx.lineWidth = 1.5;
+      const handles = [
+        [r.x, r.y], [r.x + r.w, r.y], [r.x, r.y + r.h], [r.x + r.w, r.y + r.h],
+        [r.x + r.w/2, r.y], [r.x + r.w/2, r.y + r.h],
+        [r.x, r.y + r.h/2], [r.x + r.w, r.y + r.h/2]
+      ];
+      handles.forEach(([hx, hy]) => {
+        ctx.fillRect(hx - 4, hy - 4, 8, 8);
+        ctx.strokeRect(hx - 4, hy - 4, 8, 8);
+      });
+    }
+
+    // Label badge
+    const badgeW = ctx.measureText(label.name.split('/')[0].trim()).width + 14;
+    const badgeH = 18;
+    const badgeX = r.x;
+    const badgeY = r.y - badgeH - 2;
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = label.color;
+    ctx.beginPath();
+    ctx.roundRect(badgeX, badgeY < 0 ? r.y + 2 : badgeY, badgeW, badgeH, 3);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 11px ' + getComputedStyle(document.body).fontFamily;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label.name.split('/')[0].trim(), badgeX + 7, (badgeY < 0 ? r.y + 2 : badgeY) + badgeH/2);
+
+    // Confidence badge (for pre-annotations)
+    if (isPreAnno) {
+      const confStr = Math.round(r.conf * 100) + '%';
+      const confW = ctx.measureText(confStr).width + 10;
+      ctx.fillStyle = r.conf >= 0.7 ? '#52c41a' : r.conf >= 0.5 ? '#faad14' : '#ff4d4f';
+      ctx.beginPath();
+      ctx.roundRect(badgeX + badgeW + 4, badgeY < 0 ? r.y + 2 : badgeY, confW, badgeH, 3);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.fillText(confStr, badgeX + badgeW + 9, (badgeY < 0 ? r.y + 2 : badgeY) + badgeH/2);
+    }
+
+    ctx.restore();
+  });
+
+  // Draw crosshair while drawing
+  if (isDrawing) {
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = '#1890ff';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(drawStartX, drawStartY, 0, 0); // placeholder
+  }
+}
+
+function drawDrawingRect() {
+  // Called during mousemove when drawing
+}
+
+function updateCanvasTransform() {
+  canvas.style.transform = `translate(calc(-50% + ${panX}px), calc(-50% + ${panY}px)) scale(${zoom})`;
+  document.getElementById('zoomLabel').textContent = Math.round(zoom * 100) + '%';
+}
+
+// ==================== COORDINATE CONVERSION ====================
+function canvasToImage(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  const cx = (clientX - rect.left) / zoom;
+  const cy = (clientY - rect.top) / zoom;
+  // Since canvas is centered via transform with translate(-50%,-50%)+pan, we need to account
+  // Actually our transform has translate(calc(-50%+panX), calc(-50%+panY)) scale(zoom)
+  // So the rendered top-left of canvas viewport is at:
+  //   viewX = wrapperW/2 - (canvasW*zoom)/2 + panX
+  //   viewY = wrapperH/2 - (canvasH*zoom)/2 + panY
+  // And clientX = viewX + imgX * zoom
+  // So imgX = (clientX - viewX) / zoom
+  const wrapperRect = canvasWrapper.getBoundingClientRect();
+  const viewX = wrapperRect.width/2 - (canvas.width * zoom)/2 + panX;
+  const viewY = wrapperRect.height/2 - (canvas.height * zoom)/2 + panY;
+  return {
+    x: (clientX - wrapperRect.left - viewX) / zoom,
+    y: (clientY - wrapperRect.top - viewY) / zoom
+  };
+}
+
+function imageToCanvas(imgX, imgY) {
+  const wrapperRect = canvasWrapper.getBoundingClientRect();
+  const viewX = wrapperRect.width/2 - (canvas.width * zoom)/2 + panX;
+  const viewY = wrapperRect.height/2 - (canvas.height * zoom)/2 + panY;
+  return {
+    x: wrapperRect.left + viewX + imgX * zoom,
+    y: wrapperRect.top + viewY + imgY * zoom
+  };
+}
+
+// ==================== EVENT HANDLERS ====================
+canvas.addEventListener('mousedown', function(e) {
+  if (e.button !== 0) return; // left click only
+  const pos = canvasToImage(e.clientX, e.clientY);
+
+  if (currentTool === 'pan' || (currentTool !== 'pan' && e.altKey)) {
+    isPanning = true;
+    panStartX = e.clientX;
+    panStartY = e.clientY;
+    panStartPanX = panX;
+    panStartPanY = panY;
+    canvasWrapper.style.cursor = 'grabbing';
+    return;
+  }
+
+  if (currentTool === 'select') {
+    // Check if clicking on a region
+    const clicked = hitTest(pos.x, pos.y);
+    if (clicked !== null) {
+      selectRegion(clicked);
+      // Start dragging
+      isPanning = false;
+      startDragRegion(clicked, pos.x, pos.y);
+    } else {
+      selectedRegionId = null;
+      updateDetailPanel();
+      updateRegionList();
+      render();
+    }
+    return;
+  }
+
+  if (currentTool === 'bbox') {
+    // Start drawing
+    isDrawing = true;
+    drawStartX = pos.x;
+    drawStartY = pos.y;
+    // Create temporary region
+    const newRegion = {
+      id: regionIdCounter++,
+      x: pos.x, y: pos.y, w: 0, h: 0,
+      labelId: activeLabel,
+      conf: 1 // Manual annotation
+    };
+    regions.push(newRegion);
+    selectedRegionId = newRegion.id;
+    updateDetailPanel();
+    updateRegionList();
+  }
+});
+
+canvas.addEventListener('mousemove', function(e) {
+  const pos = canvasToImage(e.clientX, e.clientY);
+
+  if (isPanning) {
+    panX = panStartPanX + (e.clientX - panStartX);
+    panY = panStartPanY + (e.clientY - panStartY);
+    updateCanvasTransform();
+    return;
+  }
+
+  if (isDragging && dragRegionId !== null) {
+    const dx = pos.x - dragStartX;
+    const dy = pos.y - dragStartY;
+    const r = regions.find(reg => reg.id === dragRegionId);
+    if (r) {
+      if (dragHandle) {
+        // Resize
+        handleResize(r, dragHandle, pos.x, pos.y);
+      } else {
+        // Move
+        r.x = dragOrigX + dx;
+        r.y = dragOrigY + dy;
+      }
+      render();
+    }
+    return;
+  }
+
+  if (isDrawing) {
+    const r = regions.find(reg => reg.id === selectedRegionId);
+    if (r) {
+      r.x = Math.min(drawStartX, pos.x);
+      r.y = Math.min(drawStartY, pos.y);
+      r.w = Math.abs(pos.x - drawStartX);
+      r.h = Math.abs(pos.y - drawStartY);
+      render();
+    }
+  }
+});
+
+canvas.addEventListener('mouseup', function(e) {
+  if (isPanning) {
+    isPanning = false;
+    canvasWrapper.style.cursor = currentTool === 'pan' ? 'grab' : 'crosshair';
+    return;
+  }
+
+  if (isDragging) {
+    isDragging = false;
+    dragRegionId = null;
+    dragHandle = null;
+    return;
+  }
+
+  if (isDrawing) {
+    isDrawing = false;
+    const r = regions.find(reg => reg.id === selectedRegionId);
+    if (r && (r.w < 3 || r.h < 3)) {
+      // Too small, remove
+      regions = regions.filter(reg => reg.id !== r.id);
+      selectedRegionId = null;
+    }
+    updateRegionList();
+    updateDetailPanel();
+    updateBboxCount();
+    render();
+  }
+});
+
+// Drag logic
+let isDragging = false;
+let dragRegionId = null;
+let dragHandle = null;
+let dragOrigX = 0, dragOrigY = 0, dragOrigW = 0, dragOrigH = 0;
+let dragStartX = 0, dragStartY = 0;
+
+function hitTest(px, py) {
+  for (let i = regions.length - 1; i >= 0; i--) {
+    const r = regions[i];
+    if (px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h) {
+      return r.id;
+    }
+  }
+  return null;
+}
+
+function getHandleAt(r, px, py) {
+  const margin = 8;
+  const handles = {
+    'tl': [r.x, r.y],
+    'tr': [r.x + r.w, r.y],
+    'bl': [r.x, r.y + r.h],
+    'br': [r.x + r.w, r.y + r.h],
+    'tm': [r.x + r.w/2, r.y],
+    'bm': [r.x + r.w/2, r.y + r.h],
+    'ml': [r.x, r.y + r.h/2],
+    'mr': [r.x + r.w, r.y + r.h/2],
+  };
+  for (const [name, [hx, hy]] of Object.entries(handles)) {
+    if (Math.abs(px - hx) < margin && Math.abs(py - hy) < margin) return name;
+  }
+  return null;
+}
+
+function startDragRegion(regionId, px, py) {
+  const r = regions.find(reg => reg.id === regionId);
+  if (!r) return;
+  isDragging = true;
+  dragRegionId = regionId;
+  dragStartX = px;
+  dragStartY = py;
+  dragOrigX = r.x;
+  dragOrigY = r.y;
+  dragOrigW = r.w;
+  dragOrigH = r.h;
+  dragHandle = getHandleAt(r, px, py);
+}
+
+function handleResize(r, handle, px, py) {
+  // Simple resize: we recompute based on handle
+  const dx = px - dragStartX;
+  const dy = py - dragStartY;
+  switch(handle) {
+    case 'br': r.w = Math.max(10, dragOrigW + dx); r.h = Math.max(10, dragOrigH + dy); break;
+    case 'bl': r.x = dragOrigX + dx; r.w = Math.max(10, dragOrigW - dx); r.h = Math.max(10, dragOrigH + dy); break;
+    case 'tr': r.y = dragOrigY + dy; r.w = Math.max(10, dragOrigW + dx); r.h = Math.max(10, dragOrigH - dy); break;
+    case 'tl': r.x = dragOrigX + dx; r.y = dragOrigY + dy; r.w = Math.max(10, dragOrigW - dx); r.h = Math.max(10, dragOrigH - dy); break;
+    case 'bm': r.h = Math.max(10, dragOrigH + dy); break;
+    case 'tm': r.y = dragOrigY + dy; r.h = Math.max(10, dragOrigH - dy); break;
+    case 'mr': r.w = Math.max(10, dragOrigW + dx); break;
+    case 'ml': r.x = dragOrigX + dx; r.w = Math.max(10, dragOrigW - dx); break;
+  }
+}
+
+// ==================== WHEEL ZOOM ====================
+canvasWrapper.addEventListener('wheel', function(e) {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  const newZoom = Math.min(5, Math.max(0.1, zoom * delta));
+
+  // Zoom toward cursor
+  const rect = canvasWrapper.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const scaleChange = newZoom / zoom;
+  panX = mx - scaleChange * (mx - panX);
+  panY = my - scaleChange * (my - panY);
+  zoom = newZoom;
+
+  updateCanvasTransform();
+});
+
+// ==================== KEYBOARD ====================
+// (keyboard shortcuts removed — use toolbar buttons instead)
+
+// ==================== TOOLS ====================
+function setTool(tool) {
+  currentTool = tool;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  const btnMap = { select: 'toolSelect', bbox: 'toolBbox', pan: 'toolPan' };
+  document.getElementById(btnMap[tool]).classList.add('active');
+  canvasWrapper.style.cursor = tool === 'pan' ? 'grab' : 'crosshair';
+}
+
+// ==================== LABEL LIST RENDERING ====================
+function renderLabelList() {
+  const container = document.getElementById('labelList');
+  container.innerHTML = LABELS.map((l, i) => {
+    const idx = i + 1;
+    return `
+      <div class="label-item ${l.id === activeLabel ? 'active' : ''}" data-label="${l.id}" onclick="selectLabel(${l.id})">
+        <span class="label-color" style="background:${l.color};border:2px solid ${l.color};"></span>
+        <span>${l.name}</span>
+        <span class="label-shortcut">${idx <= 9 ? idx : ''}</span>
+        <button class="label-del-btn" title="删除标签" onclick="event.stopPropagation();deleteLabel(${l.id})">✕</button>
+      </div>`;
+  }).join('');
+}
+
+// ==================== LABEL SELECTION ====================
+function selectLabel(id) {
+  activeLabel = id;
+  renderLabelList();
+  // If a region is selected, change its label
+  if (selectedRegionId !== null) {
+    const r = regions.find(reg => reg.id === selectedRegionId);
+    if (r) {
+      r.labelId = id;
+      updateDetailPanel();
+      updateRegionList();
+      render();
+    }
+  }
+}
+
+function showAddLabelModal() {
+  document.getElementById('addLabelModal').style.display = 'flex';
+  document.getElementById('newLabelName').value = '';
+  document.getElementById('newLabelColor').value = PRESET_COLORS[0];
+  updateColorPickerSelection();
+  document.getElementById('newLabelName').focus();
+}
+
+function closeAddLabelModal() {
+  document.getElementById('addLabelModal').style.display = 'none';
+}
+
+function initColorPicker() {
+  const picker = document.getElementById('colorPicker');
+  picker.innerHTML = PRESET_COLORS.map((c, i) => `
+    <div class="color-swatch ${i === 0 ? 'selected' : ''}" data-color="${c}"
+         style="width:28px;height:28px;border-radius:4px;background:${c};cursor:pointer;border:2px solid ${i === 0 ? '#262626' : 'transparent'};"
+         onclick="pickColor('${c}', this)"></div>
+  `).join('');
+}
+
+function pickColor(color, el) {
+  document.getElementById('newLabelColor').value = color;
+  document.querySelectorAll('#colorPicker .color-swatch').forEach(s => {
+    s.style.borderColor = 'transparent';
+    s.classList.remove('selected');
+  });
+  el.style.borderColor = '#262626';
+  el.classList.add('selected');
+}
+
+function updateColorPickerSelection() {
+  const current = document.getElementById('newLabelColor').value;
+  document.querySelectorAll('#colorPicker .color-swatch').forEach(s => {
+    const match = s.getAttribute('data-color') === current;
+    s.style.borderColor = match ? '#262626' : 'transparent';
+    if (match) s.classList.add('selected'); else s.classList.remove('selected');
+  });
+}
+
+function addLabel() {
+  const name = document.getElementById('newLabelName').value.trim();
+  const color = document.getElementById('newLabelColor').value;
+  if (!name) { showToast('请输入标签名称'); return; }
+  if (LABELS.find(l => l.name === name)) { showToast('标签名称已存在'); return; }
+  const newLabel = { id: labelIdCounter++, name: name, color: color };
+  LABELS.push(newLabel);
+  closeAddLabelModal();
+  renderLabelList();
+  showToast('标签「' + name + '」已添加');
+}
+
+function deleteLabel(id) {
+  if (LABELS.length <= 1) { showToast('至少保留一个标签'); return; }
+  const label = LABELS.find(l => l.id === id);
+  LABELS.splice(LABELS.indexOf(label), 1);
+  // Remove any regions using this label
+  regions = regions.filter(r => r.labelId !== id);
+  // Reassign regions with now-invalid labelId to first available
+  regions.forEach(r => {
+    if (!LABELS.find(l => l.id === r.labelId)) {
+      r.labelId = LABELS[0].id;
+    }
+  });
+  if (activeLabel === id) activeLabel = LABELS[0].id;
+  if (selectedRegionId && !regions.find(r => r.id === selectedRegionId)) {
+    selectedRegionId = null;
+  }
+  renderLabelList();
+  updateRegionList();
+  updateDetailPanel();
+  updateBboxCount();
+  render();
+  showToast('标签已删除');
+}
+
+// ==================== REGION OPERATIONS ====================
+function selectRegion(id) {
+  selectedRegionId = id;
+  updateDetailPanel();
+  updateRegionList();
+  render();
+}
+
+function deleteSelected() {
+  if (selectedRegionId === null) return;
+  regions = regions.filter(r => r.id !== selectedRegionId);
+  selectedRegionId = null;
+  updateDetailPanel();
+  updateRegionList();
+  updateBboxCount();
+  render();
+  showToast('标注框已删除');
+}
+
+let undoStack = [];
+
+function undo() {
+  if (regions.length === 0) return;
+  undoStack.push({...regions[regions.length - 1]});
+  regions.pop();
+  if (selectedRegionId && !regions.find(r => r.id === selectedRegionId)) {
+    selectedRegionId = regions.length > 0 ? regions[regions.length - 1].id : null;
+  }
+  updateDetailPanel();
+  updateRegionList();
+  updateBboxCount();
+  render();
+  showToast('已撤销 (Ctrl+Z)');
+}
+
+// ==================== UI UPDATES ====================
+function updateRegionList() {
+  const container = document.getElementById('regionList');
+  const countEl = document.getElementById('regionCount');
+  countEl.textContent = regions.length + ' 个标注框';
+
+  if (regions.length === 0) {
+    container.innerHTML = `<div style="color:var(--text-muted);text-align:center;padding:24px;font-size:12px;">暂无标注框<br><span style="font-size:11px;">选择标签后，在画布上拖拽绘制</span></div>`;
+    return;
+  }
+
+  container.innerHTML = regions.map((r, i) => {
+    const label = LABELS.find(l => l.id === r.labelId) || LABELS[0];
+    const isPre = r.conf !== undefined && r.conf < 1;
+    const selClass = r.id === selectedRegionId ? 'selected' : '';
+    return `
+      <div class="region-item ${selClass}" onclick="selectRegion(${r.id})">
+        <span style="width:10px;height:10px;border-radius:2px;background:${label.color};flex-shrink:0;"></span>
+        <span class="region-idx">#${i + 1}</span>
+        <span class="region-label">${label.name.split('/')[0].trim()}</span>
+        ${isPre ? `<span class="region-conf">${Math.round(r.conf * 100)}%</span>` : `<span style="font-size:9px;color:var(--success);">人工</span>`}
+        <span class="region-actions">
+          <button class="region-act-btn del" title="删除" onclick="event.stopPropagation();deleteRegion(${r.id})">🗑</button>
+        </span>
+      </div>`;
+  }).join('');
+}
+
+function updateDetailPanel() {
+  const container = document.getElementById('detailContent');
+  if (selectedRegionId === null || !regions.find(r => r.id === selectedRegionId)) {
+    container.innerHTML = '<div class="detail-empty">点击标注框查看详细属性</div>';
+    return;
+  }
+  const r = regions.find(reg => reg.id === selectedRegionId);
+  const label = LABELS.find(l => l.id === r.labelId) || LABELS[0];
+  const isPre = r.conf !== undefined && r.conf < 1;
+  container.innerHTML = `
+    <div class="detail-row"><span class="dl">标签</span>
+      <select class="dv" onchange="changeRegionLabel(${r.id}, this.value)">
+        ${LABELS.map((l, i) => `<option value="${i}" ${i === r.labelId ? 'selected' : ''}>${l.name}</option>`).join('')}
+      </select>
+    </div>
+    <div class="detail-row"><span class="dl">X</span><span class="dv"><input type="number" value="${Math.round(r.x)}" onchange="updateRegionAttr(${r.id},'x',this.value)"></span></div>
+    <div class="detail-row"><span class="dl">Y</span><span class="dv"><input type="number" value="${Math.round(r.y)}" onchange="updateRegionAttr(${r.id},'y',this.value)"></span></div>
+    <div class="detail-row"><span class="dl">宽度</span><span class="dv"><input type="number" value="${Math.round(r.w)}" onchange="updateRegionAttr(${r.id},'w',this.value)"></span></div>
+    <div class="detail-row"><span class="dl">高度</span><span class="dv"><input type="number" value="${Math.round(r.h)}" onchange="updateRegionAttr(${r.id},'h',this.value)"></span></div>
+    ${isPre ? `<div class="detail-row"><span class="dl">置信度</span><span class="dv" style="color:${r.conf >= 0.7 ? 'var(--success)': r.conf >= 0.5 ? 'var(--warning)' : 'var(--danger)'};">${Math.round(r.conf * 100)}% (预标注)</span></div>` : ''}
+    <div class="detail-row"><span class="dl">来源</span><span class="dv">${isPre ? '模型预标注' : '人工标注'}</span></div>
+  `;
+}
+
+function updateBboxCount() {
+  document.getElementById('bboxCount').textContent = regions.length;
+}
+
+function changeRegionLabel(regionId, newLabelId) {
+  const r = regions.find(reg => reg.id === regionId);
+  if (r) {
+    r.labelId = parseInt(newLabelId);
+    render();
+    updateRegionList();
+  }
+}
+
+function updateRegionAttr(regionId, attr, value) {
+  const r = regions.find(reg => reg.id === regionId);
+  if (r) {
+    r[attr] = parseFloat(value) || 0;
+    render();
+    updateRegionList();
+  }
+}
+
+function deleteRegion(id) {
+  regions = regions.filter(r => r.id !== id);
+  if (selectedRegionId === id) selectedRegionId = null;
+  updateDetailPanel();
+  updateRegionList();
+  updateBboxCount();
+  render();
+}
+
+function toggleRegionVisibility(id) {
+  // For now, just select it
+  selectRegion(id);
+}
+
+// ==================== IMAGE NAVIGATION ====================
+let currentImageIdx = 23;
+
+function prevImage() {
+  if (currentImageIdx <= 1) return;
+  saveCurrentAnnotations();
+  currentImageIdx--;
+  loadImage(currentImageIdx);
+}
+
+function nextImage() {
+  if (currentImageIdx >= 200) return;
+  saveCurrentAnnotations();
+  currentImageIdx++;
+  loadImage(currentImageIdx);
+}
+
+function skipImage() {
+  if (currentImageIdx >= 200) return;
+  saveCurrentAnnotations();
+  currentImageIdx++;
+  loadImage(currentImageIdx);
+  showToast('当前图片已跳过，进入下一张');
+}
+
+function submitImage() {
+  saveCurrentAnnotations();
+  showToast('✅ 标注已提交！跳转下一张');
+  if (currentImageIdx < 200) {
+    currentImageIdx++;
+    loadImage(currentImageIdx);
+  }
+}
+
+function saveCurrentAnnotations() {
+  // In real app: POST to API
+  console.log(`Saving image #${currentImageIdx}: ${regions.length} regions`, regions);
+}
+
+function saveDraft() {
+  saveCurrentAnnotations();
+  showToast('草稿已保存');
+}
+
+function loadImage(idx) {
+  currentImageIdx = idx;
+  document.getElementById('currentIdx').textContent = idx;
+  // Reset regions for the new image
+  regions = [];
+  selectedRegionId = null;
+  // In real app: fetch annotations for this image
+  // For demo: add mock annotations for some images
+  if (idx === 23) {
+    loadPreAnnotations();
+  }
+  updateDetailPanel();
+  updateRegionList();
+  updateBboxCount();
+  render();
+  document.getElementById('btnPrev').disabled = idx <= 1;
+  document.getElementById('btnNext').disabled = idx >= 200;
+}
+
+function loadPreAnnotations() {
+  regionIdCounter = 1;
+  preAnnoMap = [];
+  preAnnotations.forEach(pa => {
+    const id = regionIdCounter++;
+    preAnnoMap.push(id);
+    regions.push({
+      id: id,
+      x: pa.x, y: pa.y, w: pa.w, h: pa.h,
+      labelId: pa.labelId,
+      conf: pa.conf
+    });
+  });
+  updateRegionList();
+  updateBboxCount();
+}
+
+// ==================== ZOOM ====================
+function zoomIn() {
+  zoom = Math.min(5, zoom * 1.2);
+  updateCanvasTransform();
+}
+
+function zoomOut() {
+  zoom = Math.max(0.1, zoom / 1.2);
+  updateCanvasTransform();
+}
+
+// ==================== TOAST ====================
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ==================== NAVIGATION (PLACEHOLDER) ====================
+function navigate(page) {
+  if (page === 'annotation') return;
+  showToast(`导航至: ${page}（原型演示中，仅标注工作台可用）`);
+}
+
+// ==================== INITIAL LOAD ====================
+// Image is loaded via demoImage.onload above
+</script>
+</body>
+</html>
