@@ -140,18 +140,18 @@
   .progress-text { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
 
   /* ===== Dataset Grid ===== */
-  .dataset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-  .dataset-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; cursor: pointer; transition: var(--transition); position: relative; }
+  .dataset-grid { display: flex; gap: 10px; }
+  .dataset-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; cursor: pointer; transition: var(--transition); position: relative; flex: 1; min-width: 0; }
   .dataset-card:hover { border-color: var(--primary); box-shadow: 0 2px 6px rgba(24,144,255,0.1); }
-  .dataset-card .ds-icon { width: 40px; height: 40px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 10px; }
+  .dataset-card .ds-icon { width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 13px; margin-bottom: 6px; }
   .dataset-card .ds-icon.raw { background: #fff7e6; color: #fa8c16; }
   .dataset-card .ds-icon.dedup { background: #e6f7ff; color: #1890ff; }
   .dataset-card .ds-icon.train { background: #f6ffed; color: #52c41a; }
   .dataset-card .ds-icon.val { background: #f9f0ff; color: #722ed1; }
-  .dataset-card .ds-name { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
-  .dataset-card .ds-count { font-size: 12px; color: var(--text-secondary); }
-  .dataset-card .ds-date { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
-  .dataset-card .ds-badge { position: absolute; top: 12px; right: 12px; font-size: 10px; padding: 2px 8px; border-radius: 10px; }
+  .dataset-card .ds-name { font-weight: 600; font-size: 12px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dataset-card .ds-count { font-size: 11px; color: var(--text-secondary); }
+  .dataset-card .ds-date { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+  .dataset-card .ds-badge { position: absolute; top: 8px; right: 8px; font-size: 9px; padding: 1px 6px; border-radius: 8px; }
   .ds-badge.done { background: #f6ffed; color: var(--success); }
   .ds-badge.processing { background: #fff7e6; color: var(--warning); }
 
@@ -226,7 +226,7 @@
     </div>
     <div class="sidebar-group">
       <div class="sidebar-group-title">标注与训练</div>
-      <a class="sidebar-item" href="#">数据标注<span class="badge">3</span></a>
+      <a class="sidebar-item" href="数据标注工作台.html">数据标注<span class="badge">3</span></a>
       <a class="sidebar-item" href="#">模型训练</a>
       <a class="sidebar-item" href="#">模型评估</a>
     </div>
@@ -463,11 +463,27 @@
             <div class="ds-date">2026-07-02 生成</div>
             <div class="ds-badge done">已去重</div>
           </div>
-          <!-- Training Data -->
-          <div class="dataset-card" onclick="openDataset('training')" style="opacity:0.5;">
+          <!-- Train (hidden until split) -->
+          <div class="dataset-card" id="trainCard" style="display:none;" onclick="openDataset('train')">
+            <div class="ds-icon train">⊞</div>
+            <div class="ds-name">train/</div>
+            <div class="ds-count" id="trainCount">—</div>
+            <div class="ds-date" id="trainDate">—</div>
+            <div class="ds-badge done">训练集</div>
+          </div>
+          <!-- Val (hidden until split) -->
+          <div class="dataset-card" id="valCard" style="display:none;" onclick="openDataset('val')">
+            <div class="ds-icon val">◇</div>
+            <div class="ds-name">val/</div>
+            <div class="ds-count" id="valCount">—</div>
+            <div class="ds-date" id="valDate">—</div>
+            <div class="ds-badge done">验证集</div>
+          </div>
+          <!-- Training Data (hidden after split) -->
+          <div class="dataset-card" id="trainingPlaceholder" onclick="openDataset('training')" style="opacity:0.5;">
             <div class="ds-icon train">⊞</div>
             <div class="ds-name">training_data/</div>
-            <div class="ds-count">等待标注完成后生成</div>
+            <div class="ds-count">等待数据集划分</div>
             <div class="ds-date">—</div>
             <div class="ds-badge processing">待处理</div>
           </div>
@@ -483,6 +499,59 @@
   </div>
 </div>
 
+<!-- ==================== Dataset Split Modal ==================== -->
+<div class="modal-overlay" id="splitModal" style="display:none;" onclick="if(event.target==this)closeSplitModal()">
+  <div class="modal" style="width:480px;">
+    <div class="modal-header">
+      划分训练集 / 验证集
+      <button class="modal-close" onclick="closeSplitModal()">✕</button>
+    </div>
+    <div style="padding:20px;">
+      <div class="flex-between" style="margin-bottom:16px;">
+        <span style="font-size:13px;">源数据集：<strong>deduplicated/</strong>（1,102 张图片）</span>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>划分方式</label>
+          <select id="splitMethod" class="form-control" style="width:160px;" onchange="toggleSplitMethod()">
+            <option value="random">随机划分</option>
+            <option value="stratified">按类别分层划分</option>
+          </select>
+          <span class="input-hint" id="splitMethodHint">图片随机分配到训练/验证集</span>
+        </div>
+        <div class="form-group">
+          <label>训练集比例</label>
+          <div style="display:flex;align-items:center;gap:8px;height:34px;">
+            <input type="range" id="splitRatio" min="5" max="9" value="7" style="width:140px;" oninput="updateSplitPreview()">
+            <span style="font-weight:600;min-width:48px;" id="splitRatioLabel">7 : 3</span>
+          </div>
+          <span class="input-hint">推荐 7:3 或 8:2</span>
+        </div>
+      </div>
+      <!-- Preview -->
+      <div style="background:#fafafa;border-radius:var(--radius);padding:14px 16px;margin-top:12px;">
+        <div style="font-weight:600;font-size:13px;margin-bottom:8px;">划分预览</div>
+        <div style="display:flex;gap:24px;">
+          <div>
+            <span class="text-secondary" style="font-size:11px;">训练集 train/</span>
+            <div style="font-size:18px;font-weight:700;color:var(--success);" id="splitTrainCount">771</div>
+            <span class="text-muted" style="font-size:11px;">张图片</span>
+          </div>
+          <div>
+            <span class="text-secondary" style="font-size:11px;">验证集 val/</span>
+            <div style="font-size:18px;font-weight:700;color:var(--primary);" id="splitValCount">331</div>
+            <span class="text-muted" style="font-size:11px;">张图片</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeSplitModal()">取消</button>
+      <button class="btn btn-primary" onclick="executeSplit()" id="btnSplit">确认划分</button>
+    </div>
+  </div>
+</div>
+
 <!-- ==================== Dataset Detail Modal ==================== -->
 <div class="modal-overlay" id="datasetModal" style="display:none;" onclick="if(event.target==this)closeDatasetModal()">
   <div class="modal" id="datasetModalContent">
@@ -493,10 +562,7 @@
     <div style="padding:20px;">
       <div class="flex-between" style="margin-bottom:12px;">
         <div id="datasetModalStats" style="font-size:13px;"></div>
-        <div class="flex gap-8">
-          <button class="btn btn-default btn-sm">导出 ZIP</button>
-          <button class="btn btn-primary btn-sm">创建标注任务</button>
-        </div>
+        <div class="flex gap-8" id="datasetModalActions"></div>
       </div>
       <div class="img-grid" id="datasetModalGrid" style="max-height:400px;"></div>
     </div>
@@ -705,13 +771,35 @@ function openDataset(type) {
     raw_videos: { title: 'raw_videos/ — 原始视频', count: '3 个视频文件', imgs: [] },
     extracted: { title: 'extracted_frames/ — 抽帧结果', count: '1,248 张图片 · 3 个子文件夹', imgs: 24 },
     deduplicated: { title: 'deduplicated/ — 去重后图片', count: '1,102 张图片 · 已去重 11.7%', imgs: 24 },
-    training: { title: 'training_data/ — 训练数据集', count: '尚未生成，请先完成标注', imgs: 0 },
+    training: { title: 'training_data/ — 训练数据集', count: '尚未生成，请先完成划分', imgs: 0 },
+    train: { title: 'train/ — 训练集', count: '771 张图片 · 占 70%', imgs: 18 },
+    val: { title: 'val/ — 验证集', count: '331 张图片 · 占 30%', imgs: 8 },
   };
 
   const d = info[type];
+  if (!d) return;
   title.textContent = d.title;
   stats.textContent = d.count;
   modal.style.display = 'flex';
+
+  // Action buttons based on dataset type
+  const actions = document.getElementById('datasetModalActions');
+  if (type === 'deduplicated') {
+    actions.innerHTML = `
+      <button class="btn btn-default btn-sm">导出 ZIP</button>
+      <button class="btn btn-primary btn-sm" onclick="closeDatasetModal();openSplitModal();">划分数据集</button>`;
+  } else if (type === 'train') {
+    actions.innerHTML = `
+      <button class="btn btn-default btn-sm">导出 ZIP</button>
+      <button class="btn btn-primary btn-sm" onclick="location.href='数据标注工作台.html'">创建标注任务</button>`;
+  } else if (type === 'val') {
+    actions.innerHTML = `
+      <button class="btn btn-default btn-sm">导出 ZIP</button>
+      <button class="btn btn-primary btn-sm" onclick="location.href='数据标注工作台.html'">创建标注任务</button>`;
+  } else {
+    actions.innerHTML = `
+      <button class="btn btn-default btn-sm">导出 ZIP</button>`;
+  }
 
   if (d.imgs > 0) {
     grid.innerHTML = Array.from({ length: d.imgs }, (_, i) => `
@@ -731,6 +819,56 @@ function closeDatasetModal() {
 
 function refreshDatasets() {
   showToast('数据集列表已刷新');
+}
+
+// ==================== DATASET SPLIT ====================
+let splitDone = false;
+
+function openSplitModal() {
+  document.getElementById('splitModal').style.display = 'flex';
+  updateSplitPreview();
+}
+
+function closeSplitModal() {
+  document.getElementById('splitModal').style.display = 'none';
+}
+
+function toggleSplitMethod() {
+  const method = document.getElementById('splitMethod').value;
+  const hint = document.getElementById('splitMethodHint');
+  hint.textContent = method === 'stratified' ? '各类别按比例分配到训练/验证集' : '图片随机分配到训练/验证集';
+}
+
+function updateSplitPreview() {
+  const ratio = parseInt(document.getElementById('splitRatio').value);
+  const total = 1102;
+  const train = Math.round(total * ratio / 10);
+  const val = total - train;
+  document.getElementById('splitRatioLabel').textContent = ratio + ' : ' + (10 - ratio);
+  document.getElementById('splitTrainCount').textContent = train;
+  document.getElementById('splitValCount').textContent = val;
+}
+
+function executeSplit() {
+  const ratio = parseInt(document.getElementById('splitRatio').value);
+  const total = 1102;
+  const train = Math.round(total * ratio / 10);
+  const val = total - train;
+  const now = new Date().toISOString().slice(0, 10);
+
+  // Show train/val cards, hide placeholder
+  document.getElementById('trainCard').style.display = 'block';
+  document.getElementById('trainCount').textContent = train + ' 张图片';
+  document.getElementById('trainDate').textContent = now + ' 生成';
+  document.getElementById('valCard').style.display = 'block';
+  document.getElementById('valCount').textContent = val + ' 张图片';
+  document.getElementById('valDate').textContent = now + ' 生成';
+  document.getElementById('trainingPlaceholder').style.display = 'none';
+
+  closeSplitModal();
+  splitDone = true;
+  updateStep(4, 'done');
+  showToast('数据集已划分：训练集 ' + train + ' 张，验证集 ' + val + ' 张');
 }
 
 // ==================== STEP INDICATOR ====================
