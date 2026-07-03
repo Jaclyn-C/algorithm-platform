@@ -438,55 +438,111 @@
         <span class="text-secondary" style="font-weight:400;font-size:12px;">项目「保安服检测」下的所有数据子文件夹</span>
       </div>
       <div class="card-body">
-        <!-- Dataset Cards -->
-        <div class="dataset-grid">
-          <!-- Raw Videos -->
+        <!-- ========== Pipeline 1: 保安服检测 — 已完成 ========== -->
+        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:flex;align-items:center;gap:8px;">
+          摄像头A · 保安服检测
+          <span class="tag tag-success" style="font-size:10px;">已完成</span>
+        </div>
+        <div class="dataset-grid" style="margin-bottom:24px;">
           <div class="dataset-card" onclick="openDataset('raw_videos')">
+            <div class="ds-icon raw">▶</div>
+            <div class="ds-name">raw_videos/</div>
+            <div class="ds-count">4 个视频</div>
+            <div class="ds-date">2026-06-28 上传</div>
+            <div class="ds-badge done">原始数据</div>
+          </div>
+          <div class="dataset-card" onclick="openDataset('extracted')">
+            <div class="ds-icon raw">▣</div>
+            <div class="ds-name">extracted_frames/</div>
+            <div class="ds-count">1,248 张</div>
+            <div class="ds-date">2026-06-29 生成</div>
+            <div class="ds-badge done">已处理</div>
+          </div>
+          <div class="dataset-card" onclick="openDataset('deduplicated')">
+            <div class="ds-icon dedup">▦</div>
+            <div class="ds-name">deduplicated/</div>
+            <div class="ds-count">1,102 张</div>
+            <div class="ds-date">2026-06-30 生成</div>
+            <div class="ds-badge done">已标注</div>
+          </div>
+          <div class="dataset-card" onclick="openDataset('labeled')">
+            <div class="ds-icon labeled">▣</div>
+            <div class="ds-name">labeled/</div>
+            <div class="ds-count">1,102 张</div>
+            <div class="ds-date">2026-07-02 标注完成</div>
+            <div class="ds-badge done">已标注</div>
+          </div>
+          <div class="dataset-card" onclick="openDataset('train')">
+            <div class="ds-icon train">⊞</div>
+            <div class="ds-name">train/</div>
+            <div class="ds-count">771 张 + 标签</div>
+            <div class="ds-date">2026-07-03 生成</div>
+            <div class="ds-badge done">训练集</div>
+          </div>
+          <div class="dataset-card" onclick="openDataset('val')">
+            <div class="ds-icon val">◇</div>
+            <div class="ds-name">val/</div>
+            <div class="ds-count">331 张 + 标签</div>
+            <div class="ds-date">2026-07-03 生成</div>
+            <div class="ds-badge done">验证集</div>
+          </div>
+        </div>
+
+        <!-- ========== Pipeline 2: 烟火检测 — 标注中 ========== -->
+        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:flex;align-items:center;gap:8px;">
+          摄像头B · 烟火检测
+          <span class="tag tag-processing" style="font-size:10px;">标注中 47/200</span>
+        </div>
+        <div class="dataset-grid" style="margin-bottom:24px;">
+          <div class="dataset-card" onclick="openDataset('raw_videos_02')">
             <div class="ds-icon raw">▶</div>
             <div class="ds-name">raw_videos/</div>
             <div class="ds-count">3 个视频</div>
             <div class="ds-date">2026-07-01 上传</div>
             <div class="ds-badge done">原始数据</div>
           </div>
-          <!-- Extracted Frames -->
-          <div class="dataset-card" onclick="openDataset('extracted')">
+          <div class="dataset-card" onclick="openDataset('extracted_02')">
             <div class="ds-icon raw">▣</div>
             <div class="ds-name">extracted_frames/</div>
-            <div class="ds-count">1,248 张图片</div>
-            <div class="ds-date">2026-07-02 生成</div>
+            <div class="ds-count">920 张</div>
+            <div class="ds-date">2026-07-01 生成</div>
             <div class="ds-badge done">已处理</div>
           </div>
-          <!-- Deduplicated -->
-          <div class="dataset-card" onclick="openDataset('deduplicated')">
+          <div class="dataset-card" onclick="openDataset('deduplicated_02')">
             <div class="ds-icon dedup">▦</div>
             <div class="ds-name">deduplicated/</div>
-            <div class="ds-count">1,102 张图片</div>
+            <div class="ds-count">856 张</div>
             <div class="ds-date">2026-07-02 生成</div>
+            <div class="ds-badge processing">标注中 47/200</div>
+          </div>
+        </div>
+
+        <!-- ========== Pipeline 3: 安全帽检测 — 未标注 ========== -->
+        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:flex;align-items:center;gap:8px;">
+          摄像头C · 安全帽检测
+          <span class="tag tag-default" style="font-size:10px;">未标注</span>
+        </div>
+        <div class="dataset-grid">
+          <div class="dataset-card" onclick="openDataset('raw_videos_03')">
+            <div class="ds-icon raw">▶</div>
+            <div class="ds-name">raw_videos/</div>
+            <div class="ds-count">6 个视频</div>
+            <div class="ds-date">2026-07-02 上传</div>
+            <div class="ds-badge done">原始数据</div>
+          </div>
+          <div class="dataset-card" onclick="openDataset('extracted_03')">
+            <div class="ds-icon raw">▣</div>
+            <div class="ds-name">extracted_frames/</div>
+            <div class="ds-count">1,650 张</div>
+            <div class="ds-date">2026-07-03 生成</div>
+            <div class="ds-badge done">已处理</div>
+          </div>
+          <div class="dataset-card" onclick="openDataset('deduplicated_03')">
+            <div class="ds-icon dedup">▦</div>
+            <div class="ds-name">deduplicated/</div>
+            <div class="ds-count">1,517 张</div>
+            <div class="ds-date">2026-07-03 生成</div>
             <div class="ds-badge done">已去重</div>
-          </div>
-          <!-- Labeled (appears after annotation) -->
-          <div class="dataset-card" id="labeledCard" style="display:none;" onclick="openDataset('labeled')">
-            <div class="ds-icon labeled">▣</div>
-            <div class="ds-name">labeled/</div>
-            <div class="ds-count" id="labeledCount">1,102 张图片</div>
-            <div class="ds-date" id="labeledDate">2026-07-03 标注完成</div>
-            <div class="ds-badge done">已标注</div>
-          </div>
-          <!-- Train (hidden until split) -->
-          <div class="dataset-card" id="trainCard" style="display:none;" onclick="openDataset('train')">
-            <div class="ds-icon train">⊞</div>
-            <div class="ds-name">train/</div>
-            <div class="ds-count" id="trainCount">—</div>
-            <div class="ds-date" id="trainDate">—</div>
-            <div class="ds-badge done">训练集</div>
-          </div>
-          <!-- Val (hidden until split) -->
-          <div class="dataset-card" id="valCard" style="display:none;" onclick="openDataset('val')">
-            <div class="ds-icon val">◇</div>
-            <div class="ds-name">val/</div>
-            <div class="ds-count" id="valCount">—</div>
-            <div class="ds-date" id="valDate">—</div>
-            <div class="ds-badge done">验证集</div>
           </div>
         </div>
 
@@ -776,12 +832,21 @@ function openDataset(type) {
   const grid = document.getElementById('datasetModalGrid');
 
   const info = {
-    raw_videos: { title: 'raw_videos/ — 原始视频', count: '3 个视频文件', imgs: [] },
-    extracted: { title: 'extracted_frames/ — 抽帧结果', count: '1,248 张图片 · 3 个子文件夹', imgs: 24 },
-    deduplicated: { title: 'deduplicated/ — 去重后图片', count: '1,102 张图片 · 已去重 11.7%', imgs: 24 },
+    // Pipeline 1 — 已完成
+    raw_videos: { title: 'raw_videos/ — 原始视频 (摄像头A)', count: '4 个视频文件', imgs: [] },
+    extracted: { title: 'extracted_frames/ — 抽帧结果', count: '1,248 张图片 · 4 个子文件夹', imgs: 24 },
+    deduplicated: { title: 'deduplicated/ — 去重后图片', count: '1,102 张图片 · 已去重 11.7% · 已标注', imgs: 24 },
     labeled: { title: 'labeled/ — 标注完成（YOLO格式）', count: '1,102 张图片 · images/ + labels/ + data.yaml', imgs: 24 },
-    train: { title: 'train/ — 训练集', count: '771 张图片 · YOLO格式', imgs: 18 },
-    val: { title: 'val/ — 验证集', count: '331 张图片 · YOLO格式', imgs: 8 },
+    train: { title: 'train/ — 训练集（YOLO格式）', count: '771 张图片 + 标签', imgs: 18 },
+    val: { title: 'val/ — 验证集（YOLO格式）', count: '331 张图片 + 标签', imgs: 8 },
+    // Pipeline 2 — 标注中
+    raw_videos_02: { title: 'raw_videos/ — 原始视频 (摄像头B)', count: '3 个视频文件', imgs: [] },
+    extracted_02: { title: 'extracted_frames/ — 抽帧结果', count: '920 张图片 · 3 个子文件夹', imgs: 20 },
+    deduplicated_02: { title: 'deduplicated/ — 去重后图片', count: '856 张图片 · 已去重 12.3% · 标注中 (47/200)', imgs: 20 },
+    // Pipeline 3 — 未标注
+    raw_videos_03: { title: 'raw_videos/ — 原始视频 (摄像头C)', count: '6 个视频文件', imgs: [] },
+    extracted_03: { title: 'extracted_frames/ — 抽帧结果', count: '1,650 张图片 · 6 个子文件夹', imgs: 24 },
+    deduplicated_03: { title: 'deduplicated/ — 去重后图片', count: '1,517 张图片 · 已去重 9.5% · 未标注', imgs: 24 },
   };
 
   const d = info[type];
@@ -793,10 +858,20 @@ function openDataset(type) {
   // Action buttons based on dataset type
   const actions = document.getElementById('datasetModalActions');
   if (type === 'deduplicated') {
+    // Pipeline 1 — 已完成
     actions.innerHTML = `
       <button class="btn btn-default btn-sm">导出 ZIP</button>
-      <button class="btn btn-primary btn-sm" onclick="location.href='数据标注工作台.html'">创建标注任务</button>
-      <button class="btn btn-text btn-sm" onclick="simulateAnnotationDone()">模拟标注完成</button>`;
+      <button class="btn btn-primary" onclick="location.href='数据标注工作台.html'">查看 / 修改标注</button>`;
+  } else if (type === 'deduplicated_02') {
+    // Pipeline 2 — 标注中
+    actions.innerHTML = `
+      <button class="btn btn-default btn-sm">导出 ZIP</button>
+      <button class="btn btn-primary" onclick="location.href='数据标注工作台.html'">继续标注（47/200）</button>`;
+  } else if (type === 'deduplicated_03') {
+    // Pipeline 3 — 未标注
+    actions.innerHTML = `
+      <button class="btn btn-default btn-sm">导出 ZIP</button>
+      <button class="btn btn-primary" onclick="location.href='数据标注工作台.html'">创建标注任务</button>`;
   } else if (type === 'labeled') {
     actions.innerHTML = `
       <button class="btn btn-primary" onclick="closeDatasetModal();openSplitModal();">导出 YOLO 并划分</button>`;
@@ -881,16 +956,6 @@ function executeSplit() {
   }, 800);
 }
 
-// ==================== ANNOTATION SIMULATION ====================
-function simulateAnnotationDone() {
-  closeDatasetModal();
-  const now = new Date().toISOString().slice(0, 10);
-  document.getElementById('labeledCard').style.display = 'block';
-  document.getElementById('labeledCount').textContent = '1,102 张图片';
-  document.getElementById('labeledDate').textContent = now + ' 标注完成';
-  updateStep(4, 'active');
-  showToast('标注完成！labeled/ 数据集已生成（YOLO 格式）');
-}
 
 
 // ==================== STEP INDICATOR ====================

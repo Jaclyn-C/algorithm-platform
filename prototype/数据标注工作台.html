@@ -454,7 +454,8 @@
         <strong id="bboxCount">0</strong>
       </div>
       <div class="info-actions">
-        <button class="btn btn-primary btn-sm" onclick="saveDraft()">保存草稿</button>
+        <button class="btn btn-default btn-sm" onclick="saveDraft()">保存草稿</button>
+        <button class="btn btn-primary btn-sm" onclick="finishAnnotation()" id="btnFinishAnnotation" style="display:none;">完成标注</button>
       </div>
     </div>
 
@@ -734,6 +735,8 @@ demoImage.onload = function() {
   render();
   renderLabelList();
   initColorPicker();
+  loadSavedProgress();
+  checkAllDone();
 };
 
 // ==================== CANVAS INIT ====================
@@ -1336,6 +1339,23 @@ function toggleRegionVisibility(id) {
 // ==================== IMAGE NAVIGATION ====================
 let currentImageIdx = 23;
 
+function loadSavedProgress() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (data && typeof data.done === 'number') {
+      currentImageIdx = Math.min(data.done + 1, TOTAL_IMAGES);
+      loadImage(currentImageIdx);
+      if (!data.status || data.status === 'none') {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ status: 'in_progress', done: data.done, total: TOTAL_IMAGES }));
+      }
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ status: 'in_progress', done: 0, total: TOTAL_IMAGES }));
+    }
+  } catch(e) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ status: 'in_progress', done: 0, total: TOTAL_IMAGES }));
+  }
+}
+
 function prevImage() {
   if (currentImageIdx <= 1) return;
   saveCurrentAnnotations();
@@ -1358,18 +1378,44 @@ function skipImage() {
   showToast('当前图片已跳过，进入下一张');
 }
 
-function submitImage() {
-  saveCurrentAnnotations();
-  showToast('✅ 标注已提交！跳转下一张');
-  if (currentImageIdx < 200) {
-    currentImageIdx++;
-    loadImage(currentImageIdx);
+// ==================== SHARED STATE (localStorage) ====================
+const STORAGE_KEY = 'annotation_status_security';
+const TOTAL_IMAGES = 200;
+
+function syncProgress() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    data.status = 'in_progress';
+    data.done = Math.max(data.done || 0, currentImageIdx);
+    data.total = Math.max(data.total || TOTAL_IMAGES, TOTAL_IMAGES);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch(e) {}
+}
+
+function checkAllDone() {
+  if (currentImageIdx >= TOTAL_IMAGES) {
+    document.getElementById('btnFinishAnnotation').style.display = 'inline-flex';
   }
 }
 
+function finishAnnotation() {
+  if (!confirm('确认全部标注已完成？点击确定后 labeled/ 数据集将在数据中心生成。')) return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ status: 'done', done: TOTAL_IMAGES, total: TOTAL_IMAGES }));
+  showToast('标注任务已完成！返回数据中心继续操作');
+  setTimeout(() => { location.href = '数据中心.html'; }, 1500);
+}
+
+function submitImage() {
+  saveCurrentAnnotations();
+  currentImageIdx++;
+  showToast('标注已提交！跳转下一张');
+  loadImage(currentImageIdx);
+  checkAllDone();
+}
+
 function saveCurrentAnnotations() {
-  // In real app: POST to API
   console.log(`Saving image #${currentImageIdx}: ${regions.length} regions`, regions);
+  syncProgress();
 }
 
 function saveDraft() {
