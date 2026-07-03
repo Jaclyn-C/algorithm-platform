@@ -148,6 +148,7 @@
   .dataset-card .ds-icon.dedup { background: #e6f7ff; color: #1890ff; }
   .dataset-card .ds-icon.train { background: #f6ffed; color: #52c41a; }
   .dataset-card .ds-icon.val { background: #f9f0ff; color: #722ed1; }
+  .dataset-card .ds-icon.labeled { background: #fff7e6; color: #fa8c16; }
   .dataset-card .ds-name { font-weight: 600; font-size: 12px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .dataset-card .ds-count { font-size: 11px; color: var(--text-secondary); }
   .dataset-card .ds-date { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
@@ -463,6 +464,14 @@
             <div class="ds-date">2026-07-02 生成</div>
             <div class="ds-badge done">已去重</div>
           </div>
+          <!-- Labeled (appears after annotation) -->
+          <div class="dataset-card" id="labeledCard" style="display:none;" onclick="openDataset('labeled')">
+            <div class="ds-icon labeled">▣</div>
+            <div class="ds-name">labeled/</div>
+            <div class="ds-count" id="labeledCount">1,102 张图片</div>
+            <div class="ds-date" id="labeledDate">2026-07-03 标注完成</div>
+            <div class="ds-badge done">已标注</div>
+          </div>
           <!-- Train (hidden until split) -->
           <div class="dataset-card" id="trainCard" style="display:none;" onclick="openDataset('train')">
             <div class="ds-icon train">⊞</div>
@@ -478,14 +487,6 @@
             <div class="ds-count" id="valCount">—</div>
             <div class="ds-date" id="valDate">—</div>
             <div class="ds-badge done">验证集</div>
-          </div>
-          <!-- Training Data (hidden after split) -->
-          <div class="dataset-card" id="trainingPlaceholder" onclick="openDataset('training')" style="opacity:0.5;">
-            <div class="ds-icon train">⊞</div>
-            <div class="ds-name">training_data/</div>
-            <div class="ds-count">等待数据集划分</div>
-            <div class="ds-date">—</div>
-            <div class="ds-badge processing">待处理</div>
           </div>
         </div>
 
@@ -503,12 +504,12 @@
 <div class="modal-overlay" id="splitModal" style="display:none;" onclick="if(event.target==this)closeSplitModal()">
   <div class="modal" style="width:480px;">
     <div class="modal-header">
-      划分训练集 / 验证集
+      导出 YOLO 并划分数据集
       <button class="modal-close" onclick="closeSplitModal()">✕</button>
     </div>
     <div style="padding:20px;">
-      <div class="flex-between" style="margin-bottom:16px;">
-        <span style="font-size:13px;">源数据集：<strong>deduplicated/</strong>（1,102 张图片）</span>
+      <div class="flex-between" style="margin-bottom:12px;">
+        <span style="font-size:13px;">源数据集：<strong>labeled/</strong>（images + labels + data.yaml）</span>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -530,24 +531,31 @@
       </div>
       <!-- Preview -->
       <div style="background:#fafafa;border-radius:var(--radius);padding:14px 16px;margin-top:12px;">
-        <div style="font-weight:600;font-size:13px;margin-bottom:8px;">划分预览</div>
+        <div style="font-weight:600;font-size:13px;margin-bottom:10px;">输出结构（YOLO 格式）</div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:4px;padding:10px 14px;font-family:monospace;font-size:11px;line-height:1.8;color:var(--text);margin-bottom:14px;">
+          train/&emsp;&emsp;&emsp;&emsp;&emsp;val/<br>
+          &emsp;images/&emsp;<span style="color:var(--text-muted);">(训练图)</span>&emsp;&emsp;images/&emsp;<span style="color:var(--text-muted);">(验证图)</span><br>
+          &emsp;labels/&emsp;<span style="color:var(--text-muted);">(对应 .txt)</span>&emsp;&emsp;labels/&emsp;<span style="color:var(--text-muted);">(对应 .txt)</span><br>
+          data.yaml&emsp;<span style="color:var(--text-muted);">(类别 + 路径配置)</span>
+        </div>
+        <div style="font-weight:600;font-size:12px;margin-bottom:6px;">数量预览</div>
         <div style="display:flex;gap:24px;">
           <div>
             <span class="text-secondary" style="font-size:11px;">训练集 train/</span>
             <div style="font-size:18px;font-weight:700;color:var(--success);" id="splitTrainCount">771</div>
-            <span class="text-muted" style="font-size:11px;">张图片</span>
+            <span class="text-muted" style="font-size:11px;">张图片 + 标签</span>
           </div>
           <div>
             <span class="text-secondary" style="font-size:11px;">验证集 val/</span>
             <div style="font-size:18px;font-weight:700;color:var(--primary);" id="splitValCount">331</div>
-            <span class="text-muted" style="font-size:11px;">张图片</span>
+            <span class="text-muted" style="font-size:11px;">张图片 + 标签</span>
           </div>
         </div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-default" onclick="closeSplitModal()">取消</button>
-      <button class="btn btn-primary" onclick="executeSplit()" id="btnSplit">确认划分</button>
+      <button class="btn btn-primary" onclick="executeSplit()" id="btnSplit">导出并划分</button>
     </div>
   </div>
 </div>
@@ -771,9 +779,9 @@ function openDataset(type) {
     raw_videos: { title: 'raw_videos/ — 原始视频', count: '3 个视频文件', imgs: [] },
     extracted: { title: 'extracted_frames/ — 抽帧结果', count: '1,248 张图片 · 3 个子文件夹', imgs: 24 },
     deduplicated: { title: 'deduplicated/ — 去重后图片', count: '1,102 张图片 · 已去重 11.7%', imgs: 24 },
-    training: { title: 'training_data/ — 训练数据集', count: '尚未生成，请先完成划分', imgs: 0 },
-    train: { title: 'train/ — 训练集', count: '771 张图片 · 占 70%', imgs: 18 },
-    val: { title: 'val/ — 验证集', count: '331 张图片 · 占 30%', imgs: 8 },
+    labeled: { title: 'labeled/ — 标注完成（YOLO格式）', count: '1,102 张图片 · images/ + labels/ + data.yaml', imgs: 24 },
+    train: { title: 'train/ — 训练集', count: '771 张图片 · YOLO格式', imgs: 18 },
+    val: { title: 'val/ — 验证集', count: '331 张图片 · YOLO格式', imgs: 8 },
   };
 
   const d = info[type];
@@ -787,15 +795,13 @@ function openDataset(type) {
   if (type === 'deduplicated') {
     actions.innerHTML = `
       <button class="btn btn-default btn-sm">导出 ZIP</button>
-      <button class="btn btn-primary btn-sm" onclick="closeDatasetModal();openSplitModal();">划分数据集</button>`;
-  } else if (type === 'train') {
+      <button class="btn btn-primary btn-sm" onclick="location.href='数据标注工作台.html'">创建标注任务</button>
+      <button class="btn btn-text btn-sm" onclick="simulateAnnotationDone()">模拟标注完成</button>`;
+  } else if (type === 'labeled') {
     actions.innerHTML = `
-      <button class="btn btn-default btn-sm">导出 ZIP</button>
-      <button class="btn btn-primary btn-sm" onclick="location.href='数据标注工作台.html'">创建标注任务</button>`;
-  } else if (type === 'val') {
-    actions.innerHTML = `
-      <button class="btn btn-default btn-sm">导出 ZIP</button>
-      <button class="btn btn-primary btn-sm" onclick="location.href='数据标注工作台.html'">创建标注任务</button>`;
+      <button class="btn btn-primary" onclick="closeDatasetModal();openSplitModal();">导出 YOLO 并划分</button>`;
+  } else if (type === 'train' || type === 'val') {
+    actions.innerHTML = '';
   } else {
     actions.innerHTML = `
       <button class="btn btn-default btn-sm">导出 ZIP</button>`;
@@ -856,20 +862,36 @@ function executeSplit() {
   const val = total - train;
   const now = new Date().toISOString().slice(0, 10);
 
-  // Show train/val cards, hide placeholder
-  document.getElementById('trainCard').style.display = 'block';
-  document.getElementById('trainCount').textContent = train + ' 张图片';
-  document.getElementById('trainDate').textContent = now + ' 生成';
-  document.getElementById('valCard').style.display = 'block';
-  document.getElementById('valCount').textContent = val + ' 张图片';
-  document.getElementById('valDate').textContent = now + ' 生成';
-  document.getElementById('trainingPlaceholder').style.display = 'none';
+  // Step 1: export YOLO format from labeled/
+  showToast('正在导出 YOLO 格式...');
 
-  closeSplitModal();
-  splitDone = true;
-  updateStep(4, 'done');
-  showToast('数据集已划分：训练集 ' + train + ' 张，验证集 ' + val + ' 张');
+  setTimeout(() => {
+    // Step 2: split into train/val
+    document.getElementById('trainCard').style.display = 'block';
+    document.getElementById('trainCount').textContent = train + ' 张图片 + 标签';
+    document.getElementById('trainDate').textContent = now + ' 生成';
+    document.getElementById('valCard').style.display = 'block';
+    document.getElementById('valCount').textContent = val + ' 张图片 + 标签';
+    document.getElementById('valDate').textContent = now + ' 生成';
+
+    closeSplitModal();
+    splitDone = true;
+    updateStep(4, 'done');
+    showToast('已完成：YOLO 导出 + 数据集划分 → 训练集 ' + train + ' 张，验证集 ' + val + ' 张');
+  }, 800);
 }
+
+// ==================== ANNOTATION SIMULATION ====================
+function simulateAnnotationDone() {
+  closeDatasetModal();
+  const now = new Date().toISOString().slice(0, 10);
+  document.getElementById('labeledCard').style.display = 'block';
+  document.getElementById('labeledCount').textContent = '1,102 张图片';
+  document.getElementById('labeledDate').textContent = now + ' 标注完成';
+  updateStep(4, 'active');
+  showToast('标注完成！labeled/ 数据集已生成（YOLO 格式）');
+}
+
 
 // ==================== STEP INDICATOR ====================
 function updateStep(n, status) {
