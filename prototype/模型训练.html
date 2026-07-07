@@ -198,14 +198,7 @@
       <a class="sidebar-item" href="项目列表.html">项目列表</a>
     </div>
     <div class="sidebar-group" id="sidebarProjectGroup" style="display:none;">
-      <div class="sidebar-group-title">当前项目</div>
-      <div style="padding:0 20px;">
-        <select id="sidebarProject" onchange="switchProject(this.value)" style="width:100%;padding:6px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:13px;font-family:var(--font);">
-          <option value="security" style="color:#262626;">保安服检测</option>
-          <option value="fire" style="color:#262626;">烟火检测</option>
-          <option value="helmet" style="color:#262626;">安全帽检测</option>
-        </select>
-      </div>
+      <div class="sidebar-group-title" style="font-size:13px;color:#fff;font-weight:600;text-transform:none;opacity:1;" id="sidebarProjectName">当前项目：—</div>
     </div>
     <div class="sidebar-group" id="sidebarSubPages" style="display:none;">
       <a class="sidebar-item" href="数据中心.html">数据中心</a>
@@ -1034,6 +1027,7 @@ function closeResultModal() {
 
 // ==================== AUTH + PROJECT ====================
 function getUser() { try { return JSON.parse(localStorage.getItem('current_user')); } catch(e) { return null; } }
+function getProjectName(key) { var m = {security:'保安服检测',fire:'烟火检测',helmet:'安全帽检测'}; return m[key] || key; }
 function logout() { localStorage.removeItem('current_user'); location.href = '登录.html'; }
 
 (function() {
@@ -1046,13 +1040,10 @@ function logout() { localStorage.removeItem('current_user'); location.href = '�
   if (!project) { location.href = '项目列表.html'; return; }
   document.getElementById('sidebarProjectGroup').style.display = 'block';
   document.getElementById('sidebarSubPages').style.display = 'block';
-  document.getElementById('sidebarProject').value = project;
+  document.getElementById('sidebarProjectName').textContent = '当前项目：' + getProjectName(project);
 })();
 
-function switchProject(val) {
-  localStorage.setItem('current_project', val);
-  location.reload();
-}
+
 
 document.addEventListener('click', function(e) {
   if (!e.target.closest('.user-menu')) {
