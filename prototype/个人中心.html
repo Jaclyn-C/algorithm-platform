@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>算法训练平台 — 个人中心</title>
+<style>
+  :root {
+    --sidebar-bg: #001529; --sidebar-hover: #002140; --sidebar-active: #1890ff;
+    --sidebar-text: #ffffffb3; --sidebar-text-active: #fff; --header-bg: #fff;
+    --header-height: 48px; --sidebar-width: 220px; --bg: #f0f2f5; --card-bg: #fff;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.08); --primary: #1890ff; --primary-light: #e6f7ff;
+    --success: #52c41a; --warning: #faad14; --danger: #ff4d4f; --text: #262626;
+    --text-secondary: #8c8c8c; --text-muted: #bfbfbf; --border: #f0f0f0;
+    --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    --radius: 6px; --transition: 0.2s ease;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font); background: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text); font-size: 13px; }
+
+  .sidebar { width: var(--sidebar-width); min-width: var(--sidebar-width); background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; z-index: 100; }
+  .sidebar-logo { height: 56px; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-logo .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, #1890ff, #36cfc9); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; margin-right: 10px; }
+  .sidebar-logo .logo-text { color: #fff; font-size: 15px; font-weight: 600; }
+  .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+  .sidebar-group { margin-bottom: 4px; }
+  .sidebar-group-title { padding: 8px 20px; font-size: 11px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; }
+  .sidebar-item { display: flex; align-items: center; padding: 10px 20px; cursor: pointer; transition: var(--transition); color: var(--sidebar-text); text-decoration: none; font-size: 13px; border-left: 3px solid transparent; margin: 1px 0; }
+  .sidebar-item:hover { background: var(--sidebar-hover); color: #fff; }
+  .sidebar-item.active { background: var(--sidebar-active); color: var(--sidebar-text-active); border-left-color: #fff; }
+
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .header { height: var(--header-height); background: var(--header-bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .header .breadcrumb { font-size: 12px; color: var(--text-secondary); }
+  .header .breadcrumb span { color: var(--text); font-weight: 500; }
+  .header .breadcrumb .sep { margin: 0 6px; color: var(--text-muted); }
+  .header-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+  .user-menu { position: relative; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .user-dropdown { position: absolute; top: 38px; right: 0; background: #fff; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 130px; z-index: 999; display: none; }
+  .user-dropdown.show { display: block; }
+  .user-dropdown a { display: block; padding: 10px 16px; font-size: 13px; color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); }
+  .user-dropdown a:hover { background: #f5f5f5; }
+  .user-dropdown a:last-child { border-bottom: none; }
+
+  .content { flex: 1; overflow-y: auto; padding: 24px 32px; }
+  .page-header { margin-bottom: 20px; }
+  .page-header h2 { font-size: 20px; font-weight: 600; }
+
+  .profile-layout { display: flex; gap: 20px; max-width: 800px; }
+  .profile-card { background: var(--card-bg); border-radius: 8px; box-shadow: var(--card-shadow); padding: 28px; }
+  .profile-side { width: 240px; text-align: center; }
+  .profile-side .avatar-large { width: 80px; height: 80px; border-radius: 50%; background: var(--primary); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; margin-bottom: 12px; }
+  .profile-side .role-tag { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; margin-top: 4px; }
+  .role-engineer { background: #e6f7ff; color: #1890ff; }
+  .role-annotator { background: #fff7e6; color: #fa8c16; }
+  .role-admin { background: #f6ffed; color: #52c41a; }
+
+  .profile-main { flex: 1; }
+  .profile-main h3 { font-size: 15px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
+  .form-row label { width: 64px; font-size: 12px; color: var(--text-secondary); line-height: 32px; flex-shrink: 0; }
+  .form-row input { flex: 1; padding: 7px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; font-family: var(--font); outline: none; }
+  .form-row input:focus { border-color: var(--primary); }
+  .form-row .readonly { background: #f5f5f5; color: var(--text-secondary); }
+
+  .btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px; border-radius: var(--radius); font-size: 12px; cursor: pointer; border: 1px solid transparent; font-family: var(--font); transition: var(--transition); }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: #40a9ff; }
+  .btn-default { background: #fff; color: var(--text); border-color: #d9d9d9; }
+  .btn-default:hover { color: var(--primary); border-color: var(--primary); }
+
+  .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #262626; color: #fff; padding: 10px 24px; border-radius: var(--radius); font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">AI</div>
+    <div class="logo-text">算法训练平台</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
+      <a class="sidebar-item" href="项目列表.html">项目列表</a>
+    </div>
+    <div class="sidebar-group" id="sidebarProjectGroup" style="display:none;">
+      <div class="sidebar-group-title">当前项目</div>
+      <div style="padding:0 20px;">
+        <select id="sidebarProject" onchange="switchProject(this.value)" style="width:100%;padding:6px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:13px;font-family:var(--font);">
+          <option value="security" style="color:#262626;">保安服检测</option>
+          <option value="fire" style="color:#262626;">烟火检测</option>
+          <option value="helmet" style="color:#262626;">安全帽检测</option>
+        </select>
+      </div>
+    </div>
+    <div class="sidebar-group" id="sidebarSubPages" style="display:none;">
+      <a class="sidebar-item" href="数据中心.html">数据中心</a>
+      <a class="sidebar-item" href="数据标注工作台.html">数据标注<span class="badge" style="margin-left:auto;background:var(--danger);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;">3</span></a>
+      <a class="sidebar-item" href="模型训练.html">模型训练</a>
+      <a class="sidebar-item" href="模型评估.html">模型评估</a>
+      <a class="sidebar-item" href="模型试用.html">模型试用</a>
+      <a class="sidebar-item" href="模型部署.html">模型部署</a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
+      <a class="sidebar-item active" href="#">个人中心</a>
+    </div>
+  </nav>
+</aside>
+
+<div class="main">
+  <header class="header">
+    <div class="breadcrumb">算法训练平台 <span class="sep">›</span> <span>个人中心</span></div>
+    <div class="header-actions">
+      <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
+        <span style="font-size:12px;" id="headerUserName">用户</span>
+        <div id="headerUserAvatar" style="width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">U</div>
+        <div class="user-dropdown" id="userDropdown">
+          <a href="个人中心.html">个人中心</a>
+          <a href="#" onclick="event.stopPropagation();logout()">退出登录</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-header"><h2>个人中心</h2></div>
+
+    <div class="profile-layout">
+      <div class="profile-card profile-side">
+        <div class="avatar-large" id="profileAvatar">U</div>
+        <div style="font-size:18px;font-weight:700;" id="profileName">用户名</div>
+        <div class="role-tag" id="profileRole">角色</div>
+        <div style="margin-top:12px;font-size:11px;color:var(--text-muted);">注册于 <span id="profileDate">—</span></div>
+      </div>
+
+      <div class="profile-card profile-main">
+        <h3>编辑资料</h3>
+        <div class="form-row">
+          <label>用户名</label>
+          <input type="text" id="editUsername" class="readonly" readonly>
+        </div>
+        <div class="form-row">
+          <label>显示名称</label>
+          <input type="text" id="editName" placeholder="请输入显示名称">
+        </div>
+        <div class="form-row">
+          <label>邮箱</label>
+          <input type="email" id="editEmail" placeholder="请输入邮箱">
+        </div>
+        <div class="form-row">
+          <label>角色</label>
+          <input type="text" id="editRole" class="readonly" readonly>
+        </div>
+
+        <h3 style="margin-top:20px;">修改密码</h3>
+        <div class="form-row">
+          <label>旧密码</label>
+          <input type="password" id="oldPassword" placeholder="请输入旧密码">
+        </div>
+        <div class="form-row">
+          <label>新密码</label>
+          <input type="password" id="newPassword" placeholder="请输入新密码（至少 6 位）">
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:16px;">
+          <button class="btn btn-primary" onclick="saveProfile()">保存修改</button>
+          <button class="btn btn-default" onclick="location.href='项目列表.html'">返回</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var USERS_KEY = 'platform_users';
+
+function getUser() { try { return JSON.parse(localStorage.getItem('current_user')); } catch(e) { return null; } }
+function logout() { localStorage.removeItem('current_user'); location.href = '登录.html'; }
+function getUsers() { try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; } catch(e) { return []; } }
+
+function loadProfile() {
+  var user = getUser();
+  if (!user) { location.href = '登录.html'; return; }
+
+  document.getElementById('headerUserName').textContent = user.name;
+  document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
+  document.getElementById('profileAvatar').textContent = user.avatar || user.name.charAt(0);
+  document.getElementById('profileName').textContent = user.name;
+  document.getElementById('profileDate').textContent = user.createdAt || '—';
+
+  var roleNames = { engineer: '算法工程师', annotator: '标注人员', admin: '管理员' };
+  var roleName = roleNames[user.role] || user.role;
+  document.getElementById('profileRole').textContent = roleName;
+  document.getElementById('profileRole').className = 'role-tag role-' + user.role;
+
+  document.getElementById('editUsername').value = user.username;
+  document.getElementById('editName').value = user.name;
+  document.getElementById('editEmail').value = user.email || '';
+  document.getElementById('editRole').value = roleName;
+
+  // Project context
+  var project = localStorage.getItem('current_project');
+  if (project) {
+    document.getElementById('sidebarProjectGroup').style.display = 'block';
+    document.getElementById('sidebarSubPages').style.display = 'block';
+    document.getElementById('sidebarProject').value = project;
+  }
+}
+
+function saveProfile() {
+  var user = getUser();
+  if (!user) return;
+
+  var newName = document.getElementById('editName').value.trim();
+  var newEmail = document.getElementById('editEmail').value.trim();
+  var oldPw = document.getElementById('oldPassword').value.trim();
+  var newPw = document.getElementById('newPassword').value.trim();
+
+  if (!newName) { showToast('请输入显示名称'); return; }
+
+  // Check password change
+  if (newPw) {
+    if (!oldPw) { showToast('请输入旧密码'); return; }
+    if (oldPw !== user.password) { showToast('旧密码错误'); return; }
+    if (newPw.length < 6) { showToast('新密码至少 6 位'); return; }
+    user.password = newPw;
+  }
+
+  // Update user
+  user.name = newName;
+  user.avatar = newName.charAt(0);
+  user.email = newEmail;
+  localStorage.setItem('current_user', JSON.stringify(user));
+
+  // Update users array
+  var users = getUsers();
+  var idx = users.findIndex(function(u) { return u.username === user.username; });
+  if (idx >= 0) {
+    users[idx].name = user.name;
+    users[idx].avatar = user.avatar;
+    users[idx].email = user.email;
+    if (newPw) users[idx].password = newPw;
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  }
+
+  loadProfile();
+  document.getElementById('oldPassword').value = '';
+  document.getElementById('newPassword').value = '';
+  showToast('资料已保存');
+}
+
+function switchProject(val) {
+  localStorage.setItem('current_project', val);
+  location.reload();
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.user-menu')) {
+    var dd = document.getElementById('userDropdown');
+    if (dd) dd.classList.remove('show');
+  }
+});
+
+var toastTimer;
+function showToast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2000);
+}
+
+loadProfile();
+</script>
+</body>
+</html>
