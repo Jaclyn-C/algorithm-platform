@@ -100,11 +100,23 @@
   .table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
   .table tr:hover td { background: #fafafa; }
 
-  /* Log */
-  .log-box { background: #1e1e1e; color: #d4d4d4; border-radius: var(--radius); padding: 10px 14px; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 11px; height: 150px; overflow-y: auto; line-height: 1.6; }
-  .log-box .log-time { color: #6a9955; }
-  .log-box .log-info { color: #9cdcfe; }
-  .log-box .log-success { color: #a5d6a7; }
+  /* Image gallery */
+  .img-gallery { overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; }
+  .img-gallery::-webkit-scrollbar { height: 6px; }
+  .img-gallery::-webkit-scrollbar-track { background: #f5f5f5; border-radius: 3px; }
+  .img-gallery::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
+  .img-gallery-row { display: flex; gap: 12px; }
+  .img-card { flex-shrink: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: #fff; cursor: pointer; transition: var(--transition); }
+  .img-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(24,144,255,0.15); }
+  .img-card .img-card-label { font-size: 11px; color: var(--text-secondary); padding: 6px 10px; background: #fafafa; border-bottom: 1px solid var(--border); text-align: center; }
+  .img-card img { display: block; height: 200px; width: auto; }
+
+  /* Lightbox */
+  .lightbox { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+  .lightbox img { max-width: 90vw; max-height: 80vh; }
+  .lightbox .lightbox-close { position: absolute; top: 20px; right: 30px; font-size: 32px; color: #fff; cursor: pointer; }
+  .lightbox .lightbox-download { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); }
+  .lightbox .lightbox-name { position: absolute; top: 20px; left: 30px; color: #fff; font-size: 14px; }
 
 
   /* Toast */
@@ -268,25 +280,23 @@
             <!-- Metric Cards -->
             <div class="metric-grid" id="metricGrid"></div>
 
-            <!-- Image mode: per-class table + PR curve -->
-            <div id="imageResult">
-              <div class="flex-between" style="margin-bottom:12px;">
-                <span style="font-weight:600;font-size:13px;">各类别精度明细</span>
-              </div>
-              <table class="table" style="margin-bottom:16px;">
-                <thead>
-                  <tr><th>类别</th><th>AP@50</th><th>AP@50-95</th><th>Precision</th><th>Recall</th><th>实例数</th></tr>
-                </thead>
-                <tbody id="classTableBody"></tbody>
-              </table>
-
-              <div class="chart-box">
-                <div class="chart-title">PR 曲线</div>
-                <canvas id="prChart"></canvas>
-              </div>
+            <div class="flex-between" style="margin-bottom:8px;">
+              <span style="font-weight:600;font-size:13px;">各类别精度明细</span>
             </div>
+            <table class="table" style="margin-bottom:18px;">
+              <thead>
+                <tr><th>类别</th><th>AP@50</th><th>AP@50-95</th><th>Precision</th><th>Recall</th><th>实例数</th></tr>
+              </thead>
+              <tbody id="classTableBody"></tbody>
+            </table>
 
-            <div class="log-box mt-16" id="evalLog"></div>
+            <!-- Training result images -->
+            <div style="font-weight:600;font-size:13px;margin-bottom:8px;">训练结果图 <span style="font-weight:400;font-size:11px;color:var(--text-muted);">来自 run/train/ 目录 · 左右滑动查看</span></div>
+            <div class="img-gallery" id="trainImgGallery"><div class="img-gallery-row"></div></div>
+
+            <!-- Detection result images -->
+            <div style="font-weight:600;font-size:13px;margin-bottom:8px;">模型检测效果 <span style="font-weight:400;font-size:11px;color:var(--text-muted);">验证集预测 val_batch_pred.jpg · 左右滑动查看 · 点击放大</span></div>
+            <div class="img-gallery" id="detImgGallery"><div class="img-gallery-row"></div></div>
           </div>
         </div>
       </div>
@@ -313,22 +323,10 @@ function startEval() {
   // Reset UI
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('resultContent').style.display = 'block';
-  document.getElementById('imageResult').style.display = 'block';
-  document.getElementById('evalLog').innerHTML = '';
   document.getElementById('btnEval').disabled = true;
   document.getElementById('btnEval').textContent = '评估中...';
 
-  // Log start
-  const log = document.getElementById('evalLog');
-  const t = () => new Date().toTimeString().slice(0,8);
-  log.innerHTML += `<span class="log-time">[${t()}]</span> <span class="log-info">Loading model: ${model} ...</span>\n`;
-  log.innerHTML += `<span class="log-time">[${t()}]</span> <span class="log-info">Model loaded: 268 layers, 20.1M params, 68.7 GFLOPs</span>\n`;
-
-  const ds = document.getElementById('evalDataset').value;
-  log.innerHTML += `<span class="log-time">[${t()}]</span> <span class="log-info">Evaluating on ${ds}/ (331 images) ...</span>\n`;
-
   setTimeout(() => {
-    // Fill metric cards
     document.getElementById('metricGrid').innerHTML = `
       <div class="metric-card"><div class="metric-value" style="color:var(--success);">0.872</div><div class="metric-label">mAP@50</div></div>
       <div class="metric-card"><div class="metric-value" style="color:var(--primary);">0.651</div><div class="metric-label">mAP@50-95</div></div>
@@ -336,7 +334,6 @@ function startEval() {
       <div class="metric-card"><div class="metric-value">0.847</div><div class="metric-label">Recall</div></div>
     `;
 
-    // Per-class table
     const classes = [
       {name:'police / 警察', ap50:'0.921', ap5095:'0.742', prec:'0.935', rec:'0.908', inst:128},
       {name:'security / 保安', ap50:'0.897', ap5095:'0.685', prec:'0.910', rec:'0.884', inst:95},
@@ -345,21 +342,10 @@ function startEval() {
       {name:'helmet / 安全帽', ap50:'0.786', ap5095:'0.513', prec:'0.827', rec:'0.722', inst:12},
     ];
     document.getElementById('classTableBody').innerHTML = classes.map(c => `
-      <tr>
-        <td>${c.name}</td>
-        <td style="font-weight:600;">${c.ap50}</td>
-        <td>${c.ap5095}</td>
-        <td>${c.prec}</td>
-        <td>${c.rec}</td>
-        <td>${c.inst}</td>
-      </tr>
+      <tr><td>${c.name}</td><td style="font-weight:600;">${c.ap50}</td><td>${c.ap5095}</td><td>${c.prec}</td><td>${c.rec}</td><td>${c.inst}</td></tr>
     `).join('');
 
-    drawPRChart();
-
-    log.innerHTML += `<span class="log-time">[${t()}]</span> <span class="log-success">Evaluation complete. mAP@50: 0.872, mAP@50-95: 0.651</span>\n`;
-    log.innerHTML += `<span class="log-time">[${t()}]</span> <span class="log-success">Results saved.</span>\n`;
-
+    renderResultImages();
     finishEval();
   }, 1500);
 }
@@ -383,76 +369,48 @@ function finishEval() {
   document.getElementById('historyBody').insertBefore(row, document.getElementById('historyBody').firstChild);
 }
 
-// ==================== PR CHART ====================
-function drawPRChart() {
-  const canvas = document.getElementById('prChart');
-  const w = canvas.offsetWidth, h = 200;
-  canvas.width = w; canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  const pad = { top: 10, right: 110, bottom: 32, left: 48 };
-  const pw = w - pad.left - pad.right;
-  const ph = h - pad.top - pad.bottom;
-  const font = getComputedStyle(document.body).fontFamily;
+// ==================== RESULT IMAGES ====================
+function renderResultImages() {
+  var trainImgs = ['results.png', 'confusion_matrix.png', 'PR_curve.png'];
+  var detImgs = ['val_batch0_pred.jpg', 'val_batch1_pred.jpg', 'val_batch2_pred.jpg'];
 
-  ctx.clearRect(0, 0, w, h);
+  var trainRow = document.querySelector('#trainImgGallery .img-gallery-row');
+  trainRow.innerHTML = trainImgs.map(function(name) {
+    return '<div class="img-card" onclick="openLightbox(\'train/' + name + '\', \'' + name + '\')">' +
+      '<div class="img-card-label">' + name + '</div>' +
+      '<img src="train/' + name + '" alt="' + name + '">' +
+    '</div>';
+  }).join('');
 
-  // Grid
-  ctx.strokeStyle = '#f0f0f0'; ctx.lineWidth = 1;
-  ctx.font = '12px ' + font;
-  for (let i = 0; i <= 4; i++) {
-    const y = pad.top + ph * i / 4;
-    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
-    const xv = pad.left + pw * i / 4;
-    ctx.beginPath(); ctx.moveTo(xv, pad.top); ctx.lineTo(xv, pad.top + ph); ctx.stroke();
-    ctx.fillStyle = '#888'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-    ctx.fillText((1.0 - 0.25 * i).toFixed(2), pad.left - 8, y);
-    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    ctx.fillText((0.25 * i).toFixed(2), xv, h - 26);
-  }
+  var detRow = document.querySelector('#detImgGallery .img-gallery-row');
+  detRow.innerHTML = detImgs.map(function(name) {
+    return '<div class="img-card" onclick="openLightbox(\'train/' + name + '\', \'' + name + '\')">' +
+      '<div class="img-card-label">' + name + '</div>' +
+      '<img src="train/' + name + '" alt="' + name + '">' +
+    '</div>';
+  }).join('');
+}
 
-  // Y-axis label
-  ctx.save(); ctx.translate(14, h/2); ctx.rotate(-Math.PI/2);
-  ctx.fillStyle = '#999'; ctx.font = '12px ' + font;
-  ctx.textAlign = 'center'; ctx.fillText('Precision', 0, 0); ctx.restore();
-  // X-axis label
-  ctx.fillStyle = '#999'; ctx.font = '12px ' + font;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  ctx.fillText('Recall', w/2, h - 6);
+// ==================== LIGHTBOX ====================
+function openLightbox(src, name) {
+  var existing = document.querySelector('.lightbox');
+  if (existing) existing.remove();
 
-  // Curves for each class
-  const colors = ['#ff4d4f','#1890ff','#52c41a','#faad14','#722ed1'];
-  const names = ['police','security','worker','vehicle','helmet'];
-  const offsets = [0.85, 0.82, 0.78, 0.83, 0.70];
-  colors.forEach((c, i) => {
-    ctx.strokeStyle = c; ctx.lineWidth = 2;
-    ctx.beginPath();
-    const base = offsets[i];
-    for (let j = 0; j <= 100; j++) {
-      const r = j / 100;
-      const x = pad.left + r * pw;
-      const p = Math.max(0, base * (1 - r/2) + (Math.random()-0.5)*0.03);
-      const y = pad.top + (1 - p) * ph;
-      if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-  });
-
-  // Legend — right side
-  const lx = w - pad.right + 8;
-  ctx.textBaseline = 'middle';
-  names.forEach((n, i) => {
-    const ly = pad.top + 14 + i * 26;
-    ctx.fillStyle = colors[i]; ctx.fillRect(lx, ly - 6, 10, 10);
-    ctx.fillStyle = '#333'; ctx.font = '12px ' + font;
-    ctx.textAlign = 'left'; ctx.fillText(n, lx + 14, ly);
-  });
+  var lb = document.createElement('div');
+  lb.className = 'lightbox';
+  lb.onclick = function(e) { if (e.target === lb) lb.remove(); };
+  lb.innerHTML =
+    '<span class="lightbox-close" onclick="this.parentElement.remove()">✕</span>' +
+    '<span class="lightbox-name">' + name + '</span>' +
+    '<img src="' + src + '" alt="' + name + '">' +
+    '<div class="lightbox-download"><a class="btn btn-primary" href="' + src + '" download="' + name + '" onclick="event.stopPropagation()">下载</a></div>';
+  document.body.appendChild(lb);
 }
 
 // ==================== HISTORY ====================
 function viewHistory(id) {
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('resultContent').style.display = 'block';
-  document.getElementById('imageResult').style.display = 'block';
 
   document.getElementById('metricGrid').innerHTML = `
     <div class="metric-card"><div class="metric-value" style="color:var(--success);">0.872</div><div class="metric-label">mAP@50</div></div>
@@ -461,12 +419,7 @@ function viewHistory(id) {
     <div class="metric-card"><div class="metric-value">0.847</div><div class="metric-label">Recall</div></div>
   `;
 
-  document.getElementById('evalLog').innerHTML = `
-    <span class="log-time">[14:30:15]</span> <span class="log-info">Loading model: best.pt (v1.3.0) ...</span>
-    <span class="log-time">[14:30:15]</span> <span class="log-info">Model loaded successfully.</span>
-    <span class="log-time">[14:30:18]</span> <span class="log-success">Evaluation complete.</span>
-  `;
-
+  renderResultImages();
   scrollToResult();
 }
 
