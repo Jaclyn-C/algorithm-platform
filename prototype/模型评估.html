@@ -261,14 +261,14 @@
                   <td>v1.3.0</td>
                   <td style="color:var(--success);font-weight:600;">0.872</td>
                   <td><span class="tag tag-success">完成</span></td>
-                  <td><button class="btn btn-text btn-sm" onclick="viewHistory('h1')">查看</button></td>
+                  <td><button class="btn btn-text btn-sm" onclick="viewHistory('h1')">查看</button> <button class="btn btn-text btn-sm" onclick="deleteEvalRow(this)" style="color:var(--danger);">删除</button></td>
                 </tr>
                 <tr>
                   <td>07-02 10:15</td>
                   <td>v1.2.0</td>
                   <td style="color:var(--success);font-weight:600;">0.851</td>
                   <td><span class="tag tag-success">完成</span></td>
-                  <td><button class="btn btn-text btn-sm" onclick="viewHistory('h2')">查看</button></td>
+                  <td><button class="btn btn-text btn-sm" onclick="viewHistory('h2')">查看</button> <button class="btn btn-text btn-sm" onclick="deleteEvalRow(this)" style="color:var(--danger);">删除</button></td>
                 </tr>
               </tbody>
             </table>
@@ -375,7 +375,7 @@ function finishEval() {
     <td>v1.3.0</td>
     <td style="color:var(--success);font-weight:600;">0.872</td>
     <td><span class="tag tag-success">完成</span></td>
-    <td><button class="btn btn-text btn-sm" onclick="scrollToResult()">查看</button></td>
+    <td><button class="btn btn-text btn-sm" onclick="scrollToResult()">查看</button> <button class="btn btn-text btn-sm" onclick="deleteEvalRow(this)" style="color:var(--danger);">删除</button></td>
   `;
   document.getElementById('historyBody').insertBefore(row, document.getElementById('historyBody').firstChild);
 }
@@ -436,6 +436,12 @@ function viewHistory(id) {
 
 function scrollToResult() {
   document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+}
+
+function deleteEvalRow(btn) {
+  if (!confirm('确定删除该评估记录吗？')) return;
+  var row = btn.closest('tr');
+  if (row) row.remove();
 }
 
 // ==================== UTILS ====================

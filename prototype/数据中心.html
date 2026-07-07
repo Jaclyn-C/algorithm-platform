@@ -622,6 +622,24 @@
   </div>
 </div>
 
+<!-- ==================== Cascade Delete Modal ==================== -->
+<div class="modal-overlay" id="deleteModal" style="display:none;z-index:1100;" onclick="if(event.target==this)closeDeleteModal()">
+  <div class="modal" style="width:480px;">
+    <div class="modal-header">
+      确认删除
+      <button class="modal-close" onclick="closeDeleteModal()">✕</button>
+    </div>
+    <div style="padding:20px;">
+      <div style="margin-bottom:14px;font-size:13px;" id="deleteWarning"></div>
+      <div style="background:#fff1f0;border:1px solid #ffccc7;border-radius:4px;padding:12px;font-size:12px;" id="deleteCascadeList"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeDeleteModal()">取消</button>
+      <button class="btn btn-danger" onclick="executeDelete()">确认删除</button>
+    </div>
+  </div>
+</div>
+
 <!-- ==================== Dataset Split Modal ==================== -->
 <div class="modal-overlay" id="splitModal" style="display:none;" onclick="if(event.target==this)closeSplitModal()">
   <div class="modal" style="width:480px;">
@@ -1012,41 +1030,50 @@ function openDataset(type) {
     // Pipeline 1 — 已完成
     actions.innerHTML = `
       <button class="btn btn-default btn-sm">导出 ZIP</button>
-      <button class="btn btn-primary" onclick="location.href='数据标注工作台.html'">查看 / 修改标注</button>`;
+      <button class="btn btn-primary" onclick="location.href='数据标注工作台.html'">查看 / 修改标注</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '01')">删除</button>`;
   } else if (type === 'deduplicated_02') {
-    // Pipeline 2 — 标注中
     const status02 = getPipelineStatus('02');
     if (status02 === 'review') {
       actions.innerHTML = `
         <button class="btn btn-default btn-sm">导出 ZIP</button>
-        <button class="btn btn-primary" onclick="location.href='数据标注工作台.html'">审核修正标注</button>`;
+        <button class="btn btn-primary" onclick="location.href='数据标注工作台.html'">审核修正标注</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '02')">删除</button>`;
     } else {
       actions.innerHTML = `
         <button class="btn btn-default btn-sm">导出 ZIP</button>
         <button class="btn btn-primary" onclick="location.href='数据标注工作台.html'">继续标注（47/200）</button>
-        <button class="btn btn-default" onclick="closeDatasetModal();openAutoAnnoModal('02')">自动标注</button>`;
+        <button class="btn btn-default" onclick="closeDatasetModal();openAutoAnnoModal('02')">自动标注</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '02')">删除</button>`;
     }
   } else if (type === 'deduplicated_03') {
-    // Pipeline 3 — 未标注
     const status03 = getPipelineStatus('03');
     if (status03 === 'review') {
       actions.innerHTML = `
         <button class="btn btn-default btn-sm">导出 ZIP</button>
-        <button class="btn btn-primary" onclick="location.href='数据标注工作台.html'">审核修正标注</button>`;
+        <button class="btn btn-primary" onclick="location.href='数据标注工作台.html'">审核修正标注</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '03')">删除</button>`;
     } else {
       actions.innerHTML = `
         <button class="btn btn-default btn-sm">导出 ZIP</button>
         <button class="btn btn-primary" onclick="location.href='数据标注工作台.html'">创建标注任务</button>
-        <button class="btn btn-default" onclick="closeDatasetModal();openAutoAnnoModal('03')">自动标注</button>`;
+        <button class="btn btn-default" onclick="closeDatasetModal();openAutoAnnoModal('03')">自动标注</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '03')">删除</button>`;
     }
   } else if (type === 'labeled') {
     actions.innerHTML = `
-      <button class="btn btn-primary" onclick="closeDatasetModal();openSplitModal();">导出 YOLO 并划分</button>`;
+      <button class="btn btn-primary" onclick="closeDatasetModal();openSplitModal();">导出 YOLO 并划分</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('labeled', '01')">删除</button>`;
   } else if (type === 'train' || type === 'val') {
-    actions.innerHTML = '';
-  } else {
     actions.innerHTML = `
-      <button class="btn btn-default btn-sm">导出 ZIP</button>`;
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
+  } else {
+    var isPipeline2 = type.endsWith('_02');
+    var isPipeline3 = type.endsWith('_03');
+    var delType = type;
+    actions.innerHTML = `
+      <button class="btn btn-default btn-sm">导出 ZIP</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}', '${isPipeline2 ? '02' : isPipeline3 ? '03' : '01'}')">删除</button>`;
   }
 
   if (d.imgs > 0) {
@@ -1063,6 +1090,91 @@ function openDataset(type) {
 
 function closeDatasetModal() {
   document.getElementById('datasetModal').style.display = 'none';
+}
+
+// ==================== CASCADE DELETE ====================
+var pendingDeleteType = '';
+var pendingDeletePipeline = '';
+
+// Cascade chain: files → extracted_frames → deduplicated → labeled → train + val
+var cascadeMap = {
+  raw_videos:     ['extracted','deduplicated','labeled','train','val'],
+  raw_videos_02:  ['extracted_02','deduplicated_02'],
+  raw_videos_03:  ['extracted_03','deduplicated_03'],
+  extracted:      ['deduplicated','labeled','train','val'],
+  extracted_02:   ['deduplicated_02'],
+  extracted_03:   ['deduplicated_03'],
+  deduplicated:   ['labeled','train','val'],
+  deduplicated_02: [],
+  deduplicated_03: [],
+  labeled:        ['train','val'],
+  train:          ['val'],
+  val:            ['train'],
+};
+
+var cascadeNames = {
+  raw_videos:'files/', raw_videos_02:'files/', raw_videos_03:'files/',
+  extracted:'extracted_frames/', extracted_02:'extracted_frames/', extracted_03:'extracted_frames/',
+  deduplicated:'deduplicated/', deduplicated_02:'deduplicated/', deduplicated_03:'deduplicated/',
+  labeled:'labeled/', train:'train/', val:'val/',
+};
+
+function confirmDeleteDataset(type, pipeline) {
+  pendingDeleteType = type;
+  pendingDeletePipeline = pipeline || '01';
+
+  var name = cascadeNames[type] || type;
+  var cascades = cascadeMap[type] || [];
+  var cascadeNamesList = cascades.map(function(t) { return cascadeNames[t] || t; });
+
+  document.getElementById('deleteWarning').innerHTML =
+    '确定要删除 <strong>' + name + '</strong> 吗？此操作不可撤销。';
+
+  if (cascadeNamesList.length > 0) {
+    document.getElementById('deleteCascadeList').innerHTML =
+      '<strong>以下数据集将被一并删除：</strong><br>' +
+      cascades.map(function(t, i) { return '&emsp;→ ' + cascadeNames[t]; }).join('<br>');
+    document.getElementById('deleteCascadeList').style.display = 'block';
+  } else {
+    document.getElementById('deleteCascadeList').style.display = 'none';
+  }
+
+  document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').style.display = 'none';
+}
+
+function executeDelete() {
+  closeDatasetModal();
+  closeDeleteModal();
+
+  var type = pendingDeleteType;
+  var cascades = cascadeMap[type] || [];
+
+  // Hide all cards in the cascade chain, plus the target itself
+  var allToHide = [type].concat(cascades);
+  allToHide.forEach(function(t) {
+    var cardId = typeToCardId(t);
+    var card = document.getElementById(cardId);
+    if (card) card.style.display = 'none';
+  });
+
+  showToast('已删除 ' + (cascadeNames[type] || type) + (cascades.length > 0 ? ' 及下游 ' + cascades.length + ' 个数据集' : ''));
+}
+
+function typeToCardId(type) {
+  // Map dataset type to the DOM card ID
+  if (type === 'deduplicated') return null; // pipeline 1 dedup has no ID currently
+  if (type === 'deduplicated_02') return 'dedupCard02';
+  if (type === 'deduplicated_03') return 'dedupCard03';
+  if (type === 'labeled') return 'labeledCard';
+  if (type === 'train') return 'labeledCard'; // labeled group
+  if (type === 'val') return null;
+  // For pipeline 2/3 extracted cards
+  if (type === 'extracted_02' || type === 'extracted_03' || type === 'raw_videos_02' || type === 'raw_videos_03') return null;
+  return null;
 }
 
 function refreshDatasets() {

@@ -256,7 +256,7 @@
                 <td>detect.py</td>
                 <td>12.9 MB</td>
                 <td>张三</td>
-                <td><button class="btn btn-text btn-sm" onclick="downloadHistory('v1.2.0')">下载</button></td>
+                <td><button class="btn btn-text btn-sm" onclick="downloadHistory('v1.2.0')">下载</button> <button class="btn btn-text btn-sm" onclick="deleteDeployRow(this)" style="color:var(--danger);">删除</button></td>
               </tr>
               <tr>
                 <td>2026-06-28 11:00</td>
@@ -266,7 +266,7 @@
                 <td>detect.py</td>
                 <td>12.7 MB</td>
                 <td>张三</td>
-                <td><button class="btn btn-text btn-sm" onclick="downloadHistory('v1.1.0')">下载</button></td>
+                <td><button class="btn btn-text btn-sm" onclick="downloadHistory('v1.1.0')">下载</button> <button class="btn btn-text btn-sm" onclick="deleteDeployRow(this)" style="color:var(--danger);">删除</button></td>
               </tr>
               <tr>
                 <td>2026-06-20 09:30</td>
@@ -276,7 +276,7 @@
                 <td>detect.py</td>
                 <td>13.1 MB</td>
                 <td>李四</td>
-                <td><button class="btn btn-text btn-sm" onclick="downloadHistory('v2.0.0')">下载</button></td>
+                <td><button class="btn btn-text btn-sm" onclick="downloadHistory('v2.0.0')">下载</button> <button class="btn btn-text btn-sm" onclick="deleteDeployRow(this)" style="color:var(--danger);">删除</button></td>
               </tr>
               <tr>
                 <td>2026-06-15 14:00</td>
@@ -286,7 +286,7 @@
                 <td>detect.py</td>
                 <td>11.8 MB</td>
                 <td>张三</td>
-                <td><button class="btn btn-text btn-sm" onclick="downloadHistory('v1.0.0')">下载</button></td>
+                <td><button class="btn btn-text btn-sm" onclick="downloadHistory('v1.0.0')">下载</button> <button class="btn btn-text btn-sm" onclick="deleteDeployRow(this)" style="color:var(--danger);">删除</button></td>
               </tr>
             </tbody>
           </table>
@@ -371,12 +371,18 @@ function addDeployHistory(version) {
     '<td>' + uploadedScriptName + '</td>' +
     '<td>' + zipSize + ' MB</td>' +
     '<td>' + (getUser() ? getUser().name : '用户') + '</td>' +
-    '<td><button class="btn btn-text btn-sm" onclick="downloadHistory(\'' + version + '\')">下载</button></td>';
+    '<td><button class="btn btn-text btn-sm" onclick="downloadHistory(\'' + version + '\')">下载</button> <button class="btn btn-text btn-sm" onclick="deleteDeployRow(this)" style="color:var(--danger);">删除</button></td>';
   document.getElementById('historyBody').insertBefore(row, document.getElementById('historyBody').firstChild);
 }
 
 function downloadHistory(version) {
   showToast('下载 保安服检测_' + version + '.zip');
+}
+
+function deleteDeployRow(btn) {
+  if (!confirm('确定删除该部署记录吗？对应的部署包 ZIP 文件也将被删除。')) return;
+  var row = btn.closest('tr');
+  if (row) row.remove();
 }
 
 function getUser() { try { return JSON.parse(localStorage.getItem('current_user')); } catch(e) { return null; } }

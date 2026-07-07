@@ -448,7 +448,7 @@
             <td style="color:var(--success);font-weight:600;">0.918</td>
             <td style="color:var(--success);">0.734</td>
             <td><span class="tag tag-success">已完成</span></td>
-            <td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(0)">查看</button></td>
+            <td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(0)">查看</button> <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td>
           </tr>
           <tr>
             <td>2026-06-28 09:15</td>
@@ -459,7 +459,7 @@
             <td style="color:var(--success);font-weight:600;">0.872</td>
             <td style="color:var(--success);">0.651</td>
             <td><span class="tag tag-success">已完成</span></td>
-            <td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(1)">查看</button></td>
+            <td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(1)">查看</button> <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td>
           </tr>
           <tr>
             <td>2026-06-20 14:00</td>
@@ -470,7 +470,7 @@
             <td>—</td>
             <td>—</td>
             <td><span class="tag tag-error">手动终止</span></td>
-            <td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(2)">查看</button></td>
+            <td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(2)">查看</button> <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td>
           </tr>
         </tbody>
       </table>
@@ -832,7 +832,7 @@ function addHistoryRow(statusText, statusType) {
     <td style="color:var(--success);font-weight:600;">${finalMap50}</td>
     <td style="color:var(--success);">${finalMap5095}</td>
     <td><span class="tag ${tagClass}">${statusText}</span></td>
-    <td><button class="btn btn-text btn-sm" onclick="viewLatestResult()">查看</button></td>
+    <td><button class="btn btn-text btn-sm" onclick="viewLatestResult()">查看</button> <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td>
   `;
   document.getElementById('historyBody').insertBefore(row, document.getElementById('historyBody').firstChild);
 }
@@ -980,8 +980,13 @@ function viewHistoryResult(idx) {
 }
 
 function viewLatestResult() {
-  // Show the latest row's result
   viewHistoryResult(0);
+}
+
+function deleteHistoryRow(btn) {
+  if (!confirm('确定删除该训练记录吗？对应的模型文件也将一并删除。')) return;
+  var row = btn.closest('tr');
+  if (row) row.remove();
 }
 
 function drawModalCharts() {
