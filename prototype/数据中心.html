@@ -278,11 +278,11 @@
     <div class="steps">
       <div class="step active-step" onclick="scrollToSection('step1')">
         <div class="step-num active">1</div>
-        <div class="step-info"><div class="step-title">视频上传</div><div class="step-desc">上传原始视频文件</div></div>
+        <div class="step-info"><div class="step-title">文件上传</div><div class="step-desc">上传视频 / 图片 / 文件夹</div></div>
       </div>
-      <div class="step" onclick="scrollToSection('step2')">
+      <div class="step" onclick="scrollToSection('step2')" id="step2Indicator">
         <div class="step-num wait">2</div>
-        <div class="step-info"><div class="step-title">视频转图片</div><div class="step-desc">抽帧参数配置与执行</div></div>
+        <div class="step-info"><div class="step-title">视频转图片</div><div class="step-desc">仅视频需抽帧</div></div>
       </div>
       <div class="step" onclick="scrollToSection('step3')">
         <div class="step-num wait">3</div>
@@ -296,32 +296,32 @@
 
     <!-- ===== Step 1: Video Upload ===== -->
     <div class="card" id="step1">
-      <div class="card-header">视频上传 <span class="text-secondary" style="font-weight:400;font-size:12px;">支持 MP4、AVI、MOV 格式，单个文件最大 2GB，批量上传</span></div>
+      <div class="card-header">文件上传 <span class="text-secondary" style="font-weight:400;font-size:12px;">支持视频（MP4、AVI、MOV）、图片（JPG、PNG）、文件夹拖拽，单文件最大 2GB</span></div>
       <div class="card-body">
         <!-- Upload Zone -->
         <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
           <div class="upload-icon">+</div>
-          <div class="upload-text">点击或拖拽视频文件到此区域上传</div>
-          <div class="upload-hint">支持批量上传，也可选择文件夹</div>
+          <div class="upload-text">点击或拖拽文件到此区域上传</div>
+          <div class="upload-hint">支持视频、单张/多张图片、文件夹（可混合上传）</div>
         </div>
-        <input type="file" id="fileInput" accept="video/*" multiple style="display:none;" onchange="handleFiles(this.files)">
+        <input type="file" id="fileInput" accept="video/*,image/*" multiple style="display:none;" onchange="handleFiles(this.files)">
 
         <!-- Uploaded File List -->
         <div id="fileListContainer" style="display:none;" class="mt-16">
-          <div style="font-weight:600;font-size:13px;margin-bottom:8px;">已选择的视频文件（<span id="fileCount">0</span> 个）</div>
+          <div style="font-weight:600;font-size:13px;margin-bottom:8px;">已选择的文件（<span id="fileCount">0</span> 个）</div>
           <div class="file-list" id="fileList"></div>
           <div class="flex gap-8 mt-12">
             <button class="btn btn-default btn-sm" onclick="document.getElementById('fileInput').click()">继续添加</button>
             <button class="btn btn-default btn-sm" onclick="clearAllFiles()">清空全部</button>
-            <button class="btn btn-primary" onclick="startConvert()" id="btnStartConvert">开始抽帧处理</button>
+            <button class="btn btn-primary" onclick="processFiles()" id="btnProcessFiles">下一步</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ===== Step 2: Video to Frames ===== -->
-    <div class="card" id="step2">
-      <div class="card-header">视频转图片 — 参数配置</div>
+    <!-- ===== Step 2: Video to Frames (only for videos) ===== -->
+    <div class="card" id="step2" style="display:none;">
+      <div class="card-header">视频转图片 — 参数配置 <span class="text-secondary" style="font-weight:400;font-size:12px;">仅上传的视频文件需要抽帧</span></div>
       <div class="card-body">
         <div class="form-row">
           <div class="form-group">
@@ -447,8 +447,8 @@
         <div class="dataset-grid" style="margin-bottom:24px;">
           <div class="dataset-card" onclick="openDataset('raw_videos')">
             <div class="ds-icon raw">▶</div>
-            <div class="ds-name">raw_videos/</div>
-            <div class="ds-count">4 个视频</div>
+            <div class="ds-name">files/</div>
+            <div class="ds-count">4 个文件</div>
             <div class="ds-date">2026-06-28 上传</div>
             <div class="ds-badge done">原始数据</div>
           </div>
@@ -497,8 +497,8 @@
         <div class="dataset-grid" style="margin-bottom:24px;">
           <div class="dataset-card" onclick="openDataset('raw_videos_02')">
             <div class="ds-icon raw">▶</div>
-            <div class="ds-name">raw_videos/</div>
-            <div class="ds-count">3 个视频</div>
+            <div class="ds-name">files/</div>
+            <div class="ds-count">3 个文件</div>
             <div class="ds-date">2026-07-01 上传</div>
             <div class="ds-badge done">原始数据</div>
           </div>
@@ -526,8 +526,8 @@
         <div class="dataset-grid">
           <div class="dataset-card" onclick="openDataset('raw_videos_03')">
             <div class="ds-icon raw">▶</div>
-            <div class="ds-name">raw_videos/</div>
-            <div class="ds-count">6 个视频</div>
+            <div class="ds-name">files/</div>
+            <div class="ds-count">6 个文件</div>
             <div class="ds-date">2026-07-02 上传</div>
             <div class="ds-badge done">原始数据</div>
           </div>
@@ -700,9 +700,12 @@
 
 <script>
 // ==================== STATE ====================
-let uploadedFiles = [];
+let uploadedFiles = [];         // All uploaded files
+let hasVideos = false;         // Whether any uploaded file is a video
+let hasImages = false;         // Whether any uploaded file is an image
 let extractDone = false;
 let dedupDone = false;
+let step2Skipped = false;
 
 // ==================== FILE UPLOAD ====================
 const uploadZone = document.getElementById('uploadZone');
@@ -713,6 +716,41 @@ uploadZone.addEventListener('drop', function(e) {
   handleFiles(e.dataTransfer.files);
 });
 
+function isVideoFile(f) {
+  const videoExts = ['.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm'];
+  const name = (f.name || '').toLowerCase();
+  const type = (f.type || '').toLowerCase();
+  if (videoExts.some(ext => name.endsWith(ext))) return true;
+  if (type.startsWith('video/')) return true;
+  return false;
+}
+
+function isImageFile(f) {
+  const imgExts = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.tiff', '.webp', '.jfif'];
+  const name = (f.name || '').toLowerCase();
+  const type = (f.type || '').toLowerCase();
+  if (imgExts.some(ext => name.endsWith(ext))) return true;
+  if (type.startsWith('image/')) return true;
+  return false;
+}
+
+function detectFileTypes() {
+  hasVideos = uploadedFiles.some(f => isVideoFile(f));
+  hasImages = uploadedFiles.some(f => isImageFile(f));
+}
+
+function getFileTypeLabel(f) {
+  if (isVideoFile(f)) return '视频文件';
+  if (isImageFile(f)) return '图片文件';
+  return '文件';
+}
+
+function getFileIcon(f) {
+  if (isVideoFile(f)) return '▶';
+  if (isImageFile(f)) return '▣';
+  return '📄';
+}
+
 function handleFiles(files) {
   if (!files || files.length === 0) return;
   for (let f of files) {
@@ -720,6 +758,7 @@ function handleFiles(files) {
       uploadedFiles.push(f);
     }
   }
+  detectFileTypes();
   renderFileList();
   updateStep(1, 'done');
 }
@@ -733,34 +772,86 @@ function renderFileList() {
   container.style.display = 'block';
   count.textContent = uploadedFiles.length;
 
+  const vCount = uploadedFiles.filter(f => isVideoFile(f)).length;
+  const iCount = uploadedFiles.filter(f => isImageFile(f)).length;
+
+  // Show type summary
+  let typeSummary = '';
+  if (vCount > 0 && iCount > 0) typeSummary = `（${vCount} 个视频 + ${iCount} 张图片）`;
+  else if (vCount > 0) typeSummary = `（${vCount} 个视频）`;
+  else if (iCount > 0) typeSummary = `（${iCount} 张图片）`;
+
+  // Update the title line with type info
+  const titleEl = container.querySelector('div');
+  if (titleEl) titleEl.innerHTML = `已选择的文件（<span id="fileCount">${uploadedFiles.length}</span> 个）${typeSummary}`;
+
   list.innerHTML = uploadedFiles.map((f, i) => `
     <div class="file-item">
-      <div class="file-icon">▶</div>
+      <div class="file-icon">${getFileIcon(f)}</div>
       <div class="file-info">
         <div class="file-name">${f.name}</div>
-        <div class="file-meta">${formatSize(f.size)} · ${f.type || 'video'}</div>
+        <div class="file-meta">${formatSize(f.size)} · ${getFileTypeLabel(f)}</div>
       </div>
       <div class="file-status"><span class="tag tag-default">待处理</span></div>
       <button class="file-remove" onclick="removeFile(${i})">✕</button>
     </div>
   `).join('');
+
+  // Update the process button text
+  const btn = document.getElementById('btnProcessFiles');
+  if (hasVideos) {
+    btn.textContent = '下一步：抽帧处理';
+  } else {
+    btn.textContent = '下一步：图片去重';
+  }
 }
 
 function removeFile(i) {
   uploadedFiles.splice(i, 1);
+  detectFileTypes();
   renderFileList();
   if (uploadedFiles.length === 0) updateStep(1, 'active');
 }
 
 function clearAllFiles() {
   uploadedFiles = [];
+  hasVideos = false;
+  hasImages = false;
+  step2Skipped = false;
   renderFileList();
   updateStep(1, 'active');
+  document.getElementById('step2').style.display = 'none';
+  updateStep(2, 'wait');
+  updateStep(3, 'wait');
 }
 
 function formatSize(bytes) {
   if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
   return (bytes/1048576).toFixed(1) + ' MB';
+}
+
+// ==================== SMART ROUTING (decides whether to skip step 2) ====================
+function processFiles() {
+  if (uploadedFiles.length === 0) { showToast('请先上传文件'); return; }
+
+  detectFileTypes();
+
+  if (hasVideos) {
+    // Show step 2 for video extraction
+    document.getElementById('step2').style.display = 'block';
+    document.getElementById('step2').scrollIntoView({ behavior: 'smooth' });
+    updateStep(2, 'active');
+    step2Skipped = false;
+  } else {
+    // No videos → skip step 2, go directly to dedup
+    document.getElementById('step2').style.display = 'none';
+    updateStep(2, 'done');
+    updateStep(3, 'active');
+    document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
+    step2Skipped = true;
+    extractDone = true;
+    showToast('图片无需抽帧，直接进入去重步骤');
+  }
 }
 
 // ==================== STEP 2: EXTRACT FRAMES ====================
@@ -779,12 +870,6 @@ function toggleExtractMode() {
     input.value = '30';
     hint.textContent = '每 30 帧抽取 1 帧';
   }
-}
-
-function startConvert() {
-  if (uploadedFiles.length === 0) { showToast('请先上传视频文件'); return; }
-  document.getElementById('step2').scrollIntoView({ behavior: 'smooth' });
-  updateStep(2, 'active');
 }
 
 function executeExtract() {
@@ -895,18 +980,18 @@ function openDataset(type) {
 
   const info = {
     // Pipeline 1 — 已完成
-    raw_videos: { title: 'raw_videos/ — 原始视频 (摄像头A)', count: '4 个视频文件', imgs: [] },
+    raw_videos: { title: 'files/ — 原始文件 (摄像头A)', count: '4 个文件（视频 + 图片）', imgs: [] },
     extracted: { title: 'extracted_frames/ — 抽帧结果', count: '1,248 张图片 · 4 个子文件夹', imgs: 24 },
     deduplicated: { title: 'deduplicated/ — 去重后图片', count: '1,102 张图片 · 已去重 11.7% · 已标注', imgs: 24 },
     labeled: { title: 'labeled/ — 标注完成（YOLO格式）', count: '1,102 张图片 · images/ + labels/ + data.yaml', imgs: 24 },
     train: { title: 'train/ — 训练集（YOLO格式）', count: '771 张图片 + 标签', imgs: 18 },
     val: { title: 'val/ — 验证集（YOLO格式）', count: '331 张图片 + 标签', imgs: 8 },
     // Pipeline 2 — 标注中
-    raw_videos_02: { title: 'raw_videos/ — 原始视频 (摄像头B)', count: '3 个视频文件', imgs: [] },
+    raw_videos_02: { title: 'files/ — 原始文件 (摄像头B)', count: '3 个文件', imgs: [] },
     extracted_02: { title: 'extracted_frames/ — 抽帧结果', count: '920 张图片 · 3 个子文件夹', imgs: 20 },
     deduplicated_02: { title: 'deduplicated/ — 去重后图片', count: '856 张图片 · 已去重 12.3% · 标注中 (47/200)', imgs: 20 },
     // Pipeline 3 — 未标注
-    raw_videos_03: { title: 'raw_videos/ — 原始视频 (摄像头C)', count: '6 个视频文件', imgs: [] },
+    raw_videos_03: { title: 'files/ — 原始文件 (摄像头C)', count: '6 个文件', imgs: [] },
     extracted_03: { title: 'extracted_frames/ — 抽帧结果', count: '1,650 张图片 · 6 个子文件夹', imgs: 24 },
     deduplicated_03: { title: 'deduplicated/ — 去重后图片', count: '1,517 张图片 · 已去重 9.5% · 未标注', imgs: 24 },
   };

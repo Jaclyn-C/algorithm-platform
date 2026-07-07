@@ -496,7 +496,8 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-default btn-sm" onclick="closeResultModal()">关闭</button>
-      <button class="btn btn-primary btn-sm" onclick="closeResultModal();showToast('模型已下载')">下载 best.pt</button>
+      <button class="btn btn-primary btn-sm" onclick="closeResultModal();showToast('best.pt 已下载')">下载 best.pt</button>
+      <button class="btn btn-primary btn-sm" onclick="closeResultModal();showToast('last.pt 已下载')">下载 last.pt</button>
     </div>
   </div>
 </div>
@@ -964,7 +965,7 @@ function viewHistoryResult(idx) {
     <div class="result-item"><div class="metric-value">${r.train}</div><div class="metric-label">训练集</div></div>
     <div class="result-item"><div class="metric-value">${r.val}</div><div class="metric-label">验证集</div></div>
   `;
-  document.getElementById('resultModelPath').textContent = r.path;
+  document.getElementById('resultModelPath').innerHTML = `best.pt · last.pt<br><span style="font-weight:400;">${r.path}</span>`;
   document.getElementById('resultConfig').textContent = `${r.model} · epochs=${r.epochs} · batch=16 · imgsz=640 · optimizer=AdamW`;
   document.getElementById('resultModal').style.display = 'flex';
 
