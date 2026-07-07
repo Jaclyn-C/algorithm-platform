@@ -474,7 +474,6 @@
           <div class="nav-group">
             <button class="btn btn-default btn-sm" id="btnPrev" onclick="prevImage()">◀ 上一张</button>
             <span class="nav-counter">当前：<strong id="currentIdx">23</strong> / 200</span>
-            <button class="btn btn-default btn-sm" id="btnNext" onclick="nextImage()">下一张 ▶</button>
           </div>
           <div class="nav-group">
             <button class="btn btn-primary btn-sm" id="btnSubmit" onclick="submitImage()">提交并下一张 ▶</button>
@@ -1345,12 +1344,6 @@ function prevImage() {
   loadImage(currentImageIdx);
 }
 
-function nextImage() {
-  if (currentImageIdx >= 200) return;
-  saveCurrentAnnotations();
-  currentImageIdx++;
-  loadImage(currentImageIdx);
-}
 
 // ==================== SHARED STATE (localStorage) ====================
 const STORAGE_KEY = 'annotation_status_security';
@@ -1435,7 +1428,6 @@ function loadImage(idx) {
   updateBboxCount();
   render();
   document.getElementById('btnPrev').disabled = idx <= 1;
-  document.getElementById('btnNext').disabled = idx >= 200;
 }
 
 function loadPreAnnotations() {
