@@ -139,7 +139,7 @@
   <div class="content">
     <div class="page-header">
       <h2>项目列表</h2>
-      <button class="btn btn-primary" onclick="alert('新建项目（原型演示）')">+ 新建项目</button>
+      <button class="btn btn-primary" onclick="showNewProjectModal()">+ 新建项目</button>
     </div>
 
     <div class="project-grid">
@@ -271,6 +271,39 @@ document.addEventListener('click', function(e) {
     if (dd) dd.classList.remove('show');
   }
 });
+
+function showNewProjectModal() {
+  document.getElementById('newProjectModal').style.display = 'flex';
+  document.getElementById('newProjectName').focus();
+}
+function closeNewProjectModal() {
+  document.getElementById('newProjectModal').style.display = 'none';
+  document.getElementById('newProjectName').value = '';
+}
+function createProject() {
+  var name = document.getElementById('newProjectName').value.trim();
+  if (!name) { alert('请输入项目名称'); return; }
+  var projects = JSON.parse(localStorage.getItem('project_list') || '[]');
+  var id = 'proj_' + Date.now();
+  projects.push({ id: id, name: name, createdAt: new Date().toISOString().slice(0,10) });
+  localStorage.setItem('project_list', JSON.stringify(projects));
+  localStorage.setItem('current_project', id);
+  location.href = '数据中心.html';
+}
 </script>
+
+<div id="newProjectModal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1000;display:none;align-items:center;justify-content:center;" onclick="if(event.target==this)closeNewProjectModal()">
+  <div style="background:#fff;border-radius:8px;width:400px;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+    <div style="padding:16px 20px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:15px;">新建项目</div>
+    <div style="padding:20px;">
+      <label style="display:block;font-size:12px;color:#8c8c8c;margin-bottom:4px;">项目名称</label>
+      <input type="text" id="newProjectName" placeholder="请输入项目名称，如：区域入侵检测" style="width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:4px;font-size:14px;outline:none;" onkeydown="if(event.key==='Enter')createProject()">
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:8px;">
+      <button class="btn btn-default btn-sm" onclick="closeNewProjectModal()">取消</button>
+      <button class="btn btn-primary btn-sm" onclick="createProject()">确定</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
