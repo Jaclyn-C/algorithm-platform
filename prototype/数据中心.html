@@ -217,28 +217,28 @@
     <div class="logo-text">算法训练平台</div>
   </div>
   <nav class="sidebar-nav">
-    <div class="sidebar-group">
-      <div class="sidebar-group-title">平台导航</div>
-      <a class="sidebar-item" href="#">工作台</a>
+    <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
+      <a class="sidebar-item" href="项目列表.html">项目列表</a>
     </div>
-    <div class="sidebar-group">
-      <div class="sidebar-group-title">项目管理</div>
-      <a class="sidebar-item" href="#">项目列表</a>
+    <div class="sidebar-group" id="sidebarProjectGroup" style="display:none;">
+      <div class="sidebar-group-title">当前项目</div>
+      <div style="padding:0 20px;">
+        <select id="sidebarProject" onchange="switchProject(this.value)" style="width:100%;padding:6px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:13px;font-family:var(--font);">
+          <option value="security" style="color:#262626;">保安服检测</option>
+          <option value="fire" style="color:#262626;">烟火检测</option>
+          <option value="helmet" style="color:#262626;">安全帽检测</option>
+        </select>
+      </div>
+    </div>
+    <div class="sidebar-group" id="sidebarSubPages" style="display:none;">
       <a class="sidebar-item active" href="#">数据中心</a>
-    </div>
-    <div class="sidebar-group">
-      <div class="sidebar-group-title">标注与训练</div>
       <a class="sidebar-item" href="数据标注工作台.html">数据标注<span class="badge">3</span></a>
       <a class="sidebar-item" href="模型训练.html">模型训练</a>
       <a class="sidebar-item" href="模型评估.html">模型评估</a>
       <a class="sidebar-item" href="模型试用.html">模型试用</a>
-    </div>
-    <div class="sidebar-group">
-      <div class="sidebar-group-title">部署管理</div>
       <a class="sidebar-item" href="模型部署.html">模型部署</a>
     </div>
-    <div class="sidebar-group">
-      <div class="sidebar-group-title">系统设置</div>
+    <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
       <a class="sidebar-item" href="#">系统管理</a>
     </div>
   </nav>
@@ -1197,8 +1197,19 @@ function scrollToSection(id) {
 }
 
 // ==================== UTILS ====================
+(function() {
+  var project = localStorage.getItem('current_project');
+  if (!project) { location.href = '项目列表.html'; return; }
+  document.getElementById('sidebarProjectGroup').style.display = 'block';
+  document.getElementById('sidebarSubPages').style.display = 'block';
+  document.getElementById('sidebarProject').value = project;
+  var hdr = document.querySelector('.page-header select');
+  if (hdr) hdr.value = project;
+})();
+
 function switchProject(val) {
-  showToast('已切换到: ' + (val === 'security' ? '保安服检测' : val === 'fire' ? '烟火检测' : '安全帽检测'));
+  localStorage.setItem('current_project', val);
+  location.reload();
 }
 
 let toastTimer;

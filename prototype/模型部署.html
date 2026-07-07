@@ -126,19 +126,24 @@
   </div>
   <nav class="sidebar-nav">
     <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
-      <a class="sidebar-item" href="#">工作台</a>
+      <a class="sidebar-item" href="项目列表.html">项目列表</a>
     </div>
-    <div class="sidebar-group"><div class="sidebar-group-title">项目管理</div>
-      <a class="sidebar-item" href="#">项目列表</a>
+    <div class="sidebar-group" id="sidebarProjectGroup" style="display:none;">
+      <div class="sidebar-group-title">当前项目</div>
+      <div style="padding:0 20px;">
+        <select id="sidebarProject" onchange="switchProject(this.value)" style="width:100%;padding:6px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:13px;font-family:var(--font);">
+          <option value="security" style="color:#262626;">保安服检测</option>
+          <option value="fire" style="color:#262626;">烟火检测</option>
+          <option value="helmet" style="color:#262626;">安全帽检测</option>
+        </select>
+      </div>
+    </div>
+    <div class="sidebar-group" id="sidebarSubPages" style="display:none;">
       <a class="sidebar-item" href="数据中心.html">数据中心</a>
-    </div>
-    <div class="sidebar-group"><div class="sidebar-group-title">标注与训练</div>
       <a class="sidebar-item" href="数据标注工作台.html">数据标注<span class="badge">3</span></a>
       <a class="sidebar-item" href="模型训练.html">模型训练</a>
       <a class="sidebar-item" href="模型评估.html">模型评估</a>
       <a class="sidebar-item" href="模型试用.html">模型试用</a>
-    </div>
-    <div class="sidebar-group"><div class="sidebar-group-title">部署管理</div>
       <a class="sidebar-item active" href="#">模型部署</a>
     </div>
     <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
@@ -359,21 +364,21 @@ function addDeployHistory(version) {
   document.getElementById('historyBody').insertBefore(row, document.getElementById('historyBody').firstChild);
 }
 
-function rollback(version) {
-  document.getElementById('deployVersion').value = version;
-  uploadedScriptName = '';
-  document.getElementById('scriptUpload').classList.remove('has-file');
-  document.getElementById('scriptUpload').querySelector('#scriptName').textContent = '点击上传 detect.py';
-  document.getElementById('scriptHint').textContent = '上传项目的检测推理脚本';
-  document.getElementById('pkgPreview').style.display = 'none';
-  pkgGenerated = false;
-  document.getElementById('btnGenerate').textContent = '生成部署包';
-  document.getElementById('btnGenerate').className = 'btn btn-primary btn-lg';
-  showToast('已选择回滚版本: ' + version + '，请重新上传脚本并生成部署包');
-}
-
 function downloadHistory(version) {
   showToast('下载 保安服检测_' + version + '.zip');
+}
+
+(function() {
+  var project = localStorage.getItem('current_project');
+  if (!project) { location.href = '项目列表.html'; return; }
+  document.getElementById('sidebarProjectGroup').style.display = 'block';
+  document.getElementById('sidebarSubPages').style.display = 'block';
+  document.getElementById('sidebarProject').value = project;
+})();
+
+function switchProject(val) {
+  localStorage.setItem('current_project', val);
+  location.reload();
 }
 
 var toastTimer;
