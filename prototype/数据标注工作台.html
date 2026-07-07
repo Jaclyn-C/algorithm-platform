@@ -477,7 +477,6 @@
             <button class="btn btn-default btn-sm" id="btnNext" onclick="nextImage()">下一张 ▶</button>
           </div>
           <div class="nav-group">
-            <button class="btn btn-default btn-sm" onclick="skipImage()">⏭ 跳过</button>
             <button class="btn btn-primary btn-sm" id="btnSubmit" onclick="submitImage()">提交并下一张 ▶</button>
           </div>
         </div>
@@ -1351,14 +1350,6 @@ function nextImage() {
   saveCurrentAnnotations();
   currentImageIdx++;
   loadImage(currentImageIdx);
-}
-
-function skipImage() {
-  if (currentImageIdx >= 200) return;
-  saveCurrentAnnotations();
-  currentImageIdx++;
-  loadImage(currentImageIdx);
-  showToast('当前图片已跳过，进入下一张');
 }
 
 // ==================== SHARED STATE (localStorage) ====================
