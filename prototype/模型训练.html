@@ -1027,7 +1027,7 @@ function closeResultModal() {
 
 // ==================== AUTH + PROJECT ====================
 function getUser() { try { return JSON.parse(localStorage.getItem('current_user')); } catch(e) { return null; } }
-function getProjectName(key) { var m = {security:'保安服检测',fire:'烟火检测',helmet:'安全帽检测'}; return m[key] || key; }
+function getProjectName(key) { try { var pl = JSON.parse(localStorage.getItem('project_list') || '[]'); var found = pl.find(function(p) { return p.id === key; }); if (found) return found.name; } catch(e) {} var m = {security:'保安服检测',fire:'烟火检测',helmet:'安全帽检测'}; return m[key] || key; }
 function logout() { localStorage.removeItem('current_user'); location.href = '登录.html'; }
 
 (function() {
