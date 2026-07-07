@@ -1038,6 +1038,7 @@ function openDataset(type) {
       actions.innerHTML = `
         <button class="btn btn-default btn-sm">导出 ZIP</button>
         <button class="btn btn-primary" onclick="location.href='数据标注工作台.html'">审核修正标注</button>
+        <button class="btn btn-default btn-sm" onclick="discardAutoAnno('02')">丢弃预标注</button>
         <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '02')">删除</button>`;
     } else {
       actions.innerHTML = `
@@ -1052,6 +1053,7 @@ function openDataset(type) {
       actions.innerHTML = `
         <button class="btn btn-default btn-sm">导出 ZIP</button>
         <button class="btn btn-primary" onclick="location.href='数据标注工作台.html'">审核修正标注</button>
+        <button class="btn btn-default btn-sm" onclick="discardAutoAnno('03')">丢弃预标注</button>
         <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '03')">删除</button>`;
     } else {
       actions.innerHTML = `
@@ -1299,6 +1301,22 @@ function startAutoAnno() {
     const imgCount = autoAnnoPipeline === '02' ? 856 : 1517;
     showToast('自动标注完成！' + modelNames[model] + ' 已标注 ' + imgCount + ' 张图片，等待人工审核');
   }, 2000);
+}
+
+function discardAutoAnno(suffix) {
+  if (!confirm('确定丢弃全部预标注结果吗？自动标注的检测框将被清除。')) return;
+  closeDatasetModal();
+  setPipelineStatus(suffix, suffix === '02' ? 'in_progress' : 'none');
+  var badge = document.getElementById('dedupBadge' + suffix);
+  var tag = document.getElementById('pipeline' + suffix + 'Tag');
+  if (suffix === '02') {
+    if (badge) { badge.textContent = '标注中 47/200'; badge.className = 'ds-badge processing'; }
+    if (tag) { tag.textContent = '标注中 47/200'; tag.className = 'tag tag-processing'; }
+  } else {
+    if (badge) { badge.textContent = '已去重'; badge.className = 'ds-badge done'; }
+    if (tag) { tag.textContent = '未标注'; tag.className = 'tag'; tag.style.color = ''; tag.style.background = ''; }
+  }
+  showToast('预标注结果已丢弃');
 }
 
 // ==================== STEP INDICATOR ====================

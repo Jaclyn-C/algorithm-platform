@@ -169,6 +169,8 @@
   .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
   .btn-default { background: #fff; color: var(--text); border-color: #d9d9d9; }
   .btn-default:hover { color: var(--primary); border-color: var(--primary); }
+  .btn-danger { background: #fff; color: var(--danger); border-color: var(--danger); }
+  .btn-danger:hover { background: #fff1f0; }
   .btn-text { background: transparent; color: var(--primary); border: none; padding: 4px 8px; }
   .btn-text:hover { background: var(--primary-light); }
   .btn-sm { padding: 3px 8px; font-size: 11px; }
@@ -442,6 +444,7 @@
       </div>
       <div class="info-actions">
         <button class="btn btn-default btn-sm" onclick="saveDraft()">保存草稿</button>
+        <button class="btn btn-danger btn-sm" onclick="resetAnnotation()">重置标注</button>
         <button class="btn btn-primary btn-sm" onclick="finishAnnotation()" id="btnFinishAnnotation" style="display:none;">完成标注</button>
       </div>
     </div>
@@ -1383,6 +1386,21 @@ function checkAllDone() {
   if (currentImageIdx >= TOTAL_IMAGES) {
     document.getElementById('btnFinishAnnotation').style.display = 'inline-flex';
   }
+}
+
+function resetAnnotation() {
+  if (!confirm('确定重置当前标注任务吗？所有标注数据将被清除，进度归零。此操作不可撤销。')) return;
+  regions = [];
+  selectedRegionId = null;
+  currentImageIdx = 1;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ status: 'none', done: 0, total: TOTAL_IMAGES }));
+  document.getElementById('btnFinishAnnotation').style.display = 'none';
+  updateRegionList();
+  updateDetailPanel();
+  updateBboxCount();
+  loadImage(1);
+  render();
+  showToast('标注任务已重置');
 }
 
 function finishAnnotation() {
