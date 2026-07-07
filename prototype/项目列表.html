@@ -74,6 +74,8 @@
   .btn-primary:hover { background: #40a9ff; }
   .btn-default { background: #fff; color: var(--text); border-color: #d9d9d9; }
   .btn-default:hover { color: var(--primary); border-color: var(--primary); }
+  .btn-danger { background: #fff; color: var(--danger); border-color: var(--danger); }
+  .btn-danger:hover { background: #fff1f0; }
   .btn-sm { padding: 3px 8px; font-size: 11px; }
 
   .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
@@ -173,6 +175,7 @@
         <div style="display:flex;gap:6px;" onclick="event.stopPropagation();">
           <button class="btn btn-default btn-sm" onclick="enterProject('security')">进入项目</button>
           <button class="btn btn-default btn-sm" onclick="location.href='模型部署.html'">查看部署</button>
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject('security','保安服检测')">删除</button>
         </div>
       </div>
 
@@ -204,6 +207,7 @@
         <div style="display:flex;gap:6px;" onclick="event.stopPropagation();">
           <button class="btn btn-default btn-sm" onclick="enterProject('fire')">进入项目</button>
           <button class="btn btn-default btn-sm" onclick="location.href='数据标注工作台.html'">继续标注</button>
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject('fire','烟火检测')">删除</button>
         </div>
       </div>
 
@@ -235,6 +239,7 @@
         <div style="display:flex;gap:6px;" onclick="event.stopPropagation();">
           <button class="btn btn-default btn-sm" onclick="enterProject('helmet')">进入项目</button>
           <button class="btn btn-default btn-sm" onclick="location.href='数据标注工作台.html'">开始标注</button>
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject('helmet','安全帽检测')">删除</button>
         </div>
       </div>
 
@@ -290,6 +295,26 @@ function createProject() {
   localStorage.setItem('current_project', id);
   location.href = '数据中心.html';
 }
+
+function confirmDeleteProject(projectId, projectName) {
+  document.getElementById('deleteProjectId').value = projectId;
+  document.getElementById('deleteProjectName').textContent = projectName;
+  document.getElementById('deleteProjectModal').style.display = 'flex';
+}
+function closeDeleteProjectModal() {
+  document.getElementById('deleteProjectModal').style.display = 'none';
+}
+function executeDeleteProject() {
+  var id = document.getElementById('deleteProjectId').value;
+  var name = document.getElementById('deleteProjectName').textContent;
+  var card = document.querySelector('[onclick*="enterProject(\'' + id + '\')"]');
+  if (card) {
+    var projectCard = card.closest('.project-card');
+    if (projectCard) projectCard.style.display = 'none';
+  }
+  closeDeleteProjectModal();
+  alert('项目「' + name + '」已删除。其下的全部数据集、标注数据、训练记录、评估记录、部署记录将一并删除。');
+}
 </script>
 
 <div id="newProjectModal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1000;display:none;align-items:center;justify-content:center;" onclick="if(event.target==this)closeNewProjectModal()">
@@ -305,5 +330,27 @@ function createProject() {
     </div>
   </div>
 </div>
+
+<div id="deleteProjectModal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1100;display:none;align-items:center;justify-content:center;" onclick="if(event.target==this)closeDeleteProjectModal()">
+  <div style="background:#fff;border-radius:8px;width:480px;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+    <div style="padding:16px 20px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:15px;">确认删除项目</div>
+    <div style="padding:20px;">
+      <div style="margin-bottom:14px;font-size:13px;">确定要删除项目「<strong id="deleteProjectName"></strong>」吗？此操作不可撤销。</div>
+      <div style="background:#fff1f0;border:1px solid #ffccc7;border-radius:4px;padding:12px;font-size:12px;">
+        <strong>以下内容将被一并删除：</strong><br>
+        &emsp;→ 该项目下的全部数据集<br>
+        &emsp;→ 全部标注数据<br>
+        &emsp;→ 全部训练记录和模型文件<br>
+        &emsp;→ 全部评估记录<br>
+        &emsp;→ 全部部署记录和部署包
+      </div>
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:8px;">
+      <button class="btn btn-default btn-sm" onclick="closeDeleteProjectModal()">取消</button>
+      <button class="btn btn-danger btn-sm" onclick="executeDeleteProject()">确认删除</button>
+    </div>
+  </div>
+</div>
+<input type="hidden" id="deleteProjectId">
 </body>
 </html>
