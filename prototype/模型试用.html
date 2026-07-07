@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>算法训练平台 — 模型试用</title>
+<style>
+  :root {
+    --sidebar-bg: #001529; --sidebar-hover: #002140; --sidebar-active: #1890ff;
+    --sidebar-text: #ffffffb3; --sidebar-text-active: #fff; --header-bg: #fff;
+    --header-height: 48px; --sidebar-width: 220px; --bg: #f0f2f5; --card-bg: #fff;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.08); --primary: #1890ff; --primary-light: #e6f7ff;
+    --success: #52c41a; --warning: #faad14; --danger: #ff4d4f; --text: #262626;
+    --text-secondary: #8c8c8c; --text-muted: #bfbfbf; --border: #f0f0f0;
+    --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    --radius: 6px; --transition: 0.2s ease;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font); background: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text); font-size: 13px; }
+
+  .sidebar { width: var(--sidebar-width); min-width: var(--sidebar-width); background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; z-index: 100; }
+  .sidebar-logo { height: 56px; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-logo .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, #1890ff, #36cfc9); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; margin-right: 10px; }
+  .sidebar-logo .logo-text { color: #fff; font-size: 15px; font-weight: 600; }
+  .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+  .sidebar-group { margin-bottom: 4px; }
+  .sidebar-group-title { padding: 8px 20px; font-size: 11px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; }
+  .sidebar-item { display: flex; align-items: center; padding: 10px 20px; cursor: pointer; transition: var(--transition); color: var(--sidebar-text); text-decoration: none; font-size: 13px; border-left: 3px solid transparent; margin: 1px 0; }
+  .sidebar-item:hover { background: var(--sidebar-hover); color: #fff; }
+  .sidebar-item.active { background: var(--sidebar-active); color: var(--sidebar-text-active); border-left-color: #fff; }
+  .sidebar-item .badge { margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 10px; }
+
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .header { height: var(--header-height); background: var(--header-bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .header .breadcrumb { font-size: 12px; color: var(--text-secondary); }
+  .header .breadcrumb span { color: var(--text); font-weight: 500; }
+  .header .breadcrumb .sep { margin: 0 6px; color: var(--text-muted); }
+  .header-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .header-actions .user-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+
+  .content { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 16px 20px; gap: 16px; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; }
+  .page-header h2 { font-size: 18px; font-weight: 600; }
+  .page-header select { padding: 5px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; font-family: var(--font); min-width: 180px; }
+
+  .trial-layout { flex: 1; display: flex; gap: 12px; min-height: 0; }
+
+  .card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--card-shadow); display: flex; flex-direction: column; }
+  .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; }
+  .card-body { padding: 20px; overflow-y: auto; flex: 1; }
+
+  .config-panel { width: 300px; min-width: 300px; }
+  .result-panel { flex: 1; min-width: 0; }
+
+  .form-group { display: flex; flex-direction: column; gap: 3px; margin-bottom: 10px; }
+  .form-group:last-child { margin-bottom: 0; }
+  .form-group label { font-size: 11px; color: var(--text-secondary); }
+  .form-group select, .form-group input { padding: 6px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; font-family: var(--font); height: 32px; box-sizing: border-box; }
+  .form-group .hint { font-size: 10px; color: var(--text-muted); }
+
+  .btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px; border-radius: var(--radius); font-size: 12px; cursor: pointer; border: 1px solid transparent; font-family: var(--font); transition: var(--transition); white-space: nowrap; }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: #40a9ff; }
+  .btn-default { background: #fff; color: var(--text); border-color: #d9d9d9; }
+  .btn-default:hover { color: var(--primary); border-color: var(--primary); }
+  .btn-text { background: transparent; color: var(--primary); border: none; padding: 4px 8px; }
+  .btn-text:hover { background: var(--primary-light); }
+  .btn-sm { padding: 3px 8px; font-size: 11px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .upload-zone { border: 2px dashed #d9d9d9; border-radius: var(--radius); padding: 24px; text-align: center; cursor: pointer; transition: var(--transition); background: #fafafa; margin-bottom: 14px; }
+  .upload-zone:hover { border-color: var(--primary); background: var(--primary-light); }
+
+  .file-item { display: flex; align-items: center; padding: 8px 10px; background: #fafafa; border-radius: 4px; gap: 8px; font-size: 12px; margin-bottom: 4px; }
+  .file-item .file-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-item .file-remove { cursor: pointer; color: var(--text-muted); border: none; background: none; font-size: 14px; }
+
+  .img-gallery { flex: 1; overflow-y: auto; min-height: 0; }
+  .img-gallery::-webkit-scrollbar { width: 5px; }
+  .img-gallery::-webkit-scrollbar-track { background: transparent; }
+  .img-gallery::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
+  .img-gallery-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+  .img-card { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: #fff; cursor: pointer; transition: var(--transition); }
+  .img-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(24,144,255,0.15); }
+  .img-card .img-card-label { font-size: 11px; color: var(--text-secondary); padding: 6px 10px; background: #fafafa; border-bottom: 1px solid var(--border); text-align: center; }
+  .img-card svg { display: block; width: 100%; height: auto; }
+
+  .summary-box { background: #f6ffed; border: 1px solid #b7eb8f; border-radius: var(--radius); padding: 12px 16px; margin-bottom: 14px; font-size: 12px; display: flex; gap: 20px; }
+
+  .lightbox { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+  .lightbox img { max-width: 90vw; max-height: 80vh; }
+  .lightbox .lightbox-close { position: absolute; top: 20px; right: 30px; font-size: 32px; color: #fff; cursor: pointer; }
+  .lightbox .lightbox-download { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); }
+  .lightbox .lightbox-name { position: absolute; top: 20px; left: 30px; color: #fff; font-size: 14px; }
+
+  .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #262626; color: #fff; padding: 10px 24px; border-radius: var(--radius); font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+
+  .text-secondary { color: var(--text-secondary); }
+  .text-muted { color: var(--text-muted); }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .gap-8 { gap: 8px; }
+  .flex { display: flex; }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">AI</div>
+    <div class="logo-text">算法训练平台</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
+      <a class="sidebar-item" href="#">工作台</a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-group-title">项目管理</div>
+      <a class="sidebar-item" href="#">项目列表</a>
+      <a class="sidebar-item" href="数据中心.html">数据中心</a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-group-title">标注与训练</div>
+      <a class="sidebar-item" href="数据标注工作台.html">数据标注<span class="badge">3</span></a>
+      <a class="sidebar-item" href="模型训练.html">模型训练</a>
+      <a class="sidebar-item" href="模型评估.html">模型评估</a>
+      <a class="sidebar-item active" href="#">模型试用</a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-group-title">部署管理</div>
+      <a class="sidebar-item" href="模型部署.html">模型部署</a>
+      <a class="sidebar-item" href="#">版本管理</a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
+      <a class="sidebar-item" href="#">系统管理</a>
+    </div>
+  </nav>
+</aside>
+
+<div class="main">
+  <header class="header">
+    <div class="breadcrumb">算法训练平台 <span class="sep">›</span> <span>模型试用</span></div>
+    <div class="header-actions">
+      <span style="font-size:12px;color:var(--text-secondary);">张三</span>
+      <div class="user-avatar">张</div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-header">
+      <h2>模型试用</h2>
+      <select onchange="switchProject(this.value)">
+        <option value="security">保安服检测</option>
+        <option value="fire">烟火检测</option>
+        <option value="helmet">安全帽检测</option>
+      </select>
+    </div>
+
+    <div class="trial-layout">
+
+      <!-- Left: Config -->
+      <div class="card config-panel">
+        <div class="card-header">试用配置</div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>选择模型</label>
+            <select id="trialModel">
+              <option value="">— 选择模型 —</option>
+              <option value="best_v1.3" selected>best.pt — v1.3.0 (mAP@50 0.872)</option>
+              <option value="best_v1.2">best.pt — v1.2.0 (mAP@50 0.851)</option>
+              <option value="yolo11m">yolo11m.pt (预训练)</option>
+            </select>
+            <span class="hint">选择用于推理的模型</span>
+          </div>
+
+          <div class="form-group">
+            <label>置信度阈值</label>
+            <div style="display:flex;align-items:center;gap:8px;height:32px;">
+              <input type="range" id="trialConf" min="1" max="9" value="3" style="width:120px;" oninput="document.getElementById('confVal').textContent=(this.value/10).toFixed(1)">
+              <span id="confVal" style="font-weight:600;">0.3</span>
+            </div>
+            <span class="hint">低于此置信度的框将不显示</span>
+          </div>
+
+          <div style="margin:14px 0 8px;font-size:12px;font-weight:600;color:var(--text-secondary);">上传测试文件</div>
+          <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+            <div style="color:var(--primary);font-size:24px;margin-bottom:6px;">+</div>
+            <div style="font-size:13px;">点击上传图片或视频</div>
+            <div style="font-size:11px;color:var(--text-muted);">支持 JPG/PNG/MP4</div>
+          </div>
+          <input type="file" id="fileInput" accept="image/*,video/*" multiple style="display:none;" onchange="handleFiles(this.files)">
+
+          <div id="fileList"></div>
+
+          <button class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="startTrial()" id="btnTrial">开始试用</button>
+        </div>
+      </div>
+
+      <!-- Right: Results -->
+      <div class="card result-panel">
+        <div class="card-header">检测结果</div>
+        <div class="card-body" id="resultArea" style="display:flex;flex-direction:column;">
+          <div class="empty-state" id="emptyState">
+            <div style="font-size:40px;margin-bottom:12px;">🔍</div>
+            <div style="font-size:14px;margin-bottom:4px;">尚未开始试用</div>
+            <div style="font-size:12px;">选择模型、上传测试文件后点击「开始试用」</div>
+          </div>
+
+          <div id="resultContent" style="display:none;flex-direction:column;flex:1;min-height:0;">
+            <div style="flex-shrink:0;">
+              <div class="summary-box" id="summaryBox"></div>
+              <div style="font-weight:600;font-size:13px;margin-bottom:8px;">检测结果图 <span style="font-weight:400;font-size:11px;color:var(--text-muted);">点击放大 · 向下滚动查看更多</span></div>
+            </div>
+            <div class="img-gallery"><div class="img-gallery-row" id="resultGalleryRow"></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var uploadedFiles = [];
+var trialRunning = false;
+
+function handleFiles(files) {
+  if (!files || files.length === 0) return;
+  for (var i = 0; i < files.length; i++) {
+    var f = files[i];
+    if (!uploadedFiles.some(function(u) { return u.name === f.name && u.size === f.size; })) {
+      uploadedFiles.push(f);
+    }
+  }
+  renderFileList();
+}
+
+function renderFileList() {
+  var el = document.getElementById('fileList');
+  if (uploadedFiles.length === 0) { el.innerHTML = ''; return; }
+  el.innerHTML = '<div style="font-size:12px;font-weight:600;margin-bottom:6px;">已选择 ' + uploadedFiles.length + ' 个文件</div>' +
+    uploadedFiles.map(function(f, i) {
+      return '<div class="file-item"><span>' + (f.type.startsWith('video/') ? '▶' : '▣') + '</span>' +
+        '<span class="file-name">' + f.name + '</span>' +
+        '<span class="text-muted" style="font-size:10px;">' + (f.size < 1048576 ? (f.size/1024).toFixed(1)+'KB' : (f.size/1048576).toFixed(1)+'MB') + '</span>' +
+        '<button class="file-remove" onclick="removeFile(' + i + ')">✕</button></div>';
+    }).join('');
+}
+
+function removeFile(i) {
+  uploadedFiles.splice(i, 1);
+  renderFileList();
+}
+
+function startTrial() {
+  var model = document.getElementById('trialModel').value;
+  if (!model) { showToast('请选择模型'); return; }
+  if (uploadedFiles.length === 0) { showToast('请上传测试文件'); return; }
+  if (trialRunning) return;
+  trialRunning = true;
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('resultContent').style.display = 'flex';
+  document.getElementById('btnTrial').disabled = true;
+  document.getElementById('btnTrial').textContent = '检测中...';
+
+  setTimeout(function() {
+    // Summary
+    var totalDetections = uploadedFiles.length * (3 + Math.floor(Math.random() * 6));
+    document.getElementById('summaryBox').innerHTML =
+      '<div><span class="text-muted">模型</span> ' + model + '</div>' +
+      '<div><span class="text-muted">检测文件</span> ' + uploadedFiles.length + ' 个</div>' +
+      '<div><span class="text-muted">检测目标</span> ' + totalDetections + ' 个</div>' +
+      '<div><span class="text-muted">平均置信度</span> ' + (0.7 + Math.random() * 0.2).toFixed(2) + '</div>';
+
+    // Generate mock detection result images
+    var row = document.getElementById('resultGalleryRow');
+    var html = '';
+    var labels = ['police', 'security', 'worker', 'vehicle', 'helmet'];
+    var colors = ['#ff4d4f', '#1890ff', '#52c41a', '#faad14', '#722ed1'];
+
+    for (var i = 0; i < uploadedFiles.length + 2; i++) {
+      var imgName = uploadedFiles[i]
+        ? 'result_' + uploadedFiles[i].name.replace(/\.[^.]+$/, '') + '.jpg'
+        : 'result_sample_' + (i + 1) + '.jpg';
+
+      // Generate random boxes for mock detection
+      var boxes = '';
+      var boxCount = 3 + Math.floor(Math.random() * 5);
+      for (var b = 0; b < boxCount; b++) {
+        var lIdx = Math.floor(Math.random() * labels.length);
+        var bx = 10 + Math.random() * 250;
+        var by = 10 + Math.random() * 180;
+        var bw = 40 + Math.random() * 100;
+        var bh = 40 + Math.random() * 120;
+        var conf = (0.5 + Math.random() * 0.45).toFixed(2);
+        boxes += '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" fill="none" stroke="' + colors[lIdx] + '" stroke-width="2"/>' +
+          '<rect x="' + bx + '" y="' + (by - 14) + '" width="' + (labels[lIdx].length * 9 + 36) + '" height="14" fill="' + colors[lIdx] + '"/>' +
+          '<text x="' + (bx + 4) + '" y="' + (by - 3) + '" font-size="9" fill="#fff">' + labels[lIdx] + ' ' + conf + '</text>';
+      }
+
+      var svg = '<div class="img-card" onclick="openLightbox(this)">' +
+        '<div class="img-card-label">' + imgName + '</div>' +
+        '<svg width="320" height="240" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg">' +
+          '<rect width="320" height="240" fill="#87CEEB"/>' +
+          '<rect y="180" width="320" height="60" fill="#8B9A6E"/>' +
+          '<rect y="190" width="320" height="15" fill="#666" opacity="0.3"/>' +
+          boxes +
+          '<text x="195" y="190" font-size="9" fill="#fff">' + imgName + '</text>' +
+          '<text x="8" y="12" font-size="9" fill="#fff" stroke="#333" stroke-width="0.5">' + boxCount + ' detections</text>' +
+        '</svg></div>';
+      html += svg;
+    }
+    row.innerHTML = html;
+
+    document.getElementById('btnTrial').disabled = false;
+    document.getElementById('btnTrial').textContent = '重新试用';
+    trialRunning = false;
+    showToast('检测完成！共检测到 ' + totalDetections + ' 个目标');
+  }, 2000);
+}
+
+function openLightbox(el) {
+  var existing = document.querySelector('.lightbox');
+  if (existing) existing.remove();
+
+  var svg = el.querySelector('svg');
+  var name = (el.querySelector('.img-card-label') || {}).textContent || 'result';
+  var clone = svg.cloneNode(true);
+  clone.setAttribute('width', '800');
+  clone.setAttribute('height', '600');
+  clone.setAttribute('viewBox', '0 0 320 240');
+
+  var lb = document.createElement('div');
+  lb.className = 'lightbox';
+  lb.onclick = function(e) { if (e.target === lb) lb.remove(); };
+
+  var wrapper = document.createElement('div');
+  wrapper.style.cssText = 'position:relative;';
+  wrapper.appendChild(clone);
+
+  lb.innerHTML =
+    '<span class="lightbox-close" onclick="this.parentElement.remove()">✕</span>' +
+    '<span class="lightbox-name">' + name + '</span>';
+  lb.appendChild(wrapper);
+  lb.innerHTML += '<div class="lightbox-download"><button class="btn btn-primary" onclick="showToast(\'图片已下载\')">下载</button></div>';
+  document.body.appendChild(lb);
+}
+
+function switchProject(val) {
+  showToast('已切换到: ' + (val === 'security' ? '保安服检测' : val === 'fire' ? '烟火检测' : '安全帽检测'));
+}
+
+var toastTimer;
+function showToast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2000);
+}
+</script>
+</body>
+</html>
