@@ -102,11 +102,7 @@
     <div class="sidebar-group" id="sidebarProjectGroup" style="display:none;">
       <div class="sidebar-group-title">当前项目</div>
       <div style="padding:0 20px;">
-        <select id="sidebarProject" onchange="enterProject(this.value)" style="width:100%;padding:6px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:13px;font-family:var(--font);">
-          <option value="security" style="color:#262626;">保安服检测</option>
-          <option value="fire" style="color:#262626;">烟火检测</option>
-          <option value="helmet" style="color:#262626;">安全帽检测</option>
-        </select>
+        <div style="padding:8px 20px;font-size:13px;color:#fff;font-weight:600;" id="sidebarProjectName">—</div>
       </div>
     </div>
     <div class="sidebar-group" id="sidebarSubPages" style="display:none;">
@@ -174,7 +170,6 @@
         </div>
         <div style="display:flex;gap:6px;" onclick="event.stopPropagation();">
           <button class="btn btn-default btn-sm" onclick="enterProject('security')">进入项目</button>
-          <button class="btn btn-default btn-sm" onclick="location.href='模型部署.html'">查看部署</button>
           <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject('security','保安服检测')">删除</button>
         </div>
       </div>
@@ -206,7 +201,6 @@
         </div>
         <div style="display:flex;gap:6px;" onclick="event.stopPropagation();">
           <button class="btn btn-default btn-sm" onclick="enterProject('fire')">进入项目</button>
-          <button class="btn btn-default btn-sm" onclick="location.href='数据标注工作台.html'">继续标注</button>
           <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject('fire','烟火检测')">删除</button>
         </div>
       </div>
@@ -238,7 +232,6 @@
         </div>
         <div style="display:flex;gap:6px;" onclick="event.stopPropagation();">
           <button class="btn btn-default btn-sm" onclick="enterProject('helmet')">进入项目</button>
-          <button class="btn btn-default btn-sm" onclick="location.href='数据标注工作台.html'">开始标注</button>
           <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject('helmet','安全帽检测')">删除</button>
         </div>
       </div>
@@ -257,13 +250,74 @@ function logout() { localStorage.removeItem('current_user'); location.href = '�
   document.getElementById('headerUserName').textContent = user.name;
   document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
 
-  var project = localStorage.getItem('current_project');
-  if (project) {
-    document.getElementById('sidebarProjectGroup').style.display = 'block';
-    document.getElementById('sidebarSubPages').style.display = 'block';
-    document.getElementById('sidebarProject').value = project;
+  // 初始化预设项目列表（如果还不存在）
+  var pl = JSON.parse(localStorage.getItem('project_list') || '[]');
+  if (pl.length === 0) {
+    var preset = [
+      { id: 'security', name: '保安服检测', createdAt: '2026-06-28' },
+      { id: 'fire', name: '烟火检测', createdAt: '2026-07-01' },
+      { id: 'helmet', name: '安全帽检测', createdAt: '2026-07-02' }
+    ];
+    localStorage.setItem('project_list', JSON.stringify(preset));
   }
+  // 初始化预设项目列表
+  var pl = JSON.parse(localStorage.getItem('project_list') || '[]');
+  if (pl.length === 0) {
+    var preset = [
+      { id: 'security', name: '保安服检测', createdAt: '2026-06-28' },
+      { id: 'fire', name: '烟火检测', createdAt: '2026-07-01' },
+      { id: 'helmet', name: '安全帽检测', createdAt: '2026-07-02' }
+    ];
+    localStorage.setItem('project_list', JSON.stringify(preset));
+  }
+  // 渲染动态项目卡片
+  renderDynamicProjects();
+  localStorage.removeItem('current_project'); // 进入项目列表即清除项目
 })();
+
+function renderDynamicProjects() {
+  var pl = JSON.parse(localStorage.getItem('project_list') || '[]');
+  var grid = document.querySelector('.project-grid');
+  // Remove previously rendered dynamic cards
+  grid.querySelectorAll('.dynamic-card').forEach(function(c) { c.remove(); });
+  // Render cards for new projects (id starts with 'proj_')
+  pl.forEach(function(p) {
+    if (p.id.indexOf('proj_') === 0) {
+      var card = document.createElement('div');
+      card.className = 'project-card dynamic-card';
+      card.onclick = function() { enterProject(p.id); };
+      card.onclick = function() { enterProject(p.id); };
+      card.innerHTML =
+        '<div class="p-header">' +
+          '<div class="p-icon" style="background:linear-gradient(135deg,' + getCardColor(p.id) + ');">' + p.name.charAt(0) + '</div>' +
+          '<div>' +
+            '<div class="p-name">' + p.name + '</div>' +
+            '<div class="p-date">创建于 ' + p.createdAt + '</div>' +
+          '</div>' +
+          '<span class="tag" style="background:#f5f5f5;color:#8c8c8c;margin-left:auto;">数据准备</span>' +
+        '</div>' +
+        '<div class="pipeline">' +
+          '<div class="pipe-step"><div class="pipe-dot active"></div><div class="pipe-label">数据</div></div><div class="pipe-arrow">→</div>' +
+          '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">标注</div></div><div class="pipe-arrow">→</div>' +
+          '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">训练</div></div><div class="pipe-arrow">→</div>' +
+          '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">评估</div></div><div class="pipe-arrow">→</div>' +
+          '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">部署</div></div>' +
+        '</div>' +
+        '<div class="p-stats"><span>数据集：<strong>—</strong></span><span>标注：<strong>未开始</strong></span></div>' +
+        '<div style="display:flex;gap:6px;" onclick="event.stopPropagation();">' +
+          '<button class="btn btn-default btn-sm" onclick="enterProject(\'' + p.id + '\')">进入项目</button>' +
+          '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject(\'' + p.id + '\',\'' + p.name + '\')">删除</button>' +
+        '</div>';
+      grid.appendChild(card);
+    }
+  });
+}
+
+function getCardColor(id) {
+  var colors = ['#1890ff,#36cfc9','#fa8c16,#f5222d','#722ed1,#eb2f96','#52c41a,#13c2c2','#2f54eb,#a0d911'];
+  var idx = (id.charCodeAt(5) || 0) % colors.length;
+  return colors[idx];
+}
 
 function enterProject(val) {
   localStorage.setItem('current_project', val);
@@ -307,11 +361,16 @@ function closeDeleteProjectModal() {
 function executeDeleteProject() {
   var id = document.getElementById('deleteProjectId').value;
   var name = document.getElementById('deleteProjectName').textContent;
-  var card = document.querySelector('[onclick*="enterProject(\'' + id + '\')"]');
-  if (card) {
-    var projectCard = card.closest('.project-card');
-    if (projectCard) projectCard.style.display = 'none';
-  }
+  // Remove from displayed cards
+  ['.project-card', '.dynamic-card'].forEach(function(sel) {
+    document.querySelectorAll(sel).forEach(function(c) {
+      if (c.textContent.includes(name)) c.style.display = 'none';
+    });
+  });
+  // Remove from project_list
+  var pl = JSON.parse(localStorage.getItem('project_list') || '[]');
+  pl = pl.filter(function(p) { return p.id !== id; });
+  localStorage.setItem('project_list', JSON.stringify(pl));
   closeDeleteProjectModal();
   alert('项目「' + name + '」已删除。其下的全部数据集、标注数据、训练记录、评估记录、部署记录将一并删除。');
 }
