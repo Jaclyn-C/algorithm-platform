@@ -18,7 +18,6 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: var(--font); background: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text); font-size: 13px; }
 
-  /* Sidebar */
   .sidebar { width: var(--sidebar-width); min-width: var(--sidebar-width); background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; z-index: 100; }
   .sidebar-logo { height: 56px; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
   .sidebar-logo .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, #1890ff, #36cfc9); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; margin-right: 10px; }
@@ -31,7 +30,6 @@
   .sidebar-item.active { background: var(--sidebar-active); color: var(--sidebar-text-active); border-left-color: #fff; }
   .sidebar-item .badge { margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 10px; }
 
-  /* Main */
   .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   .header { height: var(--header-height); background: var(--header-bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
   .header .breadcrumb { font-size: 12px; color: var(--text-secondary); }
@@ -40,81 +38,68 @@
   .header-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
   .header-actions .user-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
 
-  /* Content */
   .content { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 16px 20px; gap: 16px; }
   .page-header { display: flex; align-items: center; justify-content: space-between; }
   .page-header h2 { font-size: 18px; font-weight: 600; }
 
-  /* Layout */
   .deploy-layout { flex: 1; display: flex; gap: 12px; min-height: 0; }
 
-  /* Cards */
   .card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--card-shadow); display: flex; flex-direction: column; }
   .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; }
   .card-body { padding: 20px; overflow-y: auto; flex: 1; }
 
-  .config-panel { width: 400px; min-width: 400px; }
+  .config-panel { width: 340px; min-width: 340px; }
   .history-panel { flex: 1; min-width: 0; }
 
-  /* Form */
-  .form-section { margin-bottom: 20px; }
-  .form-section:last-child { margin-bottom: 0; }
-  .form-section-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
-  .form-group { display: flex; flex-direction: column; gap: 3px; margin-bottom: 10px; }
+  .form-group { display: flex; flex-direction: column; gap: 3px; margin-bottom: 12px; }
   .form-group:last-child { margin-bottom: 0; }
   .form-group label { font-size: 11px; color: var(--text-secondary); }
   .form-group select, .form-group input { padding: 6px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; font-family: var(--font); height: 32px; box-sizing: border-box; }
   .form-group .hint { font-size: 10px; color: var(--text-muted); }
   .form-inline { display: flex; align-items: center; gap: 8px; }
   .form-inline input { flex: 1; }
-  .form-inline .btn { flex-shrink: 0; }
 
-  /* Buttons */
   .btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px; border-radius: var(--radius); font-size: 12px; cursor: pointer; border: 1px solid transparent; font-family: var(--font); transition: var(--transition); white-space: nowrap; }
   .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
   .btn-primary:hover { background: #40a9ff; }
   .btn-success { background: var(--success); color: #fff; border-color: var(--success); }
-  .btn-success:hover { background: #73d13d; }
   .btn-default { background: #fff; color: var(--text); border-color: #d9d9d9; }
   .btn-default:hover { color: var(--primary); border-color: var(--primary); }
-  .btn-danger { background: #fff; color: var(--danger); border-color: var(--danger); }
-  .btn-danger:hover { background: #fff1f0; }
   .btn-text { background: transparent; color: var(--primary); border: none; padding: 4px 8px; }
   .btn-text:hover { background: var(--primary-light); }
   .btn-sm { padding: 3px 8px; font-size: 11px; }
   .btn-lg { padding: 10px 24px; font-size: 14px; }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  /* Tags */
   .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
   .tag-success { background: #f6ffed; color: var(--success); }
   .tag-production { background: #e6f7ff; color: var(--primary); }
+  .prod-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; }
+  .prod-dot.on { background: var(--success); }
 
-  /* Package preview */
-  .pkg-card { background: #fafafa; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
-  .pkg-card .pkg-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
-  .pkg-card .pkg-version { color: var(--primary); font-size: 12px; font-weight: 600; margin-bottom: 12px; }
-  .pkg-files { display: flex; flex-direction: column; gap: 6px; }
-  .pkg-file { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 8px 12px; background: #fff; border-radius: 4px; border: 1px solid var(--border); }
-  .pkg-file .file-icon { width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .script-upload { display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: #fafafa; border: 1px dashed #d9d9d9; border-radius: var(--radius); cursor: pointer; transition: var(--transition); }
+  .script-upload:hover { border-color: var(--primary); background: var(--primary-light); }
+  .script-upload .upload-icon { font-size: 16px; color: var(--primary); }
+  .script-upload.has-file { border-style: solid; background: #f6ffed; border-color: var(--success); }
+
+  .pkg-card { background: #fafafa; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-top: 12px; }
+  .pkg-card .pkg-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .pkg-card .pkg-version { color: var(--primary); font-size: 12px; font-weight: 600; margin-bottom: 10px; }
+  .pkg-files { display: flex; flex-direction: column; gap: 4px; }
+  .pkg-file { display: flex; align-items: center; gap: 8px; font-size: 11px; padding: 6px 10px; background: #fff; border-radius: 4px; border: 1px solid var(--border); }
+  .pkg-file .file-icon { width: 26px; height: 26px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
   .pkg-file .file-icon.pt { background: #fff7e6; color: #fa8c16; }
   .pkg-file .file-icon.py { background: #e6f7ff; color: #1890ff; }
   .pkg-file .file-icon.txt { background: #f5f5f5; color: #8c8c8c; }
   .pkg-file .file-info { flex: 1; }
-  .pkg-file .file-size { color: var(--text-muted); font-size: 11px; }
-  .pkg-total { margin-top: 10px; font-size: 11px; color: var(--text-secondary); text-align: right; }
+  .pkg-file .file-size { color: var(--text-muted); font-size: 10px; }
+  .pkg-total { margin-top: 8px; font-size: 10px; color: var(--text-secondary); text-align: right; }
 
-  /* Table */
   .table { width: 100%; border-collapse: collapse; font-size: 12px; }
   .table th { background: #fafafa; padding: 10px 12px; text-align: left; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; }
   .table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
   .table tr:hover td { background: #fafafa; }
 
-  /* Production badge */
-  .prod-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; }
-  .prod-dot.on { background: var(--success); }
-
-  /* Toast */
   .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #262626; color: #fff; padding: 10px 24px; border-radius: var(--radius); font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
   .toast.show { opacity: 1; }
 
@@ -134,7 +119,6 @@
 </head>
 <body>
 
-<!-- Sidebar -->
 <aside class="sidebar">
   <div class="sidebar-logo">
     <div class="logo-icon">AI</div>
@@ -156,7 +140,6 @@
     </div>
     <div class="sidebar-group"><div class="sidebar-group-title">部署管理</div>
       <a class="sidebar-item active" href="#">模型部署</a>
-      <a class="sidebar-item" href="#">版本管理</a>
     </div>
     <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
       <a class="sidebar-item" href="#">系统管理</a>
@@ -164,12 +147,9 @@
   </nav>
 </aside>
 
-<!-- Main -->
 <div class="main">
   <header class="header">
-    <div class="breadcrumb">
-      算法训练平台 <span class="sep">›</span> <span>模型部署</span>
-    </div>
+    <div class="breadcrumb">算法训练平台 <span class="sep">›</span> <span>模型部署</span></div>
     <div class="header-actions">
       <span style="font-size:12px;color:var(--text-secondary);">张三</span>
       <div class="user-avatar">张</div>
@@ -177,104 +157,64 @@
   </header>
 
   <div class="content">
-    <div class="page-header">
-      <h2>模型部署</h2>
-    </div>
+    <div class="page-header"><h2>模型部署</h2></div>
 
     <div class="deploy-layout">
 
-      <!-- ===== Left: Configuration ===== -->
-      <div class="config-panel" style="display:flex;flex-direction:column;gap:12px;">
-
-        <!-- Config Card -->
-        <div class="card">
-          <div class="card-header">部署配置</div>
-          <div class="card-body">
-            <div class="form-section">
-              <div class="form-section-title">基础设置</div>
-              <div class="form-group">
-                <label>项目</label>
-                <select id="deployProject" onchange="onProjectChange()">
-                  <option value="security" selected>保安服检测</option>
-                  <option value="fire">烟火检测</option>
-                  <option value="helmet">安全帽检测</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>模型版本</label>
-                <select id="deployModel" onchange="onModelChange()">
-                  <option value="">— 选择已评估通过的模型 —</option>
-                  <option value="v1.3.0" selected>best.pt — v1.3.0 (mAP@50: 0.872, 评估通过 ✓)</option>
-                  <option value="v1.2.0">best.pt — v1.2.0 (mAP@50: 0.851, 评估通过 ✓)</option>
-                  <option value="v1.1.0">last.pt — v1.1.0 (mAP@50: 0.813, 评估通过 ✓)</option>
-                </select>
-                <span class="hint">仅显示已通过评估的模型</span>
-              </div>
-            </div>
-
-            <div class="form-section">
-              <div class="form-section-title">部署包配置</div>
-              <div class="form-group">
-                <label>检测脚本</label>
-                <div class="form-inline">
-                  <select id="deployScript">
-                    <option value="detect_v3.py" selected>detect.py (保服检测 · 2026-07-01)</option>
-                    <option value="detect_v2.py">detect.py (保服检测 · 2026-06-20)</option>
-                  </select>
-                  <button class="btn btn-text btn-sm" onclick="editScript()">编辑</button>
-                </div>
-                <span class="hint">自动继承项目关联的检测脚本</span>
-              </div>
-              <div class="form-group">
-                <label>版本号</label>
-                <div class="form-inline">
-                  <input type="text" id="deployVersion" value="v1.3.0" style="width:140px;">
-                  <button class="btn btn-text btn-sm" onclick="autoVersion()">自动</button>
-                </div>
-                <span class="hint">格式: v主.次.修订，每次部署建议递增</span>
-              </div>
-            </div>
-
-            <div class="flex gap-8 mt-12">
-              <button class="btn btn-primary btn-lg" onclick="generatePackage()" id="btnGenerate" style="flex:1;">生成部署包</button>
-            </div>
+      <!-- Left: Config -->
+      <div class="card config-panel">
+        <div class="card-header">部署配置</div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>选择模型</label>
+            <select id="deployModel">
+              <option value="">— 选择模型 —</option>
+              <option value="v1.3.0" selected>best.pt — v1.3.0 (mAP@50 0.872)</option>
+              <option value="v1.2.0">best.pt — v1.2.0 (mAP@50 0.851)</option>
+              <option value="v1.1.0">last.pt — v1.1.0 (mAP@50 0.813)</option>
+            </select>
+            <span class="hint">选择已训练的模型权重文件</span>
           </div>
-        </div>
 
-        <!-- Current Production Card -->
-        <div class="card">
-          <div class="card-header">
-            当前生产环境
-            <span style="font-size:11px;color:var(--success);font-weight:400;">● 运行中</span>
+          <div class="form-group">
+            <label>检测脚本</label>
+            <div class="script-upload" id="scriptUpload" onclick="document.getElementById('scriptInput').click()">
+              <span class="upload-icon">+</span>
+              <span id="scriptName" style="font-size:12px;">点击上传 detect.py</span>
+            </div>
+            <input type="file" id="scriptInput" accept=".py" style="display:none;" onchange="handleScriptUpload(this.files)">
+            <span class="hint" id="scriptHint">上传项目的检测推理脚本</span>
           </div>
-          <div class="card-body">
+
+          <div class="form-group">
+            <label>版本号</label>
+            <div class="form-inline">
+              <input type="text" id="deployVersion" value="v1.3.0" style="width:160px;">
+              <button class="btn btn-text btn-sm" onclick="autoVersion()">自动</button>
+            </div>
+            <span class="hint">格式: v主.次.修订</span>
+          </div>
+
+          <button class="btn btn-primary btn-lg" onclick="generatePackage()" id="btnGenerate" style="width:100%;margin-top:8px;">生成部署包</button>
+
+          <!-- Package preview (shown after generation) -->
+          <div id="pkgPreview" style="display:none;">
             <div class="pkg-card">
-              <div class="pkg-name">保服检测</div>
-              <div class="pkg-version" id="currentProdVersion">v1.2.0</div>
+              <div class="pkg-name">保安服检测</div>
+              <div class="pkg-version" id="pkgVersion">v1.3.0</div>
               <div class="pkg-files">
-                <div class="pkg-file">
-                  <div class="file-icon pt">.pt</div>
-                  <div class="file-info">best.pt</div>
-                  <div class="file-size">12.8 MB</div>
-                </div>
-                <div class="pkg-file">
-                  <div class="file-icon py">.py</div>
-                  <div class="file-info">detect.py</div>
-                  <div class="file-size">2.1 KB</div>
-                </div>
-                <div class="pkg-file">
-                  <div class="file-icon txt">.txt</div>
-                  <div class="file-info">version.txt</div>
-                  <div class="file-size">11 B</div>
-                </div>
+                <div class="pkg-file"><div class="file-icon pt">.pt</div><div class="file-info">best.pt</div><div class="file-size" id="pkgPtSize">12.8 MB</div></div>
+                <div class="pkg-file"><div class="file-icon py">.py</div><div class="file-info" id="pkgScriptName">detect.py</div><div class="file-size" id="pkgPySize">2.1 KB</div></div>
+                <div class="pkg-file"><div class="file-icon txt">.txt</div><div class="file-info">version.txt</div><div class="file-size">11 B</div></div>
               </div>
-              <div class="pkg-total">部署时间: 2026-07-01 16:20 · 总大小: 12.9 MB</div>
+              <div class="pkg-total">ZIP 大小: <strong id="pkgZipSize">12.9 MB</strong></div>
             </div>
+            <button class="btn btn-success btn-lg" onclick="downloadZip()" style="width:100%;margin-top:12px;">下载 ZIP</button>
           </div>
         </div>
       </div>
 
-      <!-- ===== Right: Package Preview + History ===== -->
+      <!-- Right: History -->
       <div class="card history-panel">
         <div class="card-header">部署历史</div>
         <div class="card-body" style="padding:0;">
@@ -285,9 +225,9 @@
                 <th>项目</th>
                 <th>版本</th>
                 <th>模型</th>
-                <th>mAP@50</th>
+                <th>脚本</th>
+                <th>大小</th>
                 <th>部署人</th>
-                <th>状态</th>
                 <th>操作</th>
               </tr>
             </thead>
@@ -297,50 +237,40 @@
                 <td>保安服检测</td>
                 <td>v1.2.0</td>
                 <td>best.pt</td>
-                <td style="font-weight:600;">0.851</td>
+                <td>detect.py</td>
+                <td>12.9 MB</td>
                 <td>张三</td>
-                <td><span class="tag tag-production"><span class="prod-dot on"></span>生产环境</span></td>
-                <td>
-                  <button class="btn btn-text btn-sm" onclick="downloadHistory('v1.2.0')">下载</button>
-                </td>
+                <td><button class="btn btn-text btn-sm" onclick="downloadHistory('v1.2.0')">下载</button></td>
               </tr>
               <tr>
                 <td>2026-06-28 11:00</td>
                 <td>保安服检测</td>
                 <td>v1.1.0</td>
                 <td>best.pt</td>
-                <td style="font-weight:600;">0.813</td>
+                <td>detect.py</td>
+                <td>12.7 MB</td>
                 <td>张三</td>
-                <td><span class="tag tag-success">已部署</span></td>
-                <td>
-                  <button class="btn btn-text btn-sm" onclick="rollback('v1.1.0')">回滚</button>
-                  <button class="btn btn-text btn-sm" onclick="downloadHistory('v1.1.0')">下载</button>
-                </td>
+                <td><button class="btn btn-text btn-sm" onclick="downloadHistory('v1.1.0')">下载</button></td>
               </tr>
               <tr>
                 <td>2026-06-20 09:30</td>
                 <td>烟火检测</td>
                 <td>v2.0.0</td>
                 <td>best.pt</td>
-                <td style="font-weight:600;">0.918</td>
+                <td>detect.py</td>
+                <td>13.1 MB</td>
                 <td>李四</td>
-                <td><span class="tag tag-production"><span class="prod-dot on"></span>生产环境</span></td>
-                <td>
-                  <button class="btn btn-text btn-sm" onclick="downloadHistory('v2.0.0')">下载</button>
-                </td>
+                <td><button class="btn btn-text btn-sm" onclick="downloadHistory('v2.0.0')">下载</button></td>
               </tr>
               <tr>
                 <td>2026-06-15 14:00</td>
                 <td>安全帽检测</td>
                 <td>v1.0.0</td>
                 <td>best.pt</td>
-                <td style="font-weight:600;">0.786</td>
+                <td>detect.py</td>
+                <td>11.8 MB</td>
                 <td>张三</td>
-                <td><span class="tag tag-success">已部署</span></td>
-                <td>
-                  <button class="btn btn-text btn-sm" onclick="rollback('v1.0.0')">回滚</button>
-                  <button class="btn btn-text btn-sm" onclick="downloadHistory('v1.0.0')">下载</button>
-                </td>
+                <td><button class="btn btn-text btn-sm" onclick="downloadHistory('v1.0.0')">下载</button></td>
               </tr>
             </tbody>
           </table>
@@ -351,140 +281,108 @@
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ==================== STATE ====================
-let pkgGenerated = false;
+var pkgGenerated = false;
+var uploadedScriptName = '';
 
-// ==================== MODEL CHANGE ====================
-function onProjectChange() {
-  const project = document.getElementById('deployProject').value;
-  showToast('已切换项目: ' + (project === 'security' ? '保安服检测' : project === 'fire' ? '烟火检测' : '安全帽检测'));
-}
-
-function onModelChange() {
-  const model = document.getElementById('deployModel').value;
-  if (!model) return;
-  document.getElementById('deployVersion').value = model;
-  pkgGenerated = false;
-  document.getElementById('btnGenerate').textContent = '生成部署包';
-  document.getElementById('btnGenerate').className = 'btn btn-primary btn-lg';
+function handleScriptUpload(files) {
+  if (!files || files.length === 0) return;
+  uploadedScriptName = files[0].name;
+  var el = document.getElementById('scriptUpload');
+  el.classList.add('has-file');
+  el.querySelector('#scriptName').textContent = uploadedScriptName + ' ✓';
+  document.getElementById('scriptHint').textContent = '已上传 · 点击可重新选择';
 }
 
 function autoVersion() {
-  const current = document.getElementById('deployVersion').value;
-  const parts = current.match(/v(\d+)\.(\d+)\.(\d+)/);
+  var current = document.getElementById('deployVersion').value;
+  var parts = current.match(/v(\d+)\.(\d+)\.(\d+)/);
   if (parts) {
-    const newVer = `v${parts[1]}.${parts[2]}.${parseInt(parts[3]) + 1}`;
-    document.getElementById('deployVersion').value = newVer;
+    document.getElementById('deployVersion').value = 'v' + parts[1] + '.' + parts[2] + '.' + (parseInt(parts[3]) + 1);
   } else {
     document.getElementById('deployVersion').value = 'v1.0.0';
   }
 }
 
-// ==================== EDIT SCRIPT ====================
-function editScript() {
-  const script = document.getElementById('deployScript').value;
-  showToast('检测脚本编辑器（模拟打开）: ' + script);
-}
-
-// ==================== GENERATE PACKAGE ====================
 function generatePackage() {
-  const model = document.getElementById('deployModel').value;
-  if (!model) { showToast('请先选择模型版本'); return; }
+  var model = document.getElementById('deployModel').value;
+  if (!model) { showToast('请选择模型'); return; }
+  if (!uploadedScriptName) { showToast('请上传检测脚本'); return; }
 
-  const version = document.getElementById('deployVersion').value;
-  const btn = document.getElementById('btnGenerate');
-
+  var btn = document.getElementById('btnGenerate');
   btn.textContent = '打包中...';
   btn.disabled = true;
 
-  setTimeout(() => {
-    btn.textContent = '下载部署包';
-    btn.className = 'btn btn-success btn-lg';
+  var version = document.getElementById('deployVersion').value;
+  var zipSize = (12 + Math.random() * 2).toFixed(1);
+
+  setTimeout(function() {
+    document.getElementById('pkgPreview').style.display = 'block';
+    document.getElementById('pkgVersion').textContent = version;
+    document.getElementById('pkgScriptName').textContent = uploadedScriptName;
+    document.getElementById('pkgPtSize').textContent = '12.8 MB';
+    document.getElementById('pkgPySize').textContent = (1.5 + Math.random() * 3).toFixed(1) + ' KB';
+    document.getElementById('pkgZipSize').textContent = zipSize + ' MB';
+
+    btn.textContent = '重新打包';
     btn.disabled = false;
     pkgGenerated = true;
-    showToast('部署包 ' + version + '.zip 已生成！点击按钮下载');
-  }, 1200);
+    showToast('部署包 ' + version + '.zip 已生成 (' + zipSize + ' MB)');
+  }, 1000);
 }
 
-// ==================== DOWNLOAD ====================
-document.addEventListener('click', function(e) {
-  if (e.target.id === 'btnGenerate' && pkgGenerated) {
-    const version = document.getElementById('deployVersion').value;
-    const project = document.getElementById('deployProject').selectedOptions[0].text;
-    showToast('开始下载: ' + project + '_' + version + '.zip');
-
-    // Add to history
-    addDeployHistory(version);
-
-    // Update current production
-    document.getElementById('currentProdVersion').textContent = version;
-  }
-});
+function downloadZip() {
+  var version = document.getElementById('deployVersion').value;
+  addDeployHistory(version);
+  showToast('开始下载: 保安服检测_' + version + '.zip');
+}
 
 function addDeployHistory(version) {
-  const now = new Date();
-  const timeStr = now.toISOString().slice(0, 16).replace('T', ' ');
-  const project = document.getElementById('deployProject').selectedOptions[0].text;
-  const modelVal = document.getElementById('deployModel').value;
-  const modelName = modelVal.includes('best.pt') ? 'best.pt' : 'last.pt';
+  var now = new Date();
+  var timeStr = now.toISOString().slice(0, 16).replace('T', ' ');
+  var modelVal = document.getElementById('deployModel').value;
+  var modelName = modelVal.includes('last.pt') ? 'last.pt' : 'best.pt';
+  var zipSize = (12 + Math.random() * 2).toFixed(1);
 
-  // Demote previous production for this project
-  document.querySelectorAll('#historyBody tr').forEach(tr => {
-    const td = tr.querySelector('td:nth-child(2)');
-    if (td && td.textContent.trim() === project) {
-      const statusTd = tr.querySelector('td:nth-child(7)');
-      if (statusTd && statusTd.textContent.includes('生产环境')) {
-        statusTd.innerHTML = '<span class="tag tag-success">已部署</span>';
-      }
-    }
-  });
-
-  const row = document.createElement('tr');
-  row.innerHTML = `
-    <td>${timeStr}</td>
-    <td>${project}</td>
-    <td>${version}</td>
-    <td>best.pt</td>
-    <td style="font-weight:600;">0.872</td>
-    <td>张三</td>
-    <td><span class="tag tag-production"><span class="prod-dot on"></span>生产环境</span></td>
-    <td>
-      <button class="btn btn-text btn-sm" onclick="downloadHistory('${version}')">下载</button>
-    </td>
-  `;
+  var row = document.createElement('tr');
+  row.innerHTML =
+    '<td>' + timeStr + '</td>' +
+    '<td>保安服检测</td>' +
+    '<td>' + version + '</td>' +
+    '<td>' + modelName + '</td>' +
+    '<td>' + uploadedScriptName + '</td>' +
+    '<td>' + zipSize + ' MB</td>' +
+    '<td>张三</td>' +
+    '<td><button class="btn btn-text btn-sm" onclick="downloadHistory(\'' + version + '\')">下载</button></td>';
   document.getElementById('historyBody').insertBefore(row, document.getElementById('historyBody').firstChild);
-
-  // Reset button
-  const btn = document.getElementById('btnGenerate');
-  btn.textContent = '生成部署包';
-  btn.className = 'btn btn-primary btn-lg';
-  pkgGenerated = false;
 }
 
-// ==================== ROLLBACK ====================
 function rollback(version) {
-  if (!confirm('回滚到 ' + version + '？将基于该版本的模型重新生成部署包。')) return;
   document.getElementById('deployVersion').value = version;
-  showToast('已选择回滚版本: ' + version + '，点击「生成部署包」完成回滚');
+  uploadedScriptName = '';
+  document.getElementById('scriptUpload').classList.remove('has-file');
+  document.getElementById('scriptUpload').querySelector('#scriptName').textContent = '点击上传 detect.py';
+  document.getElementById('scriptHint').textContent = '上传项目的检测推理脚本';
+  document.getElementById('pkgPreview').style.display = 'none';
+  pkgGenerated = false;
+  document.getElementById('btnGenerate').textContent = '生成部署包';
+  document.getElementById('btnGenerate').className = 'btn btn-primary btn-lg';
+  showToast('已选择回滚版本: ' + version + '，请重新上传脚本并生成部署包');
 }
 
 function downloadHistory(version) {
-  const project = document.getElementById('deployProject').selectedOptions[0].text;
-  showToast('下载 ' + project + '_' + version + '.zip');
+  showToast('下载 保安服检测_' + version + '.zip');
 }
 
-// ==================== UTILS ====================
-let toastTimer;
+var toastTimer;
 function showToast(msg) {
-  const el = document.getElementById('toast');
+  var el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+  toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2500);
 }
 </script>
 </body>
