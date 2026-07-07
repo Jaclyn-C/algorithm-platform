@@ -1404,10 +1404,17 @@ function resetAnnotation() {
 }
 
 function finishAnnotation() {
-  if (!confirm('确认全部标注已完成？点击确定后 labeled/ 数据集将在数据中心生成。')) return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ status: 'done', done: TOTAL_IMAGES, total: TOTAL_IMAGES }));
-  showToast('标注任务已完成！返回数据中心继续操作');
-  setTimeout(() => { location.href = '数据中心.html'; }, 1500);
+  var prev = getAnnotationStatus();
+  if (!confirm('确认全部标注已完成？')) return;
+  var data = { status: 'done', done: TOTAL_IMAGES, total: TOTAL_IMAGES };
+  if (prev === 'done') data.labeled_modified = true;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  showToast(prev === 'done' ? '标注已更新，train/val 将被清除，请重新划分数据集。返回数据中心...' : '标注任务已完成！返回数据中心继续操作');
+  setTimeout(() => { location.href = '数据中心.html'; }, 1800);
+}
+
+function getAnnotationStatus() {
+  try { var d = JSON.parse(localStorage.getItem(STORAGE_KEY)); return (d && d.status) || 'none'; } catch(e) { return 'none'; }
 }
 
 function submitImage() {
