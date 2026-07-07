@@ -315,7 +315,6 @@
           <div class="flex gap-8 mt-12">
             <button class="btn btn-default btn-sm" onclick="document.getElementById('fileInput').click()">继续添加</button>
             <button class="btn btn-default btn-sm" onclick="clearAllFiles()">清空全部</button>
-            <button class="btn btn-primary" onclick="processFiles()" id="btnProcessFiles">下一步</button>
           </div>
         </div>
       </div>
@@ -757,6 +756,14 @@ function isImageFile(f) {
 function detectFileTypes() {
   hasVideos = uploadedFiles.some(f => isVideoFile(f));
   hasImages = uploadedFiles.some(f => isImageFile(f));
+  // 含视频 → 自动展开步骤2，仅图片 → 跳过步骤2
+  if (hasVideos) {
+    document.getElementById('step2').style.display = 'block';
+    updateStep(2, 'active');
+  } else {
+    document.getElementById('step2').style.display = 'none';
+    updateStep(2, 'done');
+  }
 }
 
 function getFileTypeLabel(f) {
@@ -816,14 +823,6 @@ function renderFileList() {
       <button class="file-remove" onclick="removeFile(${i})">✕</button>
     </div>
   `).join('');
-
-  // Update the process button text
-  const btn = document.getElementById('btnProcessFiles');
-  if (hasVideos) {
-    btn.textContent = '下一步：抽帧处理';
-  } else {
-    btn.textContent = '下一步：图片去重';
-  }
 }
 
 function removeFile(i) {
