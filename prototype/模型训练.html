@@ -286,7 +286,7 @@
             <div class="form-row">
               <div class="form-group">
                 <label>训练轮数 (epochs)</label>
-                <input type="number" id="epochs" value="1000" min="1">
+                <input type="number" id="epochs" value="50" min="1">
               </div>
               <div class="form-group">
                 <label>批处理大小 (batch)</label>
@@ -696,7 +696,7 @@ function runEpochLoop() {
     if (currentEpoch >= totalEpochs) {
       finishTraining();
     }
-  }, 250);
+  }, 120);
 }
 
 function pauseTraining() {
