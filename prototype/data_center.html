@@ -214,6 +214,46 @@
   .flex-wrap { flex-wrap: wrap; }
 
   /* Scrollbar */
+  /* ===== Auto-Annotation Modal ===== */
+  .auto-section { margin-bottom: 20px; }
+  .auto-section:last-child { margin-bottom: 0; }
+  .auto-section-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+  .auto-section-title-line { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+  .auto-section-body { padding: 12px; background: #fafafa; border-radius: var(--radius); border: 1px solid var(--border); }
+
+  /* Model options */
+  .model-option { display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; border-bottom: 1px solid var(--border); transition: var(--transition); }
+  .model-option:last-child { border-bottom: none; }
+  .model-option:hover { background: #f5f5f5; }
+  .model-option.selected { background: var(--primary-light); }
+  .model-option input[type="radio"] { display: none; }
+  .model-option-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #d9d9d9; flex-shrink: 0; transition: var(--transition); }
+  .model-option.selected .model-option-dot { border-color: var(--primary); border-width: 5px; }
+  .model-option-info { flex: 1; min-width: 0; }
+  .model-option-name { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .model-option-tag { font-size: 10px; padding: 1px 6px; border-radius: 3px; background: var(--primary-light); color: var(--primary); font-weight: 400; }
+  .model-option-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* Category grid */
+  .cat-check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 4px; max-height: 170px; overflow-y: auto; }
+  .cat-check-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 4px; cursor: pointer; transition: var(--transition); font-size: 12px; }
+  .cat-check-item:hover { background: #f5f5f5; }
+  .cat-check-item input[type="checkbox"] { accent-color: var(--primary); width: 14px; height: 14px; }
+  .cat-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+  .auto-cat-count { font-size: 11px; color: var(--text-muted); min-width: 48px; text-align: right; }
+
+  /* Confidence threshold */
+  .conf-body { padding: 16px !important; }
+  .conf-row { display: flex; align-items: center; gap: 12px; }
+  .conf-label { font-size: 11px; color: var(--text-muted); font-weight: 500; width: 24px; text-align: center; flex-shrink: 0; }
+  .conf-slider-wrap { flex: 1; min-width: 0; }
+  .conf-slider-wrap input[type="range"] { width: 100%; margin: 0; accent-color: var(--primary); }
+  .conf-ticks { display: flex; justify-content: space-between; padding: 0 2px; margin-top: -2px; }
+  .conf-ticks span { font-size: 14px; color: #d9d9d9; line-height: 1; }
+  .conf-current { text-align: center; margin-top: 10px; font-size: 11px; color: var(--text-secondary); }
+  .auto-conf-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 22px; padding: 0 8px; border-radius: 11px; background: var(--primary); color: #fff; font-weight: 700; font-size: 13px; vertical-align: middle; }
+
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
@@ -560,62 +600,71 @@
 
 <!-- ==================== Auto-Annotation Modal ==================== -->
 <div class="modal-overlay" id="autoAnnoModal" style="display:none;" onclick="if(event.target==this)closeAutoAnnoModal()">
-  <div class="modal" style="width:480px;">
+  <div class="modal" style="width:520px;">
     <div class="modal-header">
       自动标注
       <button class="modal-close" onclick="closeAutoAnnoModal()">✕</button>
     </div>
-    <div style="padding:20px;">
-      <div class="flex-between" style="margin-bottom:14px;">
-        <span style="font-size:13px;">目标数据集：<strong id="autoAnnoTarget">deduplicated/</strong></span>
+    <div style="padding:24px;">
+
+      <!-- Target dataset -->
+      <div class="auto-section">
+        <div class="auto-section-title">目标数据集</div>
+        <div class="auto-section-body" style="font-size:13px;font-weight:500;" id="autoAnnoTarget">deduplicated/</div>
       </div>
-      <div class="form-section">
-        <div class="form-section-title">选择标注模型</div>
-        <div style="display:flex;flex-direction:column;gap:6px;" id="modelRadioGroup">
-          <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:4px;cursor:pointer;background:var(--primary-light);border-color:var(--primary);">
-            <input type="radio" name="autoModel" value="best_v1.3" checked onclick="switchAnnoModel('best_v1.3')" style="accent-color:var(--primary);">
-            <div>
-              <div style="font-weight:600;font-size:13px;">best.pt — v1.3.0（保安服检测）</div>
-              <div style="font-size:11px;color:var(--text-secondary);">mAP@50: 0.872 · 5 个类别 · 12.8 MB</div>
+
+      <!-- Model selection -->
+      <div class="auto-section">
+        <div class="auto-section-title">选择标注模型</div>
+        <div class="auto-section-body" style="padding:0;">
+          <label class="model-option selected" id="modelOpt_best_v1.3">
+            <input type="radio" name="autoModel" value="best_v1.3" checked onclick="switchAnnoModel('best_v1.3')">
+            <span class="model-option-dot"></span>
+            <div class="model-option-info">
+              <div class="model-option-name">best.pt — v1.3.0<span class="model-option-tag">保安服检测</span></div>
+              <div class="model-option-meta">mAP@50: 0.872 · 5 个类别 · 12.8 MB</div>
             </div>
           </label>
-          <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:4px;cursor:pointer;">
-            <input type="radio" name="autoModel" value="best_v2.0" onclick="switchAnnoModel('best_v2.0')" style="accent-color:var(--primary);">
-            <div>
-              <div style="font-weight:600;font-size:13px;">best.pt — v2.0.0（烟火检测）</div>
-              <div style="font-size:11px;color:var(--text-secondary);">mAP@50: 0.918 · 3 个类别 · 12.8 MB</div>
+          <label class="model-option" id="modelOpt_best_v2.0">
+            <input type="radio" name="autoModel" value="best_v2.0" onclick="switchAnnoModel('best_v2.0')">
+            <span class="model-option-dot"></span>
+            <div class="model-option-info">
+              <div class="model-option-name">best.pt — v2.0.0<span class="model-option-tag">烟火检测</span></div>
+              <div class="model-option-meta">mAP@50: 0.918 · 3 个类别 · 12.8 MB</div>
             </div>
           </label>
-          <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:4px;cursor:pointer;">
-            <input type="radio" name="autoModel" value="yolo11m" onclick="switchAnnoModel('yolo11m')" style="accent-color:var(--primary);">
-            <div>
-              <div style="font-weight:600;font-size:13px;">yolo11m.pt（预训练模型）</div>
-              <div style="font-size:11px;color:var(--text-secondary);">通用 COCO 预训练 · 80 个类别 · 52.0 MB</div>
+          <label class="model-option" id="modelOpt_yolo11m">
+            <input type="radio" name="autoModel" value="yolo11m" onclick="switchAnnoModel('yolo11m')">
+            <span class="model-option-dot"></span>
+            <div class="model-option-info">
+              <div class="model-option-name">yolo11m.pt<span class="model-option-tag" style="background:#f0f0f0;color:#8c8c8c;">预训练</span></div>
+              <div class="model-option-meta">COCO 预训练 · 80 个类别 · 52.0 MB</div>
             </div>
           </label>
-        </div>
-      </div>
-      <!-- Category Selection -->
-      <div class="form-group" style="margin-top:16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <label style="margin-bottom:0;">选择标注类别 <span style="font-size:10px;color:var(--text-muted);">（可多选，仅标注勾选的类别）</span></label>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <button class="btn btn-text btn-sm" id="btnToggleAllCats" onclick="toggleAllAnnoCats()" style="font-size:11px;">全选</button>
-            <span style="font-size:11px;color:var(--text-secondary);min-width:80px;text-align:right;" id="annoCatCount">已选 0 个类别</span>
-          </div>
-        </div>
-        <div style="border:1px solid var(--border);border-radius:4px;padding:8px 12px;max-height:180px;overflow-y:auto;" id="annoCategoryList">
         </div>
       </div>
 
-      <div class="form-group">
-        <label>置信度阈值</label>
-        <div style="display:flex;align-items:center;gap:8px;height:32px;">
-          <input type="range" id="autoConfThreshold" min="1" max="9" value="3" style="width:140px;" oninput="document.getElementById('confVal').textContent = (this.value/10).toFixed(1)">
-          <span id="confVal" style="font-weight:600;min-width:28px;">0.3</span>
+      <!-- Category selection -->
+      <div class="auto-section">
+        <div class="auto-section-title-line">
+          <span>选择标注类别</span>
+          <span style="font-weight:400;font-size:11px;color:var(--text-muted);">仅标注勾选的类别</span>
+          <span style="flex:1;"></span>
+          <button class="btn btn-text btn-sm" id="btnToggleAllCats" onclick="toggleAllAnnoCats()">全选</button>
+          <span class="auto-cat-count" id="annoCatCount">已选 5</span>
         </div>
-        <span class="hint">低于此置信度的检测框将被丢弃</span>
+        <div class="auto-section-body cat-check-grid" id="annoCategoryList"></div>
       </div>
+
+      <!-- Confidence threshold -->
+      <div class="auto-section">
+        <div class="auto-section-title-line">
+          <span>置信度阈值</span>
+          <input type="number" id="autoConfThreshold" value="0.3" min="0.01" max="1" step="0.01" style="width:80px;padding:4px 8px;border:1px solid #d9d9d9;border-radius:4px;font-size:12px;font-family:var(--font);text-align:center;">
+          <span style="font-size:10px;color:var(--text-muted);">低于此值的检测框将被丢弃</span>
+        </div>
+      </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn btn-default" onclick="closeAutoAnnoModal()">取消</button>
@@ -1281,10 +1330,22 @@ function openAutoAnnoModal(suffix) {
   renderAnnoCategories();
 }
 
-// 切换模型时更新类别列表
+// 切换模型时更新选中样式和类别列表
 function switchAnnoModel(modelVal) {
   var radios = document.querySelectorAll('input[name="autoModel"]');
-  for (var i = 0; i < radios.length; i++) { radios[i].checked = (radios[i].value === modelVal); }
+  for (var i = 0; i < radios.length; i++) {
+    radios[i].checked = (radios[i].value === modelVal);
+  }
+  // Update selected class on labels
+  var labels = document.querySelectorAll('.model-option');
+  for (var j = 0; j < labels.length; j++) {
+    var radio = labels[j].querySelector('input[name="autoModel"]');
+    if (radio && radio.value === modelVal) {
+      labels[j].classList.add('selected');
+    } else {
+      labels[j].classList.remove('selected');
+    }
+  }
   renderAnnoCategories();
 }
 
@@ -1299,9 +1360,9 @@ function renderAnnoCategories() {
     var cat = categories[i];
     var color = MODEL_CAT_COLORS[i % MODEL_CAT_COLORS.length];
     html +=
-      '<label style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;font-size:12px;">' +
-        '<input type="checkbox" class="anno-cat-checkbox" value="' + cat + '" checked onchange="updateAnnoCatCount()" style="accent-color:' + color + ';">' +
-        '<span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + color + ';flex-shrink:0;"></span>' +
+      '<label class="cat-check-item">' +
+        '<input type="checkbox" class="anno-cat-checkbox" value="' + cat + '" checked onchange="updateAnnoCatCount()">' +
+        '<span class="cat-dot" style="background:' + color + ';"></span>' +
         '<span>' + cat + '</span>' +
       '</label>';
   }
@@ -1336,7 +1397,7 @@ function closeAutoAnnoModal() {
 
 function startAutoAnno() {
   const model = document.querySelector('input[name="autoModel"]:checked').value;
-  const threshold = parseInt(document.getElementById('autoConfThreshold').value) / 10;
+  const threshold = parseFloat(document.getElementById('autoConfThreshold').value) || 0.3;
   const btn = document.getElementById('btnStartAutoAnno');
   const modelNames = { 'best_v1.3': 'best.pt v1.3.0', 'best_v2.0': 'best.pt v2.0.0', yolo11m: 'yolo11m.pt' };
 
