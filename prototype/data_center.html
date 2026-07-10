@@ -573,21 +573,21 @@
         <div class="form-section-title">选择标注模型</div>
         <div style="display:flex;flex-direction:column;gap:6px;" id="modelRadioGroup">
           <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:4px;cursor:pointer;background:var(--primary-light);border-color:var(--primary);">
-            <input type="radio" name="autoModel" value="best_v1.3" checked style="accent-color:var(--primary);">
+            <input type="radio" name="autoModel" value="best_v1.3" checked onclick="switchAnnoModel('best_v1.3')" style="accent-color:var(--primary);">
             <div>
               <div style="font-weight:600;font-size:13px;">best.pt — v1.3.0（保安服检测）</div>
               <div style="font-size:11px;color:var(--text-secondary);">mAP@50: 0.872 · 5 个类别 · 12.8 MB</div>
             </div>
           </label>
           <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:4px;cursor:pointer;">
-            <input type="radio" name="autoModel" value="best_v2.0" style="accent-color:var(--primary);">
+            <input type="radio" name="autoModel" value="best_v2.0" onclick="switchAnnoModel('best_v2.0')" style="accent-color:var(--primary);">
             <div>
               <div style="font-weight:600;font-size:13px;">best.pt — v2.0.0（烟火检测）</div>
               <div style="font-size:11px;color:var(--text-secondary);">mAP@50: 0.918 · 3 个类别 · 12.8 MB</div>
             </div>
           </label>
           <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:4px;cursor:pointer;">
-            <input type="radio" name="autoModel" value="yolo11m" style="accent-color:var(--primary);">
+            <input type="radio" name="autoModel" value="yolo11m" onclick="switchAnnoModel('yolo11m')" style="accent-color:var(--primary);">
             <div>
               <div style="font-weight:600;font-size:13px;">yolo11m.pt（预训练模型）</div>
               <div style="font-size:11px;color:var(--text-secondary);">通用 COCO 预训练 · 80 个类别 · 52.0 MB</div>
@@ -595,6 +595,19 @@
           </label>
         </div>
       </div>
+      <!-- Category Selection -->
+      <div class="form-group" style="margin-top:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <label style="margin-bottom:0;">选择标注类别 <span style="font-size:10px;color:var(--text-muted);">（可多选，仅标注勾选的类别）</span></label>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button class="btn btn-text btn-sm" id="btnToggleAllCats" onclick="toggleAllAnnoCats()" style="font-size:11px;">全选</button>
+            <span style="font-size:11px;color:var(--text-secondary);min-width:80px;text-align:right;" id="annoCatCount">已选 0 个类别</span>
+          </div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:4px;padding:8px 12px;max-height:180px;overflow-y:auto;" id="annoCategoryList">
+        </div>
+      </div>
+
       <div class="form-group">
         <label>置信度阈值</label>
         <div style="display:flex;align-items:center;gap:8px;height:32px;">
@@ -1248,11 +1261,73 @@ function setPipelineStatus(suffix, status) {
 
 let autoAnnoPipeline = '';
 
+// ── Model category data ──
+const MODEL_CATEGORIES = {
+  'best_v1.3': ['police / 警察', 'security / 保安', 'worker / 工人', 'vehicle / 车辆', 'helmet / 安全帽'],
+  'best_v2.0': ['fire / 火焰', 'smoke / 烟雾', 'spark / 火花'],
+  yolo11m: ['person', 'bicycle', 'car', 'motorcycle', 'bus', 'truck', 'traffic light', 'fire hydrant'],
+};
+
+const MODEL_CAT_COLORS = ['#ff4d4f', '#1890ff', '#52c41a', '#faad14', '#722ed1', '#eb2f96', '#13c2c2', '#fa8c16'];
+
 function openAutoAnnoModal(suffix) {
   autoAnnoPipeline = suffix;
-  const nameMap = { '02': '上传批次_20260701 (856 张)', '03': '上传批次_20260702 (1,517 张)' };
+  var nameMap = { '02': '上传批次_20260701 (856 张)', '03': '上传批次_20260702 (1,517 张)' };
   document.getElementById('autoAnnoTarget').textContent = nameMap[suffix] || '';
+  // 默认选中第一个模型
+  var radios = document.querySelectorAll('input[name="autoModel"]');
+  if (radios.length > 0) { radios[0].checked = true; }
   document.getElementById('autoAnnoModal').style.display = 'flex';
+  renderAnnoCategories();
+}
+
+// 切换模型时更新类别列表
+function switchAnnoModel(modelVal) {
+  var radios = document.querySelectorAll('input[name="autoModel"]');
+  for (var i = 0; i < radios.length; i++) { radios[i].checked = (radios[i].value === modelVal); }
+  renderAnnoCategories();
+}
+
+function renderAnnoCategories() {
+  var model = document.querySelector('input[name="autoModel"]:checked');
+  var modelVal = model ? model.value : 'best_v1.3';
+  var categories = MODEL_CATEGORIES[modelVal] || [];
+  var container = document.getElementById('annoCategoryList');
+  if (!container) return;
+  var html = '';
+  for (var i = 0; i < categories.length; i++) {
+    var cat = categories[i];
+    var color = MODEL_CAT_COLORS[i % MODEL_CAT_COLORS.length];
+    html +=
+      '<label style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;font-size:12px;">' +
+        '<input type="checkbox" class="anno-cat-checkbox" value="' + cat + '" checked onchange="updateAnnoCatCount()" style="accent-color:' + color + ';">' +
+        '<span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + color + ';flex-shrink:0;"></span>' +
+        '<span>' + cat + '</span>' +
+      '</label>';
+  }
+  container.innerHTML = html;
+  updateAnnoCatCount();
+}
+
+function toggleAllAnnoCats() {
+  var cbs = document.querySelectorAll('.anno-cat-checkbox');
+  var allChecked = true;
+  for (var i = 0; i < cbs.length; i++) {
+    if (!cbs[i].checked) { allChecked = false; break; }
+  }
+  var newVal = !allChecked;
+  for (var j = 0; j < cbs.length; j++) { cbs[j].checked = newVal; }
+  document.getElementById('btnToggleAllCats').textContent = newVal ? '取消全选' : '全选';
+  updateAnnoCatCount();
+}
+
+function updateAnnoCatCount() {
+  var count = document.querySelectorAll('.anno-cat-checkbox:checked').length;
+  var total = document.querySelectorAll('.anno-cat-checkbox').length;
+  var el = document.getElementById('annoCatCount');
+  if (el) el.textContent = '已选 ' + count + ' 个类别';
+  var btn = document.getElementById('btnToggleAllCats');
+  if (btn) btn.textContent = (count === total) ? '取消全选' : '全选';
 }
 
 function closeAutoAnnoModal() {
@@ -1263,7 +1338,14 @@ function startAutoAnno() {
   const model = document.querySelector('input[name="autoModel"]:checked').value;
   const threshold = parseInt(document.getElementById('autoConfThreshold').value) / 10;
   const btn = document.getElementById('btnStartAutoAnno');
-  const modelNames = { best_v1_3: 'best.pt v1.3.0', best_v2_0: 'best.pt v2.0.0', yolo11m: 'yolo11m.pt' };
+  const modelNames = { 'best_v1.3': 'best.pt v1.3.0', 'best_v2.0': 'best.pt v2.0.0', yolo11m: 'yolo11m.pt' };
+
+  // Collect selected categories
+  const selectedCats = [];
+  document.querySelectorAll('.anno-cat-checkbox:checked').forEach(function(cb) {
+    selectedCats.push(cb.value);
+  });
+  if (selectedCats.length === 0) { showToast('请至少选择一个标注类别'); return; }
 
   btn.textContent = '标注中...';
   btn.disabled = true;
@@ -1288,7 +1370,7 @@ function startAutoAnno() {
     }
 
     const imgCount = autoAnnoPipeline === '02' ? 856 : 1517;
-    showToast('自动标注完成！' + modelNames[model] + ' 已标注 ' + imgCount + ' 张图片，等待人工审核');
+    showToast('自动标注完成！' + modelNames[model] + ' 已标注 ' + imgCount + ' 张图片，类别：' + selectedCats.length + ' 个，等待人工审核');
   }, 2000);
 }
 
