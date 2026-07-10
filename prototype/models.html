@@ -74,6 +74,12 @@
   .in-use-dot.off { background: #d9d9d9; }
 
   .btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px; border-radius: var(--radius); font-size: 12px; cursor: pointer; border: 1px solid transparent; font-family: var(--font); transition: var(--transition); white-space: nowrap; }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: #40a9ff; }
+  .btn-default { background: #fff; color: var(--text); border-color: #d9d9d9; }
+  .btn-default:hover { color: var(--primary); border-color: var(--primary); }
+  .btn-danger { background: #fff; color: var(--danger); border-color: var(--danger); }
+  .btn-danger:hover { background: #fff1f0; }
   .btn-text { background: transparent; color: var(--primary); border: none; padding: 4px 8px; }
   .btn-text:hover { background: var(--primary-light); }
   .btn-sm { padding: 3px 8px; font-size: 11px; }
@@ -84,6 +90,30 @@
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
+
+  .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #262626; color: #fff; padding: 10px 24px; border-radius: 6px; font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+
+  .ov-notes { max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; padding: 2px 4px; border-radius: 3px; border: 1px solid transparent; min-height: 24px; line-height: 20px; color: var(--text-secondary); font-size: 12px; }
+  .ov-notes:hover { background: #fafafa; border-color: #d9d9d9; }
+  .ov-notes:empty::after { content: '双击添加备注'; color: var(--text-muted); font-style: italic; }
+  .ov-notes.editing { background: #fff; border-color: var(--primary); outline: none; }
+
+  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+  .modal { background: #fff; border-radius: 8px; width: 440px; max-height: 85vh; overflow: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: space-between; }
+  .modal-close { width: 28px; height: 28px; border: none; background: transparent; cursor: pointer; font-size: 16px; color: var(--text-secondary); border-radius: 4px; }
+  .modal-close:hover { background: #f5f5f5; }
+  .modal-body { padding: 20px; }
+  .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+  .form-group:last-child { margin-bottom: 0; }
+  .form-group label { font-size: 12px; color: var(--text-secondary); }
+  .form-group input, .form-group select { padding: 7px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; font-family: var(--font); }
+  .form-group input:focus, .form-group select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+  .file-upload-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px dashed #d9d9d9; border-radius: 4px; cursor: pointer; background: #fafafa; transition: var(--transition); }
+  .file-upload-row:hover { border-color: var(--primary); background: var(--primary-light); }
+  .file-upload-row.has-file { border-style: solid; background: #f6ffed; border-color: var(--success); }
 </style>
 </head>
 <body>
@@ -123,9 +153,12 @@
   <div class="content">
     <div class="page-header">
       <h2>模型总览</h2>
-      <select id="projectFilter" onchange="onProjectFilter()" style="padding:6px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);min-width:160px;">
-        <option value="all">全部项目</option>
-      </select>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select id="projectFilter" onchange="onProjectFilter()" style="padding:6px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);min-width:160px;">
+          <option value="all">全部项目</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="openImportModal()">+ 导入模型</button>
+        <button class="btn btn-danger btn-sm" id="btnBatchDelete" onclick="openBatchDeleteModal()" disabled>批量删除 (<span id="selectedCount">0</span>)</button>      </div>
     </div>
 
     <!-- Stats -->
@@ -141,13 +174,16 @@
         <table class="table">
           <thead>
             <tr>
+              <th style="width:36px;"><input type="checkbox" id="checkAll" onchange="toggleSelectAll(this)" style="accent-color:var(--primary);"></th>
               <th style="width:50px;">#</th>
               <th>项目名称</th>
               <th style="width:130px;">训练时间</th>
               <th>模型名</th>
               <th style="width:90px;">版本号</th>
-              <th style="width:90px;">mAP@50</th>
-              <th style="width:100px;">使用状态</th>
+              <th style="width:80px;">mAP@50</th>
+              <th style="width:90px;">使用状态</th>
+              <th>备注</th>
+              <th style="width:80px;">操作</th>
             </tr>
           </thead>
           <tbody id="modelsBody"></tbody>
@@ -157,16 +193,72 @@
   </div>
 </div>
 
+<!-- Import Modal -->
+<div class="modal-overlay" id="importModal" style="display:none;" onclick="if(event.target==this)closeImportModal()">
+  <div class="modal">
+    <div class="modal-header">
+      导入模型
+      <button class="modal-close" onclick="closeImportModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>上传 .pt 模型文件</label>
+        <div class="file-upload-row" id="importFileRow" onclick="document.getElementById('importFileInput').click()">
+          <span style="color:var(--primary);font-size:18px;">+</span>
+          <span id="importFileName" style="font-size:12px;">点击选择 .pt 文件</span>
+        </div>
+        <input type="file" id="importFileInput" accept=".pt" style="display:none;" onchange="handleImportFile(this.files)">
+      </div>
+      <div class="form-group">
+        <label>项目名称</label>
+        <input type="text" id="importProject" placeholder="请输入项目名称" list="projectSuggest">
+        <datalist id="projectSuggest"></datalist>
+      </div>
+      <div class="form-group">
+        <label>版本号</label>
+        <input type="text" id="importVersion" placeholder="如：v1.0.0">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default btn-sm" onclick="closeImportModal()">取消</button>
+      <button class="btn btn-primary btn-sm" onclick="executeImport()">确认导入</button>
+    </div>
+  </div>
+</div>
+
+<!-- Batch Delete Confirm Modal -->
+<div class="modal-overlay" id="batchDeleteModal" style="display:none;" onclick="if(event.target==this)closeBatchDeleteModal()">
+  <div class="modal" style="width:440px;">
+    <div class="modal-header">
+      确认批量删除
+      <button class="modal-close" onclick="closeBatchDeleteModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:12px;font-size:13px;">
+        确定要删除选中的 <strong id="batchDeleteCount">0</strong> 个模型吗？
+      </div>
+      <div style="background:#fff1f0;border:1px solid #ffccc7;border-radius:4px;padding:12px;font-size:12px;">
+        <strong>注意：</strong>此操作不可撤销。删除后模型及其训练记录将永久丢失。
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default btn-sm" onclick="closeBatchDeleteModal()">取消</button>
+      <button class="btn btn-danger btn-sm" onclick="executeBatchDelete()">确认删除</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
 <script>
 // ── Model registry (all models across all projects) ──
 const ALL_MODELS = [
-  { project: '保安服检测', time: '2026-07-02 15:30', model: 'best.pt', version: 'v1.3.0', epochs: 800, mAP50: '0.872', mAP5095: '0.651', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB' },
-  { project: '保安服检测', time: '2026-06-28 09:15', model: 'best.pt', version: 'v1.2.0', epochs: 500, mAP50: '0.851', mAP5095: '0.624', inUse: false, pretrained: 'yolo11m.pt', size: '12.7 MB' },
-  { project: '保安服检测', time: '2026-06-20 14:00', model: 'last.pt', version: 'v1.1.0', epochs: 500, mAP50: '0.813', mAP5095: '0.587', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB' },
-  { project: '烟火检测', time: '2026-07-05 10:20', model: 'best.pt', version: 'v2.0.0', epochs: 1000, mAP50: '0.918', mAP5095: '0.734', inUse: false, pretrained: 'yolo11m.pt', size: '12.9 MB' },
-  { project: '烟火检测', time: '2026-06-30 16:45', model: 'best.pt', version: 'v1.0.0', epochs: 600, mAP50: '0.886', mAP5095: '0.691', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB' },
-  { project: '安全帽检测', time: '2026-07-08 11:00', model: 'best.pt', version: 'v1.0.0', epochs: 800, mAP50: '0.835', mAP5095: '0.612', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB' },
-  { project: '安全帽检测', time: '2026-06-20 14:00', model: 'best.pt', version: 'v0.5.0', epochs: 500, mAP50: '0.784', mAP5095: '0.543', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB' },
+  { id: 1, project: '保安服检测', time: '2026-07-02 15:30', model: 'best.pt', version: 'v1.3.0', epochs: 800, mAP50: '0.872', mAP5095: '0.651', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '' },
+  { id: 2, project: '保安服检测', time: '2026-06-28 09:15', model: 'best.pt', version: 'v1.2.0', epochs: 500, mAP50: '0.851', mAP5095: '0.624', inUse: false, pretrained: 'yolo11m.pt', size: '12.7 MB', notes: '检测精度略有下降' },
+  { id: 3, project: '保安服检测', time: '2026-06-20 14:00', model: 'last.pt', version: 'v1.1.0', epochs: 500, mAP50: '0.813', mAP5095: '0.587', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '' },
+  { id: 4, project: '烟火检测', time: '2026-07-05 10:20', model: 'best.pt', version: 'v2.0.0', epochs: 1000, mAP50: '0.918', mAP5095: '0.734', inUse: false, pretrained: 'yolo11m.pt', size: '12.9 MB', notes: '误报率偏高，需调整阈值' },
+  { id: 5, project: '烟火检测', time: '2026-06-30 16:45', model: 'best.pt', version: 'v1.0.0', epochs: 600, mAP50: '0.886', mAP5095: '0.691', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '' },
+  { id: 6, project: '安全帽检测', time: '2026-07-08 11:00', model: 'best.pt', version: 'v1.0.0', epochs: 800, mAP50: '0.835', mAP5095: '0.612', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '' },
+  { id: 7, project: '安全帽检测', time: '2026-06-20 14:00', model: 'best.pt', version: 'v0.5.0', epochs: 500, mAP50: '0.784', mAP5095: '0.543', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '' },
 ];
 
 // ── Render table ──
@@ -176,6 +268,8 @@ function populateProjectFilter() {
   var projects = {};
   ALL_MODELS.forEach(function(m) { projects[m.project] = true; });
   var sel = document.getElementById('projectFilter');
+  // Keep only the "全部项目" option, remove the rest
+  while (sel.options.length > 1) { sel.remove(1); }
   var keys = Object.keys(projects);
   keys.forEach(function(p) {
     var opt = document.createElement('option');
@@ -204,16 +298,19 @@ function renderModelTable() {
       : '<span class="text-muted"><span class="in-use-dot off"></span>—</span>';
 
     var row = '<tr>' +
+      '<td><input type="checkbox" class="row-checkbox" data-modelid="' + m.id + '" onchange="updateSelectedCount()" style="accent-color:var(--primary);"></td>' +
       '<td>' + (i + 1) + '</td>' +
       '<td style="font-weight:500;">' + m.project + '</td>' +
-      '<td>' + m.time + '</td>' +
+      '<td>' + (m.time || '<span class="text-muted">—</span>') + '</td>' +
       '<td>' +
         '<div style="font-weight:600;">' + m.model + '</div>' +
-        '<div style="font-size:11px;color:var(--text-muted);">' + m.pretrained + ' · ' + m.size + '</div>' +
+        '<div style="font-size:11px;color:var(--text-muted);">' + (m.pretrained || '导入模型') + ' · ' + (m.size || '—') + '</div>' +
       '</td>' +
       '<td><span style="color:var(--primary);font-weight:600;">' + m.version + '</span></td>' +
-      '<td style="color:var(--success);font-weight:600;">' + m.mAP50 + '</td>' +
+      '<td style="color:var(--success);font-weight:600;">' + (m.mAP50 || '<span class="text-muted">—</span>') + '</td>' +
       '<td>' + inUseHtml + '</td>' +
+      '<td><div class="ov-notes" data-modelid="' + m.id + '" ondblclick="startEditModelNotes(this)" title="双击编辑备注">' + escapeHTML(m.notes || '') + '</div></td>' +
+      '<td><button class="btn btn-text btn-sm" onclick="exportModel(\'' + m.project + '\', \'' + m.version + '\')" style="color:var(--primary);">导出</button></td>' +
     '</tr>';
     body.innerHTML += row;
   });
@@ -221,6 +318,184 @@ function renderModelTable() {
   document.getElementById('statTotal').textContent = models.length;
   document.getElementById('statInUse').textContent = models.filter(function(m) { return m.inUse; }).length;
   document.getElementById('statProjects').textContent = Object.keys(projects).length;
+  // Reset selection
+  var ca = document.getElementById('checkAll');
+  if (ca) ca.checked = false;
+  document.getElementById('selectedCount').textContent = '0';
+  document.getElementById('btnBatchDelete').disabled = true;
+}
+
+// ── Batch delete ──
+function updateSelectedCount() {
+  var checked = document.querySelectorAll('#modelsBody .row-checkbox:checked');
+  var count = checked.length;
+  document.getElementById('selectedCount').textContent = count;
+  document.getElementById('btnBatchDelete').disabled = count === 0;
+}
+
+function toggleSelectAll(el) {
+  var checkboxes = document.querySelectorAll('#modelsBody .row-checkbox');
+  checkboxes.forEach(function(cb) { cb.checked = el.checked; });
+  updateSelectedCount();
+}
+
+function openBatchDeleteModal() {
+  var count = document.querySelectorAll('#modelsBody .row-checkbox:checked').length;
+  if (count === 0) return;
+  document.getElementById('batchDeleteCount').textContent = count;
+  document.getElementById('batchDeleteModal').style.display = 'flex';
+}
+
+function closeBatchDeleteModal() {
+  document.getElementById('batchDeleteModal').style.display = 'none';
+}
+
+function executeBatchDelete() {
+  var checked = document.querySelectorAll('#modelsBody .row-checkbox:checked');
+  var idsToDelete = [];
+  checked.forEach(function(cb) { idsToDelete.push(parseInt(cb.getAttribute('data-modelid'))); });
+
+  // Remove from ALL_MODELS
+  for (var i = ALL_MODELS.length - 1; i >= 0; i--) {
+    if (idsToDelete.indexOf(ALL_MODELS[i].id) !== -1) {
+      ALL_MODELS.splice(i, 1);
+    }
+  }
+
+  // Reset selection
+  document.getElementById('checkAll').checked = false;
+  document.getElementById('selectedCount').textContent = '0';
+  document.getElementById('btnBatchDelete').disabled = true;
+
+  closeBatchDeleteModal();
+  populateProjectFilter();
+  onProjectFilter();
+  showToast('已删除 ' + idsToDelete.length + ' 个模型');
+}
+
+// ── Export ──
+function exportModel(project, version) {
+  var fileName = project + '_' + version + '.pt';
+  showToast('正在导出 ' + fileName + ' ...');
+  setTimeout(function() {
+    showToast(fileName + ' 已下载');
+  }, 800);
+}
+
+// ── Model notes editing ──
+function escapeHTML(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function startEditModelNotes(el) {
+  if (el.classList.contains('editing')) return;
+  var currentText = el.textContent.trim();
+  el.classList.add('editing');
+  el.contentEditable = 'true';
+  el.focus();
+  var range = document.createRange();
+  range.selectNodeContents(el);
+  var sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+
+  function finish() {
+    el.contentEditable = 'false';
+    el.classList.remove('editing');
+    var newText = el.textContent.trim();
+    var modelId = parseInt(el.getAttribute('data-modelid'));
+    var model = ALL_MODELS.find(function(m) { return m.id === modelId; });
+    if (model) { model.notes = newText; }
+    if (!newText && !el.textContent.trim()) { el.textContent = ''; }
+    el.removeEventListener('blur', finish);
+    el.removeEventListener('keydown', onKey);
+  }
+
+  function onKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); finish(); }
+    if (e.key === 'Escape') { el.textContent = currentText; finish(); }
+  }
+
+  el.addEventListener('blur', finish);
+  el.addEventListener('keydown', onKey);
+}
+
+// ── Import ──
+var importFileName = '';
+var importFileSize = '';
+
+function openImportModal() {
+  document.getElementById('importModal').style.display = 'flex';
+  document.getElementById('importProject').value = '';
+  document.getElementById('importVersion').value = '';
+  document.getElementById('importFileName').textContent = '点击选择 .pt 文件';
+  document.getElementById('importFileRow').classList.remove('has-file');
+  importFileName = '';
+  importFileSize = '';
+  // Populate project suggestions
+  var projects = {};
+  ALL_MODELS.forEach(function(m) { projects[m.project] = true; });
+  var datalist = document.getElementById('projectSuggest');
+  datalist.innerHTML = Object.keys(projects).map(function(p) { return '<option value="' + p + '">'; }).join('');
+}
+
+function closeImportModal() {
+  document.getElementById('importModal').style.display = 'none';
+}
+
+function handleImportFile(files) {
+  if (!files || files.length === 0) return;
+  var f = files[0];
+  importFileName = f.name;
+  importFileSize = f.size < 1048576 ? (f.size / 1024).toFixed(1) + ' KB' : (f.size / 1048576).toFixed(1) + ' MB';
+  document.getElementById('importFileName').textContent = importFileName + ' (' + importFileSize + ')';
+  document.getElementById('importFileRow').classList.add('has-file');
+}
+
+function executeImport() {
+  if (!importFileName) { showToast('请上传 .pt 模型文件'); return; }
+  var project = document.getElementById('importProject').value.trim();
+  if (!project) { showToast('请输入项目名称'); return; }
+  var version = document.getElementById('importVersion').value.trim();
+  if (!version) { showToast('请输入版本号'); return; }
+
+  var now = new Date();
+  var timeStr = now.toISOString().slice(0, 16).replace('T', ' ');
+
+  var newModel = {
+    id: Date.now(),
+    project: project,
+    time: timeStr,
+    model: importFileName,
+    version: version,
+    epochs: '—',
+    mAP50: '',    // 导入的模型没有 mAP
+    mAP5095: '',
+    inUse: false,
+    pretrained: '',
+    size: importFileSize,
+    notes: '',
+  };
+
+  ALL_MODELS.unshift(newModel);
+  closeImportModal();
+  var currentFilter = document.getElementById('projectFilter').value;
+  populateProjectFilter();
+  document.getElementById('projectFilter').value = currentFilter || 'all';
+  filteredModels = (currentFilter === 'all' || !currentFilter)
+    ? ALL_MODELS.slice()
+    : ALL_MODELS.filter(function(m) { return m.project === currentFilter; });
+  renderModelTable();
+  showToast('模型 ' + importFileName + ' 已导入');
+}
+
+// ── Toast ──
+function showToast(msg) {
+  var toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(function() { toast.classList.remove('show'); }, 2000);
 }
 
 // ── Auth ──
