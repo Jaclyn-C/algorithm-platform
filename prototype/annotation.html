@@ -533,6 +533,7 @@
           <option value="unannotated">未标注</option>
         </select>
         <span style="flex:1;"></span>
+        <button class="btn btn-default btn-sm" id="btnSortDate" onclick="toggleDateSort()" title="按处理时间排序">↓</button>
         <button class="btn btn-danger btn-sm" id="btnBatchDelete" onclick="openBatchDeleteModal()" disabled>批量删除 (<span id="selectedCount">0</span>)</button>
       </div>
 
@@ -765,6 +766,22 @@ function generateMockImages(dsInfo) {
     var isUnreviewed = inAutoRange && autoIdx >= reviewedCount;
     var isAnnotated = isManual || isReviewed;
 
+    // Processed date: annotated/reviewed images have recent dates, unannotated have old dates, unreviewed in between
+    var processedDate;
+    if (isManual || isReviewed) {
+      // 已标注 / 已审查：最近几天
+      var recentDay = new Date(2026, 6, 5 + Math.floor(i * 3 / dsInfo.total)); // 7月5-8日
+      processedDate = recentDay.toISOString().slice(0, 10) + ' ' +
+        String(8 + (i * 7 % 14)).padStart(2, '0') + ':' + String((i * 23) % 60).padStart(2, '0');
+    } else if (isUnreviewed) {
+      // 未审查：略早
+      var midDay = new Date(2026, 6, 2 + Math.floor(autoIdx * 2 / dsInfo.autoTotal));
+      processedDate = midDay.toISOString().slice(0, 10) + ' ' +
+        String(9 + (i * 5 % 12)).padStart(2, '0') + ':' + String((i * 17) % 60).padStart(2, '0');
+    } else {
+      processedDate = '';
+    }
+
     var dayOffset = Math.floor(i / 200);
     var d = new Date(2026, 5, Math.min(28 + dayOffset, 30));
     var dateStr = d.toISOString().slice(0, 10);
@@ -778,6 +795,7 @@ function generateMockImages(dsInfo) {
     images.push({
       id: 'img_' + String(idx).padStart(5, '0'),
       date: dateStr,
+      processedDate: processedDate,
       isManual: isManual,
       isAuto: inAutoRange,
       isReviewed: isReviewed,
@@ -802,6 +820,7 @@ let overviewState = {
   currentPage: 1,
   pageSize: 20,
   editingNotesId: null,
+  sortOrder: 'asc',   // 'asc' | 'desc' | 'none'
 };
 
 // ── Thumbnail SVG generator ──
@@ -846,7 +865,9 @@ function onDatasetChange() {
 
   overviewState.currentDsInfo = dsInfo;
   overviewState.images = generateMockImages(dsInfo);
-  overviewState.filteredImages = [...overviewState.images];
+  overviewState.filteredImages = applySort([...overviewState.images]);
+  overviewState.sortOrder = 'asc';
+  document.getElementById('btnSortDate').innerHTML = '↓';
 
   updateOverviewStats();
   renderOverviewTable();
@@ -858,15 +879,44 @@ function onSearchChange() {
   if (!overviewState.currentDsInfo) return;
   const filter = document.getElementById('overviewStatusFilter').value;
 
-  overviewState.filteredImages = overviewState.images.filter(function(img) {
+  var filtered = overviewState.images.filter(function(img) {
     if (filter === 'annotated' && !img.isAnnotated) return false;
     if (filter === 'unreviewed' && !img.isUnreviewed) return false;
     if (filter === 'unannotated' && (img.isAnnotated || img.isUnreviewed)) return false;
     return true;
   });
+  overviewState.filteredImages = applySort(filtered);
   overviewState.currentPage = 1;
   renderOverviewTable();
   renderPagination();
+}
+
+// ── Sort by processed date ──
+function toggleDateSort() {
+  if (overviewState.sortOrder === 'asc') {
+    overviewState.sortOrder = 'desc';
+    document.getElementById('btnSortDate').innerHTML = '↑';
+  } else if (overviewState.sortOrder === 'desc') {
+    overviewState.sortOrder = 'none';
+    document.getElementById('btnSortDate').innerHTML = '—';
+  } else {
+    overviewState.sortOrder = 'asc';
+    document.getElementById('btnSortDate').innerHTML = '↓';
+  }
+  onSearchChange();
+}
+
+function applySort(images) {
+  if (overviewState.sortOrder === 'none') return images;
+  return images.slice().sort(function(a, b) {
+    var dateA = a.processedDate || '0000';
+    var dateB = b.processedDate || '0000';
+    if (overviewState.sortOrder === 'asc') {
+      return dateA.localeCompare(dateB);
+    } else {
+      return dateB.localeCompare(dateA);
+    }
+  });
 }
 
 // ── Update stats ──
@@ -901,7 +951,7 @@ function renderOverviewTable() {
     '<th style="width:36px;"><input type="checkbox" id="checkAll" onchange="toggleSelectAll(this)" style="accent-color:var(--primary);"></th>' +
     '<th style="width:50px;">#</th>' +
     '<th style="width:110px;">图片 ID</th>' +
-    '<th style="width:100px;">日期</th>' +
+    '<th style="width:130px;">处理时间</th>' +
     '<th style="width:72px;">缩略图</th>' +
     '<th style="width:80px;">标注状态</th>' +
     '<th style="width:100px;">标注方式</th>' +
@@ -937,7 +987,7 @@ function renderOverviewTable() {
       '<td><input type="checkbox" class="row-checkbox" data-imgid="' + img.id + '" onchange="updateSelectedCount()" style="accent-color:var(--primary);"></td>' +
       '<td>' + globalIdx + '</td>' +
       '<td style="font-family:monospace;font-size:11px;">' + img.id + '</td>' +
-      '<td>' + img.date + '</td>' +
+      '<td style="font-size:11px;">' + (img.processedDate || '<span class="text-muted">—</span>') + '</td>' +
       '<td><div class="ov-thumb" onclick="previewImage(\'' + img.id + '\')"><img src="' + thumbnailSVG(img.id, img.idx) + '" alt="" style="width:100%;height:100%;object-fit:cover;"></div></td>' +
       '<td>' + statusTag + '</td>' +
       '<td>' + methodTag + '</td>' +
