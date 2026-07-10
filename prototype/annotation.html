@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>算法训练平台 — 数据标注工作台</title>
+<title>算法训练平台 — 数据标注</title>
 <style>
-  /* ===== CSS Variables (From 风格.png palette) ===== */
+  /* ===== CSS Variables ===== */
   :root {
     --sidebar-bg: #001529;
     --sidebar-hover: #002140;
@@ -137,6 +137,160 @@
     padding: 12px 16px; gap: 12px;
   }
 
+  /* ===== Buttons ===== */
+  .btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 14px; border-radius: var(--radius);
+    font-size: 12px; cursor: pointer; border: 1px solid transparent;
+    font-family: var(--font); transition: var(--transition);
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
+  .btn-default { background: #fff; color: var(--text); border-color: #d9d9d9; }
+  .btn-default:hover { color: var(--primary); border-color: var(--primary); }
+  .btn-danger { background: #fff; color: var(--danger); border-color: var(--danger); }
+  .btn-danger:hover { background: #fff1f0; }
+  .btn-text { background: transparent; color: var(--primary); border: none; padding: 4px 8px; }
+  .btn-text:hover { background: var(--primary-light); }
+  .btn-sm { padding: 3px 8px; font-size: 11px; }
+  .btn-lg { padding: 8px 20px; font-size: 14px; }
+
+  /* ===== Tags ===== */
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+  .tag-success { background: #f6ffed; color: var(--success); }
+  .tag-processing { background: #fff7e6; color: var(--warning); }
+  .tag-default { background: #f5f5f5; color: var(--text-secondary); }
+  .tag-error { background: #fff1f0; color: var(--danger); }
+
+  /* ===== Card ===== */
+  .card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--card-shadow); }
+  .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 14px; }
+  .card-body { padding: 20px; }
+
+  /* ===== Toast ===== */
+  .toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background: #262626; color: #fff; padding: 10px 24px; border-radius: var(--radius);
+    font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ===== Lightbox ===== */
+  .lightbox {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85); z-index: 2000;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  .lightbox .lb-close {
+    position: absolute; top: 20px; right: 30px;
+    font-size: 32px; color: #fff; cursor: pointer;
+    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; background: rgba(255,255,255,0.15); transition: var(--transition);
+  }
+  .lightbox .lb-close:hover { background: rgba(255,255,255,0.3); }
+  .lightbox .lb-info {
+    position: absolute; top: 20px; left: 30px; color: #fff; font-size: 13px;
+  }
+  .lightbox .lb-info .lb-status { margin-top: 4px; font-size: 11px; opacity: 0.8; }
+  .lightbox svg { max-width: 90vw; max-height: 75vh; border-radius: 4px; }
+
+  /* ===== Modal ===== */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.45); z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal {
+    background: #fff; border-radius: 8px;
+    width: 420px; max-height: 80vh; overflow: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .modal-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    font-weight: 600; font-size: 15px;
+  }
+  .modal-body { padding: 20px; }
+  .modal-footer {
+    padding: 12px 20px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 8px;
+  }
+
+  /* ================================================================ */
+  /*                      OVERVIEW MODE STYLES                        */
+  /* ================================================================ */
+  .overview-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; gap: 16px; }
+
+  .overview-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .overview-toolbar select { padding: 6px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; font-family: var(--font); min-width: 280px; }
+  .overview-toolbar input[type="text"] { padding: 6px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; font-family: var(--font); width: 200px; }
+  .overview-toolbar select:focus, .overview-toolbar input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+
+  /* Stats row */
+  .overview-stats { display: flex; gap: 12px; }
+  .stat-card {
+    background: var(--card-bg); border-radius: var(--radius);
+    box-shadow: var(--card-shadow); padding: 14px 20px;
+    text-align: center; flex: 1; min-width: 0;
+  }
+  .stat-card .stat-value { font-size: 22px; font-weight: 700; }
+  .stat-card .stat-label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+  /* Table wrapper */
+  .overview-table-wrap { flex: 1; overflow: auto; }
+  .overview-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .overview-table th {
+    background: #fafafa; padding: 10px 12px; text-align: left;
+    font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border);
+    white-space: nowrap; position: sticky; top: 0; z-index: 1;
+  }
+  .overview-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .overview-table tbody tr { transition: var(--transition); }
+  .overview-table tbody tr:hover td { background: #fafafa; }
+
+  /* Thumbnail */
+  .ov-thumb {
+    width: 64px; height: 40px; border-radius: 3px; overflow: hidden;
+    background: #f0f0f0; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: var(--text-muted); cursor: pointer;
+    border: 1px solid var(--border); transition: var(--transition);
+  }
+  .ov-thumb:hover { border-color: var(--primary); box-shadow: 0 2px 4px rgba(24,144,255,0.15); }
+
+  /* Notes cell */
+  .ov-notes {
+    max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    cursor: pointer; padding: 2px 4px; border-radius: 3px; transition: var(--transition);
+    border: 1px solid transparent; min-height: 24px; line-height: 20px;
+    color: var(--text-secondary);
+  }
+  .ov-notes:hover { background: #fafafa; border-color: #d9d9d9; }
+  .ov-notes:empty::after { content: '双击添加备注'; color: var(--text-muted); font-style: italic; }
+  .ov-notes.editing { background: #fff; border-color: var(--primary); outline: none; }
+
+  /* Pagination */
+  .overview-pagination { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 4px 0; }
+  .overview-pagination .page-btn {
+    min-width: 30px; height: 28px; border: 1px solid #d9d9d9; border-radius: 4px;
+    background: #fff; cursor: pointer; font-size: 12px; font-family: var(--font);
+    display: flex; align-items: center; justify-content: center; transition: var(--transition);
+    color: var(--text);
+  }
+  .overview-pagination .page-btn:hover { color: var(--primary); border-color: var(--primary); }
+  .overview-pagination .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .overview-pagination .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .overview-pagination .page-info { font-size: 12px; color: var(--text-secondary); padding: 0 8px; }
+
+  /* Empty state */
+  .ov-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .ov-empty .empty-icon { font-size: 40px; margin-bottom: 8px; }
+
+  /* ================================================================ */
+  /*                      WORKSPACE MODE STYLES                       */
+  /* ================================================================ */
+
   /* ===== Top Info Bar ===== */
   .info-bar {
     display: flex; gap: 12px; align-items: center;
@@ -156,25 +310,6 @@
   .info-dot.blue { background: var(--primary); }
   .info-dot.orange { background: var(--warning); }
   .info-actions { margin-left: auto; display: flex; gap: 8px; }
-
-  /* Buttons */
-  .btn {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 6px 14px; border-radius: var(--radius);
-    font-size: 12px; cursor: pointer; border: 1px solid transparent;
-    font-family: var(--font); transition: var(--transition);
-    white-space: nowrap;
-  }
-  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
-  .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
-  .btn-default { background: #fff; color: var(--text); border-color: #d9d9d9; }
-  .btn-default:hover { color: var(--primary); border-color: var(--primary); }
-  .btn-danger { background: #fff; color: var(--danger); border-color: var(--danger); }
-  .btn-danger:hover { background: #fff1f0; }
-  .btn-text { background: transparent; color: var(--primary); border: none; padding: 4px 8px; }
-  .btn-text:hover { background: var(--primary-light); }
-  .btn-sm { padding: 3px 8px; font-size: 11px; }
-  .btn-lg { padding: 8px 20px; font-size: 14px; }
 
   /* ===== Workspace ===== */
   .workspace {
@@ -212,7 +347,6 @@
     flex: 1; position: relative; overflow: hidden;
     cursor: crosshair;
     background: #e8e8e8;
-    /* Grid background */
     background-image:
       linear-gradient(45deg, #ddd 25%, transparent 25%),
       linear-gradient(-45deg, #ddd 25%, transparent 25%),
@@ -322,37 +456,6 @@
   }
   .detail-empty { color: var(--text-muted); text-align: center; padding: 24px; font-size: 12px; }
 
-  /* ===== Toast ===== */
-  .toast {
-    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-    background: #262626; color: #fff; padding: 10px 24px; border-radius: var(--radius);
-    font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s;
-    pointer-events: none;
-  }
-  .toast.show { opacity: 1; }
-
-  /* ===== Modal ===== */
-  .modal-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.45); z-index: 1000;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .modal {
-    background: #fff; border-radius: 8px;
-    width: 420px; max-height: 80vh; overflow: auto;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  }
-  .modal-header {
-    padding: 16px 20px; border-bottom: 1px solid var(--border);
-    font-weight: 600; font-size: 15px;
-  }
-  .modal-body { padding: 20px; }
-  .modal-footer {
-    padding: 12px 20px; border-top: 1px solid var(--border);
-    display: flex; justify-content: flex-end; gap: 8px;
-  }
-
-
   /* Scrollbar */
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -393,10 +496,11 @@
 
   <!-- Header -->
   <header class="header">
-    <div class="breadcrumb">
-      算法训练平台 <span class="sep">›</span> 数据标注 <span class="sep">›</span> <span>保安服检测 — 锚点初标任务</span>
+    <div class="breadcrumb" id="breadcrumb">
+      算法训练平台 <span class="sep">›</span> <span>数据标注</span>
     </div>
     <div class="header-actions">
+      <button class="btn btn-default btn-sm" id="btnBackToOverview" style="display:none;" onclick="backToOverview()">← 返回数据标注总览</button>
       <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
         <span style="font-size:12px;" id="headerUserName">用户</span>
         <div id="headerUserAvatar" style="width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">U</div>
@@ -410,6 +514,51 @@
 
   <!-- Content -->
   <div class="content">
+
+    <!-- ==================== OVERVIEW VIEW ==================== -->
+    <div id="overviewView" class="overview-content">
+      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
+        <h2 style="font-size:18px;font-weight:600;">数据标注总览</h2>
+      </div>
+
+      <!-- Toolbar: dataset selector + filter -->
+      <div class="overview-toolbar">
+        <select id="overviewDataset" onchange="onDatasetChange()">
+          <option value="">— 选择数据集 —</option>
+        </select>
+        <select id="overviewStatusFilter" onchange="onSearchChange()" style="min-width:120px;">
+          <option value="all">全部状态</option>
+          <option value="annotated">已标注</option>
+          <option value="unreviewed">未审查</option>
+          <option value="unannotated">未标注</option>
+        </select>
+      </div>
+
+      <!-- Stats -->
+      <div class="overview-stats" id="overviewStats">
+        <div class="stat-card"><div class="stat-value" style="color:var(--text);" id="statTotal">0</div><div class="stat-label">图片总数</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--success);" id="statAnnotated">0</div><div class="stat-label">已标注</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#eb2f96;" id="statUnreviewed">0</div><div class="stat-label">未审查</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--warning);" id="statUnannotated">0</div><div class="stat-label">未标注</div></div>
+      </div>
+
+      <!-- Table -->
+      <div class="card overview-table-wrap">
+        <div class="card-body" style="padding:0;">
+          <div id="overviewTableContainer">
+            <div class="ov-empty" id="overviewEmpty">
+              <div>请选择一个数据集查看标注情况</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="overview-pagination" id="overviewPagination"></div>
+    </div>
+
+    <!-- ==================== WORKSPACE VIEW ==================== -->
+    <div id="workspaceView" style="display:none;flex:1;flex-direction:column;gap:12px;">
 
     <!-- Info Bar -->
     <div class="info-bar">
@@ -436,6 +585,7 @@
         <strong id="bboxCount">0</strong>
       </div>
       <div class="info-actions">
+        <button class="btn btn-default btn-sm" onclick="backToOverview()">← 返回总览</button>
         <button class="btn btn-default btn-sm" onclick="saveDraft()">保存草稿</button>
         <button class="btn btn-danger btn-sm" onclick="resetAnnotation()">重置标注</button>
         <button class="btn btn-primary btn-sm" onclick="finishAnnotation()" id="btnFinishAnnotation" style="display:none;">完成标注</button>
@@ -473,10 +623,11 @@
         <div class="canvas-footer">
           <div class="nav-group">
             <button class="btn btn-default btn-sm" id="btnPrev" onclick="prevImage()">◀ 上一张</button>
-            <span class="nav-counter">当前：<strong id="currentIdx">23</strong> / 200</span>
+            <span class="nav-counter">当前：<strong id="currentIdx">23</strong> / <span id="totalIdx">200</span></span>
+            <button class="btn btn-default btn-sm" id="btnNext" onclick="nextImage()">下一张 ▶</button>
           </div>
           <div class="nav-group">
-            <button class="btn btn-primary btn-sm" id="btnSubmit" onclick="submitImage()">提交并下一张 ▶</button>
+            <button class="btn btn-primary btn-sm" id="btnSubmit" onclick="submitImage()">提交 ▶</button>
           </div>
         </div>
       </div>
@@ -521,6 +672,8 @@
       </div>
 
     </div>
+    </div><!-- /workspaceView -->
+
   </div>
 </div>
 
@@ -550,9 +703,493 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-
 <script>
-// ==================== DATA & STATE ====================
+// ================================================================
+//                      OVERVIEW MODE LOGIC
+// ================================================================
+
+// ── Dataset registry (per project) ──
+const DATASET_REGISTRY = {
+  security: [
+    { key: 'security_deduplicated_01', name: 'deduplicated/ (上传批次_20260628)', total: 1102, annotated: 1102, autoTotal: 400, unreviewed: 120, pipeline: '01' },
+    { key: 'security_deduplicated_02', name: 'deduplicated/ (上传批次_20260701)', total: 856, annotated: 380, autoTotal: 300, unreviewed: 120, pipeline: '02' },
+    { key: 'security_deduplicated_03', name: 'deduplicated/ (上传批次_20260702)', total: 1517, annotated: 0, autoTotal: 460, unreviewed: 460, pipeline: '03' },
+  ],
+  fire: [
+    { key: 'fire_deduplicated_01', name: 'deduplicated/ (上传批次_20260701)', total: 892, annotated: 320, autoTotal: 200, unreviewed: 70, pipeline: '01' },
+    { key: 'fire_deduplicated_02', name: 'deduplicated/ (上传批次_20260705)', total: 450, annotated: 0, autoTotal: 0, unreviewed: 0, pipeline: '02' },
+  ],
+  helmet: [
+    { key: 'helmet_deduplicated_01', name: 'deduplicated/ (上传批次_20260702)', total: 650, annotated: 80, autoTotal: 80, unreviewed: 30, pipeline: '01' },
+  ],
+};
+
+// ── Mock image data generator ──
+function generateMockImages(dsInfo) {
+  const images = [];
+  const authors = ['张三', '李四', 'admin'];
+  const autoModels = ['best.pt v1.3.0', 'best.pt v2.0.0'];
+  var unreviewedCount = dsInfo.unreviewed || 0;
+  var reviewedCount = dsInfo.autoTotal - unreviewedCount; // 已审查 = 已标注
+  var manualCount = dsInfo.annotated - reviewedCount;     // 纯人工标注
+
+  for (var i = 0; i < dsInfo.total; i++) {
+    var idx = i + 1;
+
+    // Order: manual → auto(reviewed→已标注) → auto(unreviewed→未审查) → unannotated
+    var isManual = i < manualCount;
+    var autoIdx = i - manualCount;
+    var inAutoRange = !isManual && autoIdx >= 0 && autoIdx < dsInfo.autoTotal;
+    var isReviewed = inAutoRange && autoIdx < reviewedCount;
+    var isUnreviewed = inAutoRange && autoIdx >= reviewedCount;
+    var isAnnotated = isManual || isReviewed;
+
+    var dayOffset = Math.floor(i / 200);
+    var d = new Date(2026, 5, Math.min(28 + dayOffset, 30));
+    var dateStr = d.toISOString().slice(0, 10);
+
+    var notes = '';
+    if (isAnnotated) {
+      var notesPool = ['', '', '', '', '', '光线较暗，需复核', '目标部分遮挡', '标注框偏大，建议调整', '多人重叠区域', '已和审核确认'];
+      notes = notesPool[(i * 7 + 3) % notesPool.length];
+    }
+
+    images.push({
+      id: 'img_' + String(idx).padStart(5, '0'),
+      date: dateStr,
+      isManual: isManual,
+      isAuto: inAutoRange,
+      isReviewed: isReviewed,
+      isUnreviewed: isUnreviewed,
+      isAnnotated: isAnnotated,
+      autoAnnotated: inAutoRange,
+      author: (isManual || inAutoRange) ? authors[i % authors.length] : '',
+      autoModel: inAutoRange ? autoModels[i % autoModels.length] : '',
+      notes: notes,
+      idx: idx,
+    });
+  }
+  return images;
+}
+
+// ── State ──
+let overviewState = {
+  currentDatasetKey: '',
+  currentDsInfo: null,
+  images: [],
+  filteredImages: [],
+  currentPage: 1,
+  pageSize: 20,
+  editingNotesId: null,
+};
+
+// ── Thumbnail SVG generator ──
+function thumbnailSVG(imgId, idx) {
+  const hue = (idx * 37 + 180) % 360;
+  const skyH = (hue + 20) % 360;
+  return 'data:image/svg+xml,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="40" viewBox="0 0 64 40">' +
+      '<rect width="64" height="40" fill="hsl(' + skyH + ',40%,75%)"/>' +
+      '<rect y="22" width="64" height="18" fill="hsl(90,20%,60%)"/>' +
+      '<rect x="10" y="10" width="14" height="14" rx="1" fill="hsl(' + hue + ',30%,65%)"/>' +
+      '<rect x="35" y="14" width="12" height="12" rx="1" fill="hsl(' + (hue+60) + ',30%,60%)"/>' +
+      '<text x="3" y="36" font-size="5" fill="#fff" opacity="0.8">' + imgId.slice(-4) + '</text>' +
+    '</svg>'
+  );
+}
+
+// ── Populate dataset dropdown ──
+function populateDatasetDropdown() {
+  const project = getCurrentProject();
+  const datasets = DATASET_REGISTRY[project] || [];
+  const sel = document.getElementById('overviewDataset');
+  sel.innerHTML = '<option value="">— 选择数据集 —</option>' +
+    datasets.map(d => '<option value="' + d.key + '">' + d.name + ' (' + d.total + ' 张)</option>').join('');
+}
+
+// ── Dataset change ──
+function onDatasetChange() {
+  const key = document.getElementById('overviewDataset').value;
+  if (!key) {
+    showOverviewEmpty();
+    return;
+  }
+  overviewState.currentDatasetKey = key;
+  overviewState.currentPage = 1;
+  document.getElementById('overviewStatusFilter').value = 'all';
+
+  const project = getCurrentProject();
+  const datasets = DATASET_REGISTRY[project] || [];
+  const dsInfo = datasets.find(d => d.key === key);
+  if (!dsInfo) return;
+
+  overviewState.currentDsInfo = dsInfo;
+  overviewState.images = generateMockImages(dsInfo);
+  overviewState.filteredImages = [...overviewState.images];
+
+  updateOverviewStats();
+  renderOverviewTable();
+  renderPagination();
+}
+
+// ── Filter ──
+function onSearchChange() {
+  if (!overviewState.currentDsInfo) return;
+  const filter = document.getElementById('overviewStatusFilter').value;
+
+  overviewState.filteredImages = overviewState.images.filter(function(img) {
+    if (filter === 'annotated' && !img.isAnnotated) return false;
+    if (filter === 'unreviewed' && !img.isUnreviewed) return false;
+    if (filter === 'unannotated' && (img.isAnnotated || img.isUnreviewed)) return false;
+    return true;
+  });
+  overviewState.currentPage = 1;
+  renderOverviewTable();
+  renderPagination();
+}
+
+// ── Update stats ──
+function updateOverviewStats() {
+  var imgs = overviewState.images;
+  var annotatedCount = imgs.filter(function(img) { return img.isAnnotated; }).length;
+  var unreviewedCount = imgs.filter(function(img) { return img.isUnreviewed; }).length;
+  var unannotatedCount = imgs.filter(function(img) { return !img.isAnnotated && !img.isUnreviewed; }).length;
+  document.getElementById('statTotal').textContent = overviewState.currentDsInfo ? overviewState.currentDsInfo.total : 0;
+  document.getElementById('statAnnotated').textContent = annotatedCount;
+  document.getElementById('statUnreviewed').textContent = unreviewedCount;
+  document.getElementById('statUnannotated').textContent = unannotatedCount;
+}
+
+// ── Render table ──
+function renderOverviewTable() {
+  const container = document.getElementById('overviewTableContainer');
+  const images = overviewState.filteredImages;
+  const page = overviewState.currentPage;
+  const ps = overviewState.pageSize;
+  const start = (page - 1) * ps;
+  const pageImages = images.slice(start, start + ps);
+
+  if (images.length === 0) {
+    const hasDataset = !!overviewState.currentDsInfo;
+    container.innerHTML = '<div class="ov-empty"><div class="empty-icon">' + (hasDataset ? '🔍' : '📋') + '</div><div>' + (hasDataset ? '没有匹配的图片' : '请选择一个数据集查看标注情况') + '</div></div>';
+    document.getElementById('overviewPagination').innerHTML = '';
+    return;
+  }
+
+  let html = '<table class="overview-table"><thead><tr>' +
+    '<th style="width:50px;">#</th>' +
+    '<th style="width:110px;">图片 ID</th>' +
+    '<th style="width:100px;">日期</th>' +
+    '<th style="width:72px;">缩略图</th>' +
+    '<th style="width:80px;">标注状态</th>' +
+    '<th style="width:100px;">标注方式</th>' +
+    '<th style="width:72px;">作者</th>' +
+    '<th>备注</th>' +
+    '<th style="width:80px;">操作</th>' +
+    '</tr></thead><tbody>';
+
+  pageImages.forEach((img, i) => {
+    // Status: 已标注(人工 or 自动+已审查), 未审查(自动+未审核), 未标注
+    let statusTag = '';
+    if (img.isAnnotated) {
+      statusTag = '<span class="tag tag-success">已标注</span>';
+    } else if (img.isUnreviewed) {
+      statusTag = '<span class="tag" style="background:#fff0f6;color:#eb2f96;">未审查</span>';
+    } else {
+      statusTag = '<span class="tag tag-default">未标注</span>';
+    }
+
+    // Method: only show for images that have been worked on
+    let methodTag = '';
+    if (img.isAuto) {
+      methodTag = '<span class="tag" style="background:#fff0f6;color:#eb2f96;">自动标注</span>' +
+        (img.autoModel ? '<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">' + escapeHTML(img.autoModel) + '</div>' : '');
+    } else if (img.isManual) {
+      methodTag = '<span class="tag" style="background:#e6f7ff;color:#1890ff;">人工标注</span>';
+    } else {
+      methodTag = '<span class="tag tag-default">—</span>';
+    }
+    const globalIdx = start + i + 1;
+
+    html += '<tr>' +
+      '<td>' + globalIdx + '</td>' +
+      '<td style="font-family:monospace;font-size:11px;">' + img.id + '</td>' +
+      '<td>' + img.date + '</td>' +
+      '<td><div class="ov-thumb" onclick="previewImage(\'' + img.id + '\')"><img src="' + thumbnailSVG(img.id, img.idx) + '" alt="" style="width:100%;height:100%;object-fit:cover;"></div></td>' +
+      '<td>' + statusTag + '</td>' +
+      '<td>' + methodTag + '</td>' +
+      '<td>' + (img.author || '<span style="color:var(--text-muted);">—</span>') + '</td>' +
+      '<td><div class="ov-notes" data-imgid="' + img.id + '" data-dataset="' + overviewState.currentDatasetKey + '" ondblclick="startEditNotes(this)" title="双击编辑备注">' + escapeHTML(img.notes) + '</div></td>' +
+      '<td>' +
+        '<button class="btn btn-primary btn-sm" onclick="openImageInWorkspace(\'' + overviewState.currentDatasetKey + '\', \'' + img.id + '\', ' + img.idx + ')">' + (img.annotated ? '查看' : '标注') + '</button>' +
+      '</td>' +
+    '</tr>';
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+// ── Pagination ──
+function renderPagination() {
+  const total = overviewState.filteredImages.length;
+  const ps = overviewState.pageSize;
+  const totalPages = Math.ceil(total / ps);
+  const page = overviewState.currentPage;
+  const el = document.getElementById('overviewPagination');
+
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+
+  let html = '<button class="page-btn" ' + (page <= 1 ? 'disabled' : '') + ' onclick="goToPage(' + (page - 1) + ')">◀</button>';
+
+  // Show max 7 page buttons
+  let startP = Math.max(1, page - 3);
+  let endP = Math.min(totalPages, page + 3);
+  if (endP - startP < 6) {
+    if (startP === 1) endP = Math.min(totalPages, startP + 6);
+    else startP = Math.max(1, endP - 6);
+  }
+
+  for (let p = startP; p <= endP; p++) {
+    html += '<button class="page-btn' + (p === page ? ' active' : '') + '" onclick="goToPage(' + p + ')">' + p + '</button>';
+  }
+
+  html += '<button class="page-btn" ' + (page >= totalPages ? 'disabled' : '') + ' onclick="goToPage(' + (page + 1) + ')">▶</button>';
+  html += '<span class="page-info">共 ' + total + ' 条</span>';
+  el.innerHTML = html;
+}
+
+function goToPage(p) {
+  overviewState.currentPage = p;
+  renderOverviewTable();
+  renderPagination();
+}
+
+// ── Notes editing ──
+function startEditNotes(el) {
+  if (el.classList.contains('editing')) return;
+  const currentText = el.textContent.trim();
+  el.classList.add('editing');
+  el.contentEditable = 'true';
+  el.focus();
+  // Select all text
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+
+  function finish() {
+    el.contentEditable = 'false';
+    el.classList.remove('editing');
+    const newText = el.textContent.trim();
+    // Save to mock data
+    const imgId = el.getAttribute('data-imgid');
+    const dsKey = el.getAttribute('data-dataset');
+    const img = findImage(dsKey, imgId);
+    if (img) { img.notes = newText; }
+    if (!newText && !el.textContent.trim()) {
+      el.textContent = '';
+    }
+    el.removeEventListener('blur', finish);
+    el.removeEventListener('keydown', onKey);
+  }
+
+  function onKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      finish();
+    }
+    if (e.key === 'Escape') {
+      el.textContent = currentText;
+      finish();
+    }
+  }
+
+  el.addEventListener('blur', finish);
+  el.addEventListener('keydown', onKey);
+}
+
+function findImage(dsKey, imgId) {
+  if (overviewState.currentDatasetKey === dsKey) {
+    return overviewState.images.find(img => img.id === imgId);
+  }
+  return null;
+}
+
+function escapeHTML(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ── Other overview helpers ──
+function showOverviewEmpty() {
+  document.getElementById('statTotal').textContent = '0';
+  document.getElementById('statAnnotated').textContent = '0';
+  document.getElementById('statUnreviewed').textContent = '0';
+  document.getElementById('statUnannotated').textContent = '0';
+  document.getElementById('overviewTableContainer').innerHTML = '<div class="ov-empty"><div class="empty-icon">📋</div><div>请选择一个数据集查看标注情况</div></div>';
+  document.getElementById('overviewPagination').innerHTML = '';
+  overviewState.currentDsInfo = null;
+  overviewState.images = [];
+  overviewState.filteredImages = [];
+}
+
+// ── Full-size image SVG (annotated or original) ──
+function fullImageSVG(img, w, h) {
+  w = w || 800; h = h || 500;
+  var hue = (img.idx * 37 + 180) % 360;
+  var skyH = (hue + 20) % 360;
+
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">' +
+    '<defs>' +
+      '<linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">' +
+        '<stop offset="0%" style="stop-color:hsl(' + skyH + ',40%,75%)"/>' +
+        '<stop offset="100%" style="stop-color:#E0E8F0"/>' +
+      '</linearGradient>' +
+    '</defs>' +
+    '<rect width="' + w + '" height="' + h + '" fill="url(#skyGrad)"/>';
+
+  // Buildings
+  var leftBuildingW = Math.round(w * 0.18);
+  svg += '<rect x="0" y="' + Math.round(h * 0.15) + '" width="' + leftBuildingW + '" height="' + Math.round(h * 0.85) + '" fill="#8899AA" stroke="#667788" stroke-width="1"/>';
+  for (var r = 0; r < 6; r++) {
+    svg += '<rect x="' + Math.round(w * 0.03) + '" y="' + Math.round(h * (0.2 + r * 0.12)) + '" width="' + Math.round(w * 0.05) + '" height="' + Math.round(h * 0.08) + '" fill="#AADDFF" opacity="0.6"/>';
+    svg += '<rect x="' + Math.round(w * 0.09) + '" y="' + Math.round(h * (0.2 + r * 0.12)) + '" width="' + Math.round(w * 0.05) + '" height="' + Math.round(h * 0.08) + '" fill="#AADDFF" opacity="0.6"/>';
+  }
+
+  var rightBuildingX = Math.round(w * 0.82);
+  svg += '<rect x="' + rightBuildingX + '" y="' + Math.round(h * 0.12) + '" width="' + Math.round(w * 0.18) + '" height="' + Math.round(h * 0.88) + '" fill="#99AABB" stroke="#778899" stroke-width="1"/>';
+  for (var r2 = 0; r2 < 5; r2++) {
+    svg += '<rect x="' + (rightBuildingX + Math.round(w * 0.03)) + '" y="' + Math.round(h * (0.18 + r2 * 0.14)) + '" width="' + Math.round(w * 0.05) + '" height="' + Math.round(h * 0.07) + '" fill="#BBDDFF" opacity="0.6"/>';
+  }
+
+  // Ground
+  svg += '<rect x="0" y="' + Math.round(h * 0.72) + '" width="' + w + '" height="' + Math.round(h * 0.28) + '" fill="hsl(90,20%,60%)"/>';
+  svg += '<rect x="0" y="' + Math.round(h * 0.74) + '" width="' + w + '" height="' + Math.round(h * 0.12) + '" fill="#555" opacity="0.35"/>';
+
+  // If annotated, draw bounding boxes and labels
+  if (img.isAnnotated || img.isUnreviewed) {
+    var labels = ['police', 'security', 'worker', 'vehicle', 'helmet'];
+    var colors = ['#ff4d4f', '#1890ff', '#52c41a', '#faad14', '#722ed1'];
+    var boxCount = 3 + (img.idx * 7 % 5);
+    for (var b = 0; b < boxCount; b++) {
+      var lIdx = (img.idx + b) % labels.length;
+      var bx = Math.round(w * (0.05 + (b * 0.18 + img.idx * 0.01) % 0.65));
+      var by = Math.round(h * (0.12 + (b * 0.13 + img.idx * 0.02) % 0.5));
+      var bw = Math.round(w * (0.08 + (img.idx + b) * 0.03 % 0.15));
+      var bh = Math.round(h * (0.12 + b * 0.04 % 0.28));
+      var conf = (0.55 + (img.idx + b) * 0.07 % 0.4).toFixed(2);
+
+      svg += '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" fill="' + colors[lIdx] + '" opacity="0.15" stroke="' + colors[lIdx] + '" stroke-width="2"' + (img.isUnreviewed ? ' stroke-dasharray="8,4"' : '') + '/>';
+      svg += '<rect x="' + bx + '" y="' + Math.max(0, by - 18) + '" width="' + (labels[lIdx].length * 10 + 52) + '" height="18" fill="' + colors[lIdx] + '" rx="2"/>';
+      svg += '<text x="' + (bx + 6) + '" y="' + Math.max(0, by - 5) + '" font-size="11" fill="#fff" font-weight="600">' + labels[lIdx] + ' ' + conf + '</text>';
+    }
+  }
+
+  svg += '</svg>';
+  return 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+
+function previewImage(imgId) {
+  // Find the full image object
+  var img = overviewState.images.find(function(im) { return im.id === imgId; });
+  if (!img) return;
+
+  var existing = document.querySelector('.lightbox');
+  if (existing) existing.remove();
+
+  var lb = document.createElement('div');
+  lb.className = 'lightbox';
+  lb.onclick = function(e) { if (e.target === lb) lb.remove(); };
+
+  var statusText = img.isAnnotated ? '已标注' : (img.isUnreviewed ? '未审查' : '未标注');
+  var statusColor = img.isAnnotated ? '#52c41a' : (img.isUnreviewed ? '#eb2f96' : '#8c8c8c');
+  var previewLabel = img.isUnreviewed ? '（自动标注，待审核）' : (img.isAnnotated ? '' : '');
+
+  lb.innerHTML =
+    '<span class="lb-close" onclick="this.parentElement.remove()">✕</span>' +
+    '<div class="lb-info">' +
+      '<span style="font-weight:600;">' + img.id + '</span>' +
+      '<div class="lb-status">' +
+        '<span style="color:' + statusColor + ';font-weight:600;">' + statusText + '</span>' +
+        (img.author ? ' · ' + img.author : '') +
+        (previewLabel ? ' · ' + previewLabel : '') +
+        (img.autoModel ? ' · ' + img.autoModel : '') +
+      '</div>' +
+    '</div>' +
+    '<img src="' + fullImageSVG(img, 800, 500) + '" alt="' + img.id + '" style="max-width:90vw;max-height:75vh;border-radius:4px;">';
+
+  document.body.appendChild(lb);
+}
+
+// ── Open image in workspace ──
+function openImageInWorkspace(dsKey, imgId, idx) {
+  // Save context
+  localStorage.setItem('annotation_context', JSON.stringify({
+    dataset: dsKey,
+    imageId: imgId,
+    imageIdx: idx,
+  }));
+  switchToWorkspace(dsKey, idx);
+}
+
+// ── Switch between views ──
+function switchToWorkspace(dsKey, imageIdx) {
+  document.getElementById('overviewView').style.display = 'none';
+  const ws = document.getElementById('workspaceView');
+  ws.style.display = 'flex';
+  document.getElementById('btnBackToOverview').style.display = 'inline-flex';
+  currentImageIdx = imageIdx || 1;
+  updateBreadcrumb('workspace', dsKey);
+  // Re-fit canvas after DOM layout update
+  setTimeout(function() {
+    resizeCanvas();
+    fitToWindow();
+    renderLabelList();
+    initColorPicker();
+    loadImage(currentImageIdx);
+  }, 60);
+}
+
+function backToOverview() {
+  document.getElementById('workspaceView').style.display = 'none';
+  document.getElementById('overviewView').style.display = 'flex';
+  document.getElementById('btnBackToOverview').style.display = 'none';
+  updateBreadcrumb('overview');
+  // Refresh overview if a dataset was selected
+  if (overviewState.currentDatasetKey) {
+    populateDatasetDropdown();
+    document.getElementById('overviewDataset').value = overviewState.currentDatasetKey;
+    onDatasetChange();
+  }
+  // Clear context but keep project
+  localStorage.removeItem('annotation_context');
+}
+
+// ── Breadcrumb update ──
+function updateBreadcrumb(mode, dsKey) {
+  const bc = document.getElementById('breadcrumb');
+  const project = getCurrentProject();
+  const projNames = { security: '保安服检测', fire: '烟火检测', helmet: '安全帽检测' };
+  const projName = projNames[project] || '项目';
+  if (mode === 'overview') {
+    bc.innerHTML = '算法训练平台 <span class="sep">›</span> <span>数据标注</span> <span class="sep">›</span> <span>数据标注总览</span>';
+  } else {
+    let dsName = '';
+    if (dsKey) {
+      const dss = DATASET_REGISTRY[project] || [];
+      const found = dss.find(d => d.key === dsKey);
+      if (found) dsName = found.name.split(' ')[0];
+    }
+    bc.innerHTML = '算法训练平台 <span class="sep">›</span> <span>数据标注</span> <span class="sep">›</span> <span>' + projName + ' — ' + (dsName || '标注任务') + '</span>';
+  }
+}
+
+// ================================================================
+//                      WORKSPACE MODE LOGIC
+// ================================================================
+
+// ── DATA & STATE ──
 const LABELS = [
   { id: 0, name: 'police / 警察', color: '#ff4d4f' },
   { id: 1, name: 'security / 保安', color: '#1890ff' },
@@ -567,7 +1204,7 @@ let activeLabel = 0;
 let currentTool = 'bbox';
 let zoom = 1;
 let panX = 0, panY = 0;
-let regions = [];          // { id, x, y, w, h, labelId, conf }
+let regions = [];
 let selectedRegionId = null;
 let isDrawing = false;
 let drawStartX, drawStartY;
@@ -576,7 +1213,7 @@ let panStartX, panStartY;
 let panStartPanX, panStartPanY;
 let regionIdCounter = 1;
 
-// Mock pre-annotations for demo
+// Mock pre-annotations
 const preAnnotations = [
   { id: 0, x: 120, y: 85, w: 180, h: 220, labelId: 0, conf: 0.92 },
   { id: 0, x: 350, y: 150, w: 200, h: 180, labelId: 1, conf: 0.85 },
@@ -586,18 +1223,15 @@ const preAnnotations = [
   { id: 0, x: 680, y: 300, w: 150, h: 190, labelId: 4, conf: 0.55 },
 ];
 
-// All pre-annotations get real IDs on load
-let preAnnoMap = []; // Map preAnno index to region ID
+let preAnnoMap = [];
 
-// ==================== CANVAS SETUP ====================
+// ── CANVAS SETUP ──
 const canvasWrapper = document.getElementById('canvasWrapper');
 const canvas = document.getElementById('mainCanvas');
 const ctx = canvas.getContext('2d');
 
-// Load the demo image
 const demoImage = new Image();
 demoImage.crossOrigin = 'anonymous';
-// Use a placeholder surveillance image (people in scene)
 demoImage.src = 'data:image/svg+xml,' + encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
   <defs>
@@ -610,9 +1244,7 @@ demoImage.src = 'data:image/svg+xml,' + encodeURIComponent(`
       <stop offset="100%" style="stop-color:#6B7B5A"/>
     </linearGradient>
   </defs>
-  <!-- Sky -->
   <rect width="900" height="600" fill="url(#sky)"/>
-  <!-- Buildings -->
   <rect x="0" y="100" width="160" height="500" fill="#8899AA" stroke="#667788" stroke-width="1"/>
   <rect x="0" y="140" width="40" height="40" fill="#AADDFF" opacity="0.7"/>
   <rect x="60" y="140" width="40" height="40" fill="#AADDFF" opacity="0.7"/>
@@ -622,7 +1254,6 @@ demoImage.src = 'data:image/svg+xml,' + encodeURIComponent(`
   <rect x="60" y="300" width="40" height="40" fill="#AADDFF" opacity="0.9"/>
   <rect x="0" y="380" width="40" height="40" fill="#AADDFF" opacity="0.6"/>
   <rect x="60" y="380" width="40" height="40" fill="#AADDFF" opacity="0.8"/>
-
   <rect x="740" y="80" width="160" height="520" fill="#99AABB" stroke="#778899" stroke-width="1"/>
   <rect x="760" y="120" width="40" height="40" fill="#BBDDFF" opacity="0.7"/>
   <rect x="820" y="120" width="40" height="40" fill="#BBDDFF" opacity="0.5"/>
@@ -630,13 +1261,8 @@ demoImage.src = 'data:image/svg+xml,' + encodeURIComponent(`
   <rect x="820" y="200" width="40" height="40" fill="#BBDDFF" opacity="0.6"/>
   <rect x="760" y="280" width="40" height="40" fill="#BBDDFF" opacity="0.7"/>
   <rect x="760" y="360" width="40" height="40" fill="#BBDDFF" opacity="0.9"/>
-
-  <!-- Ground / plaza -->
   <rect x="0" y="420" width="900" height="180" fill="url(#ground)"/>
-  <!-- Road -->
   <rect x="0" y="430" width="900" height="60" fill="#555555" opacity="0.4"/>
-
-  <!-- Person 1 - guard/police -->
   <g transform="translate(180, 200)">
     <circle cx="40" cy="15" r="14" fill="#FFDDBB"/>
     <rect x="25" y="30" width="30" height="50" rx="3" fill="#1a3a5c"/>
@@ -646,8 +1272,6 @@ demoImage.src = 'data:image/svg+xml,' + encodeURIComponent(`
     <rect x="27" y="80" width="12" height="35" rx="2" fill="#333"/>
     <rect x="41" y="80" width="12" height="35" rx="2" fill="#333"/>
   </g>
-
-  <!-- Person 2 - guard -->
   <g transform="translate(420, 230)">
     <circle cx="40" cy="15" r="13" fill="#FFDDBB"/>
     <rect x="27" y="30" width="26" height="45" rx="2" fill="#2a4a6c"/>
@@ -656,8 +1280,6 @@ demoImage.src = 'data:image/svg+xml,' + encodeURIComponent(`
     <rect x="27" y="75" width="11" height="30" rx="2" fill="#444"/>
     <rect x="42" y="75" width="11" height="30" rx="2" fill="#444"/>
   </g>
-
-  <!-- Person 3 - worker with helmet -->
   <g transform="translate(620, 180)">
     <circle cx="35" cy="20" r="18" fill="#ffcc00"/>
     <rect x="20" y="38" width="30" height="46" rx="2" fill="#ff8800"/>
@@ -666,8 +1288,6 @@ demoImage.src = 'data:image/svg+xml,' + encodeURIComponent(`
     <rect x="20" y="84" width="13" height="30" rx="2" fill="#555"/>
     <rect x="37" y="84" width="13" height="30" rx="2" fill="#555"/>
   </g>
-
-  <!-- Person 4 - walking -->
   <g transform="translate(300, 380)">
     <circle cx="35" cy="15" r="13" fill="#FFDDBB"/>
     <rect x="22" y="30" width="26" height="42" rx="2" fill="#336699"/>
@@ -676,8 +1296,6 @@ demoImage.src = 'data:image/svg+xml,' + encodeURIComponent(`
     <rect x="18" y="72" width="11" height="32" rx="2" fill="#444"/>
     <rect x="41" y="72" width="11" height="32" rx="2" fill="#444"/>
   </g>
-
-  <!-- Person 5 - worker -->
   <g transform="translate(550, 400)">
     <circle cx="30" cy="18" r="16" fill="#ffff00"/>
     <rect x="15" y="34" width="30" height="40" rx="2" fill="#ff8800"/>
@@ -686,8 +1304,6 @@ demoImage.src = 'data:image/svg+xml,' + encodeURIComponent(`
     <rect x="15" y="74" width="12" height="28" rx="2" fill="#555"/>
     <rect x="33" y="74" width="12" height="28" rx="2" fill="#555"/>
   </g>
-
-  <!-- Person 6 - police -->
   <g transform="translate(700, 350)">
     <circle cx="40" cy="14" r="13" fill="#FFDDBB"/>
     <rect x="26" y="28" width="28" height="46" rx="2" fill="#1a3a5c"/>
@@ -696,8 +1312,6 @@ demoImage.src = 'data:image/svg+xml,' + encodeURIComponent(`
     <rect x="26" y="74" width="12" height="28" rx="2" fill="#333"/>
     <rect x="42" y="74" width="12" height="28" rx="2" fill="#333"/>
   </g>
-
-  <!-- Car / Vehicle -->
   <g transform="translate(360, 470)">
     <rect x="0" y="10" width="120" height="40" rx="8" fill="#cc3333"/>
     <rect x="15" y="0" width="50" height="25" rx="6" fill="#dd5555"/>
@@ -711,16 +1325,20 @@ demoImage.src = 'data:image/svg+xml,' + encodeURIComponent(`
 `);
 
 demoImage.onload = function() {
-  initCanvas();
-  loadPreAnnotations();
-  render();
-  renderLabelList();
-  initColorPicker();
-  loadSavedProgress();
-  checkAllDone();
+  resizeCanvas();
+  // Only init canvas if workspace is visible (not in overview mode)
+  if (document.getElementById('workspaceView').style.display !== 'none') {
+    fitToWindow();
+    loadPreAnnotations();
+    render();
+    renderLabelList();
+    initColorPicker();
+    loadSavedProgress();
+    checkAllDone();
+  }
 };
 
-// ==================== CANVAS INIT ====================
+// ── CANVAS INIT ──
 function initCanvas() {
   resizeCanvas();
   fitToWindow();
@@ -742,14 +1360,11 @@ function fitToWindow() {
   render();
 }
 
-// ==================== RENDER ====================
+// ── RENDER ──
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Draw image
   ctx.drawImage(demoImage, 0, 0, canvas.width, canvas.height);
 
-  // Draw all regions
   regions.forEach(r => {
     const label = LABELS.find(l => l.id === r.labelId) || LABELS[0];
     const isSelected = r.id === selectedRegionId;
@@ -757,7 +1372,6 @@ function render() {
 
     ctx.save();
     if (isPreAnno) {
-      // Pre-annotation: dashed border
       ctx.setLineDash([6, 4]);
       ctx.strokeStyle = label.color;
       ctx.lineWidth = 2;
@@ -768,14 +1382,10 @@ function render() {
       ctx.lineWidth = isSelected ? 3 : 2;
     }
 
-    // Fill
-    ctx.fillStyle = label.color + '1A'; // 10% opacity
+    ctx.fillStyle = label.color + '1A';
     ctx.fillRect(r.x, r.y, r.w, r.h);
-
-    // Stroke
     ctx.strokeRect(r.x, r.y, r.w, r.h);
 
-    // Selection handles
     if (isSelected) {
       ctx.setLineDash([]);
       ctx.fillStyle = '#fff';
@@ -792,7 +1402,6 @@ function render() {
       });
     }
 
-    // Label badge
     const badgeW = ctx.measureText(label.name.split('/')[0].trim()).width + 14;
     const badgeH = 18;
     const badgeX = r.x;
@@ -808,7 +1417,6 @@ function render() {
     ctx.textBaseline = 'middle';
     ctx.fillText(label.name.split('/')[0].trim(), badgeX + 7, (badgeY < 0 ? r.y + 2 : badgeY) + badgeH/2);
 
-    // Confidence badge (for pre-annotations)
     if (isPreAnno) {
       const confStr = Math.round(r.conf * 100) + '%';
       const confW = ctx.measureText(confStr).width + 10;
@@ -822,18 +1430,6 @@ function render() {
 
     ctx.restore();
   });
-
-  // Draw crosshair while drawing
-  if (isDrawing) {
-    ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = '#1890ff';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(drawStartX, drawStartY, 0, 0); // placeholder
-  }
-}
-
-function drawDrawingRect() {
-  // Called during mousemove when drawing
 }
 
 function updateCanvasTransform() {
@@ -841,18 +1437,9 @@ function updateCanvasTransform() {
   document.getElementById('zoomLabel').textContent = Math.round(zoom * 100) + '%';
 }
 
-// ==================== COORDINATE CONVERSION ====================
+// ── COORDINATE CONVERSION ──
 function canvasToImage(clientX, clientY) {
   const rect = canvas.getBoundingClientRect();
-  const cx = (clientX - rect.left) / zoom;
-  const cy = (clientY - rect.top) / zoom;
-  // Since canvas is centered via transform with translate(-50%,-50%)+pan, we need to account
-  // Actually our transform has translate(calc(-50%+panX), calc(-50%+panY)) scale(zoom)
-  // So the rendered top-left of canvas viewport is at:
-  //   viewX = wrapperW/2 - (canvasW*zoom)/2 + panX
-  //   viewY = wrapperH/2 - (canvasH*zoom)/2 + panY
-  // And clientX = viewX + imgX * zoom
-  // So imgX = (clientX - viewX) / zoom
   const wrapperRect = canvasWrapper.getBoundingClientRect();
   const viewX = wrapperRect.width/2 - (canvas.width * zoom)/2 + panX;
   const viewY = wrapperRect.height/2 - (canvas.height * zoom)/2 + panY;
@@ -862,19 +1449,9 @@ function canvasToImage(clientX, clientY) {
   };
 }
 
-function imageToCanvas(imgX, imgY) {
-  const wrapperRect = canvasWrapper.getBoundingClientRect();
-  const viewX = wrapperRect.width/2 - (canvas.width * zoom)/2 + panX;
-  const viewY = wrapperRect.height/2 - (canvas.height * zoom)/2 + panY;
-  return {
-    x: wrapperRect.left + viewX + imgX * zoom,
-    y: wrapperRect.top + viewY + imgY * zoom
-  };
-}
-
-// ==================== EVENT HANDLERS ====================
+// ── EVENT HANDLERS ──
 canvas.addEventListener('mousedown', function(e) {
-  if (e.button !== 0) return; // left click only
+  if (e.button !== 0) return;
   const pos = canvasToImage(e.clientX, e.clientY);
 
   if (currentTool === 'pan' || (currentTool !== 'pan' && e.altKey)) {
@@ -888,12 +1465,9 @@ canvas.addEventListener('mousedown', function(e) {
   }
 
   if (currentTool === 'select') {
-    // Check if clicking on a region
     const clicked = hitTest(pos.x, pos.y);
     if (clicked !== null) {
       selectRegion(clicked);
-      // Start dragging
-      isPanning = false;
       startDragRegion(clicked, pos.x, pos.y);
     } else {
       selectedRegionId = null;
@@ -905,16 +1479,14 @@ canvas.addEventListener('mousedown', function(e) {
   }
 
   if (currentTool === 'bbox') {
-    // Start drawing
     isDrawing = true;
     drawStartX = pos.x;
     drawStartY = pos.y;
-    // Create temporary region
     const newRegion = {
       id: regionIdCounter++,
       x: pos.x, y: pos.y, w: 0, h: 0,
       labelId: activeLabel,
-      conf: 1 // Manual annotation
+      conf: 1
     };
     regions.push(newRegion);
     selectedRegionId = newRegion.id;
@@ -939,10 +1511,8 @@ canvas.addEventListener('mousemove', function(e) {
     const r = regions.find(reg => reg.id === dragRegionId);
     if (r) {
       if (dragHandle) {
-        // Resize
         handleResize(r, dragHandle, pos.x, pos.y);
       } else {
-        // Move
         r.x = dragOrigX + dx;
         r.y = dragOrigY + dy;
       }
@@ -981,7 +1551,6 @@ canvas.addEventListener('mouseup', function(e) {
     isDrawing = false;
     const r = regions.find(reg => reg.id === selectedRegionId);
     if (r && (r.w < 3 || r.h < 3)) {
-      // Too small, remove
       regions = regions.filter(reg => reg.id !== r.id);
       selectedRegionId = null;
     }
@@ -992,7 +1561,7 @@ canvas.addEventListener('mouseup', function(e) {
   }
 });
 
-// Drag logic
+// ── Drag logic ──
 let isDragging = false;
 let dragRegionId = null;
 let dragHandle = null;
@@ -1012,14 +1581,10 @@ function hitTest(px, py) {
 function getHandleAt(r, px, py) {
   const margin = 8;
   const handles = {
-    'tl': [r.x, r.y],
-    'tr': [r.x + r.w, r.y],
-    'bl': [r.x, r.y + r.h],
-    'br': [r.x + r.w, r.y + r.h],
-    'tm': [r.x + r.w/2, r.y],
-    'bm': [r.x + r.w/2, r.y + r.h],
-    'ml': [r.x, r.y + r.h/2],
-    'mr': [r.x + r.w, r.y + r.h/2],
+    'tl': [r.x, r.y], 'tr': [r.x + r.w, r.y],
+    'bl': [r.x, r.y + r.h], 'br': [r.x + r.w, r.y + r.h],
+    'tm': [r.x + r.w/2, r.y], 'bm': [r.x + r.w/2, r.y + r.h],
+    'ml': [r.x, r.y + r.h/2], 'mr': [r.x + r.w, r.y + r.h/2],
   };
   for (const [name, [hx, hy]] of Object.entries(handles)) {
     if (Math.abs(px - hx) < margin && Math.abs(py - hy) < margin) return name;
@@ -1042,7 +1607,6 @@ function startDragRegion(regionId, px, py) {
 }
 
 function handleResize(r, handle, px, py) {
-  // Simple resize: we recompute based on handle
   const dx = px - dragStartX;
   const dy = py - dragStartY;
   switch(handle) {
@@ -1057,13 +1621,11 @@ function handleResize(r, handle, px, py) {
   }
 }
 
-// ==================== WHEEL ZOOM ====================
+// ── WHEEL ZOOM ──
 canvasWrapper.addEventListener('wheel', function(e) {
   e.preventDefault();
   const delta = e.deltaY > 0 ? 0.9 : 1.1;
   const newZoom = Math.min(5, Math.max(0.1, zoom * delta));
-
-  // Zoom toward cursor
   const rect = canvasWrapper.getBoundingClientRect();
   const mx = e.clientX - rect.left;
   const my = e.clientY - rect.top;
@@ -1071,14 +1633,10 @@ canvasWrapper.addEventListener('wheel', function(e) {
   panX = mx - scaleChange * (mx - panX);
   panY = my - scaleChange * (my - panY);
   zoom = newZoom;
-
   updateCanvasTransform();
 });
 
-// ==================== KEYBOARD ====================
-// (keyboard shortcuts removed — use toolbar buttons instead)
-
-// ==================== TOOLS ====================
+// ── TOOLS ──
 function setTool(tool) {
   currentTool = tool;
   document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
@@ -1087,7 +1645,7 @@ function setTool(tool) {
   canvasWrapper.style.cursor = tool === 'pan' ? 'grab' : 'crosshair';
 }
 
-// ==================== LABEL LIST RENDERING ====================
+// ── LABEL LIST RENDERING ──
 function renderLabelList() {
   const container = document.getElementById('labelList');
   container.innerHTML = LABELS.map((l, i) => {
@@ -1102,11 +1660,9 @@ function renderLabelList() {
   }).join('');
 }
 
-// ==================== LABEL SELECTION ====================
 function selectLabel(id) {
   activeLabel = id;
   renderLabelList();
-  // If a region is selected, change its label
   if (selectedRegionId !== null) {
     const r = regions.find(reg => reg.id === selectedRegionId);
     if (r) {
@@ -1174,9 +1730,7 @@ function deleteLabel(id) {
   if (LABELS.length <= 1) { showToast('至少保留一个标签'); return; }
   const label = LABELS.find(l => l.id === id);
   LABELS.splice(LABELS.indexOf(label), 1);
-  // Remove any regions using this label
   regions = regions.filter(r => r.labelId !== id);
-  // Reassign regions with now-invalid labelId to first available
   regions.forEach(r => {
     if (!LABELS.find(l => l.id === r.labelId)) {
       r.labelId = LABELS[0].id;
@@ -1194,7 +1748,7 @@ function deleteLabel(id) {
   showToast('标签已删除');
 }
 
-// ==================== REGION OPERATIONS ====================
+// ── REGION OPERATIONS ──
 function selectRegion(id) {
   selectedRegionId = id;
   updateDetailPanel();
@@ -1213,11 +1767,8 @@ function deleteSelected() {
   showToast('标注框已删除');
 }
 
-let undoStack = [];
-
 function undo() {
   if (regions.length === 0) return;
-  undoStack.push({...regions[regions.length - 1]});
   regions.pop();
   if (selectedRegionId && !regions.find(r => r.id === selectedRegionId)) {
     selectedRegionId = regions.length > 0 ? regions[regions.length - 1].id : null;
@@ -1226,10 +1777,10 @@ function undo() {
   updateRegionList();
   updateBboxCount();
   render();
-  showToast('已撤销 (Ctrl+Z)');
+  showToast('已撤销');
 }
 
-// ==================== UI UPDATES ====================
+// ── UI UPDATES ──
 function updateRegionList() {
   const container = document.getElementById('regionList');
   const countEl = document.getElementById('regionCount');
@@ -1312,13 +1863,8 @@ function deleteRegion(id) {
   render();
 }
 
-function toggleRegionVisibility(id) {
-  // For now, just select it
-  selectRegion(id);
-}
-
-// ==================== IMAGE NAVIGATION ====================
-let currentImageIdx = 23;
+// ── IMAGE NAVIGATION ──
+let currentImageIdx = 1;
 
 function loadSavedProgress() {
   try {
@@ -1344,8 +1890,14 @@ function prevImage() {
   loadImage(currentImageIdx);
 }
 
+function nextImage() {
+  saveCurrentAnnotations();
+  currentImageIdx++;
+  loadImage(currentImageIdx);
+  checkAllDone();
+}
 
-// ==================== SHARED STATE (localStorage) ====================
+// ── SHARED STATE (localStorage) ──
 const STORAGE_KEY = 'annotation_status_security';
 const TOTAL_IMAGES = 200;
 
@@ -1415,11 +1967,9 @@ function saveDraft() {
 function loadImage(idx) {
   currentImageIdx = idx;
   document.getElementById('currentIdx').textContent = idx;
-  // Reset regions for the new image
+  document.getElementById('totalIdx').textContent = TOTAL_IMAGES;
   regions = [];
   selectedRegionId = null;
-  // In real app: fetch annotations for this image
-  // For demo: add mock annotations for some images
   if (idx === 23) {
     loadPreAnnotations();
   }
@@ -1447,7 +1997,7 @@ function loadPreAnnotations() {
   updateBboxCount();
 }
 
-// ==================== ZOOM ====================
+// ── ZOOM ──
 function zoomIn() {
   zoom = Math.min(5, zoom * 1.2);
   updateCanvasTransform();
@@ -1458,7 +2008,7 @@ function zoomOut() {
   updateCanvasTransform();
 }
 
-// ==================== TOAST ====================
+// ── TOAST ──
 let toastTimer;
 function showToast(msg) {
   const el = document.getElementById('toast');
@@ -1468,26 +2018,85 @@ function showToast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
 }
 
-// ==================== PROJECT CONTEXT ====================
+// ── PROJECT CONTEXT ──
 function getUser() { try { return JSON.parse(localStorage.getItem('current_user')); } catch(e) { return null; } }
+function getCurrentProject() { return localStorage.getItem('current_project') || 'security'; }
 function getProjectName(key) { try { var pl = JSON.parse(localStorage.getItem('project_list') || '[]'); var found = pl.find(function(p) { return p.id === key; }); if (found) return found.name; } catch(e) {} var m = {security:'保安服检测',fire:'烟火检测',helmet:'安全帽检测'}; return m[key] || key; }
 function logout() { localStorage.removeItem('current_user'); location.href = 'login.html'; }
 
+// ── INIT ──
 (function() {
   var user = getUser();
   if (!user) { location.href = 'login.html'; return; }
   document.getElementById('headerUserName').textContent = user.name;
   document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
 
-  var project = localStorage.getItem('current_project');
+  var project = getCurrentProject();
   if (!project) { location.href = 'projects.html'; return; }
   document.getElementById('sidebarProjectGroup').style.display = 'block';
   document.getElementById('sidebarSubPages').style.display = 'block';
   document.getElementById('sidebarProjectName').textContent = '当前项目：' + getProjectName(project);
-  updateBreadcrumb(project);
+
+  // Decide which view to show
+  var hash = window.location.hash;
+  var ctxStr = localStorage.getItem('annotation_context');
+  var hasContext = false;
+
+  // Check URL hash for dataset param
+  if (hash && hash.indexOf('dataset=') >= 0) {
+    hasContext = true;
+  } else if (ctxStr) {
+    try {
+      var ctx = JSON.parse(ctxStr);
+      if (ctx && ctx.dataset) hasContext = true;
+    } catch(e) {}
+  }
+
+  if (hasContext) {
+    // Show workspace
+    var dsKey = '';
+    var imgIdx = 1;
+    if (hash && hash.indexOf('dataset=') >= 0) {
+      var params = hash.substring(1).split('&');
+      params.forEach(function(p) {
+        var kv = p.split('=');
+        if (kv[0] === 'dataset') dsKey = decodeURIComponent(kv[1]);
+        if (kv[0] === 'image') imgIdx = parseInt(kv[1]) || 1;
+      });
+      // Save context for back navigation
+      localStorage.setItem('annotation_context', JSON.stringify({ dataset: dsKey, imageIdx: imgIdx }));
+    } else if (ctxStr) {
+      try {
+        var ctx = JSON.parse(ctxStr);
+        dsKey = ctx.dataset;
+        imgIdx = ctx.imageIdx || 1;
+      } catch(e) {}
+    }
+
+    document.getElementById('overviewView').style.display = 'none';
+    document.getElementById('workspaceView').style.display = 'flex';
+    document.getElementById('btnBackToOverview').style.display = 'inline-flex';
+    currentImageIdx = imgIdx;
+    updateBreadcrumb('workspace', dsKey);
+    // Ensure canvas fits after DOM update
+    if (demoImage.complete) {
+      setTimeout(function() {
+        resizeCanvas();
+        fitToWindow();
+        renderLabelList();
+        initColorPicker();
+        loadImage(currentImageIdx);
+      }, 60);
+    }
+  } else {
+    // Show overview
+    document.getElementById('overviewView').style.display = 'flex';
+    document.getElementById('workspaceView').style.display = 'none';
+    document.getElementById('btnBackToOverview').style.display = 'none';
+    updateBreadcrumb('overview');
+    populateDatasetDropdown();
+  }
 })();
-
-
 
 document.addEventListener('click', function(e) {
   if (!e.target.closest('.user-menu')) {
@@ -1496,15 +2105,13 @@ document.addEventListener('click', function(e) {
   }
 });
 
-function updateBreadcrumb(projectKey) {
-  var names = { security: '保安服检测', fire: '烟火检测', helmet: '安全帽检测' };
-  var name = names[projectKey] || '保安服检测';
-  var span = document.querySelector('.breadcrumb span');
-  if (span) span.textContent = name + ' — 初标任务';
-}
-
-// ==================== INITIAL LOAD ====================
-// Image is loaded via demoImage.onload above
+// Handle hash changes
+window.addEventListener('hashchange', function() {
+  var hash = window.location.hash;
+  if (!hash || hash.indexOf('dataset=') < 0) {
+    backToOverview();
+  }
+});
 </script>
 </body>
 </html>

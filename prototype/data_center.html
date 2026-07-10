@@ -1019,20 +1019,20 @@ function openDataset(type) {
     // 数据源 1 — 已完成
     actions.innerHTML = `
       <button class="btn btn-default btn-sm">导出 ZIP</button>
-      <button class="btn btn-primary" onclick="location.href='annotation.html'">查看 / 修改标注</button>
+      <button class="btn btn-primary" onclick="goToAnnotation('deduplicated')">查看 / 修改标注</button>
       <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '01')">删除</button>`;
   } else if (type === 'deduplicated_02') {
     const status02 = getPipelineStatus('02');
     if (status02 === 'review') {
       actions.innerHTML = `
         <button class="btn btn-default btn-sm">导出 ZIP</button>
-        <button class="btn btn-primary" onclick="location.href='annotation.html'">审核修正标注</button>
+        <button class="btn btn-primary" onclick="goToAnnotation('deduplicated_02')">审核修正标注</button>
         <button class="btn btn-default btn-sm" onclick="discardAutoAnno('02')">丢弃预标注</button>
         <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '02')">删除</button>`;
     } else {
       actions.innerHTML = `
         <button class="btn btn-default btn-sm">导出 ZIP</button>
-        <button class="btn btn-primary" onclick="location.href='annotation.html'">继续标注（47/200）</button>
+        <button class="btn btn-primary" onclick="goToAnnotation('deduplicated_02')">继续标注（47/200）</button>
         <button class="btn btn-default" onclick="closeDatasetModal();openAutoAnnoModal('02')">自动标注</button>
         <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '02')">删除</button>`;
     }
@@ -1041,13 +1041,13 @@ function openDataset(type) {
     if (status03 === 'review') {
       actions.innerHTML = `
         <button class="btn btn-default btn-sm">导出 ZIP</button>
-        <button class="btn btn-primary" onclick="location.href='annotation.html'">审核修正标注</button>
+        <button class="btn btn-primary" onclick="goToAnnotation('deduplicated_03')">审核修正标注</button>
         <button class="btn btn-default btn-sm" onclick="discardAutoAnno('03')">丢弃预标注</button>
         <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '03')">删除</button>`;
     } else {
       actions.innerHTML = `
         <button class="btn btn-default btn-sm">导出 ZIP</button>
-        <button class="btn btn-primary" onclick="location.href='annotation.html'">创建标注任务</button>
+        <button class="btn btn-primary" onclick="goToAnnotation('deduplicated_03')">创建标注任务</button>
         <button class="btn btn-default" onclick="closeDatasetModal();openAutoAnnoModal('03')">自动标注</button>
         <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '03')">删除</button>`;
     }
@@ -1385,6 +1385,18 @@ document.addEventListener('click', function(e) {
     if (dd) dd.classList.remove('show');
   }
 });
+
+function goToAnnotation(dsType) {
+  var project = localStorage.getItem('current_project') || 'security';
+  // Map data_center types to annotation dataset keys
+  var keyMap = {
+    'deduplicated': project + '_deduplicated_01',
+    'deduplicated_02': project + '_deduplicated_02',
+    'deduplicated_03': project + '_deduplicated_03',
+  };
+  var key = keyMap[dsType] || (project + '_' + dsType);
+  location.href = 'annotation.html#dataset=' + encodeURIComponent(key);
+}
 
 let toastTimer;
 function showToast(msg) {
