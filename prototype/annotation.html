@@ -521,7 +521,7 @@
         <h2 style="font-size:18px;font-weight:600;">数据标注总览</h2>
       </div>
 
-      <!-- Toolbar: dataset selector + filter -->
+      <!-- Toolbar: dataset selector + filter + actions -->
       <div class="overview-toolbar">
         <select id="overviewDataset" onchange="onDatasetChange()">
           <option value="">— 选择数据集 —</option>
@@ -532,6 +532,8 @@
           <option value="unreviewed">未审查</option>
           <option value="unannotated">未标注</option>
         </select>
+        <span style="flex:1;"></span>
+        <button class="btn btn-danger btn-sm" id="btnBatchDelete" onclick="openBatchDeleteModal()" disabled>批量删除 (<span id="selectedCount">0</span>)</button>
       </div>
 
       <!-- Stats -->
@@ -696,6 +698,25 @@
     <div class="modal-footer">
       <button class="btn btn-default btn-sm" onclick="closeAddLabelModal()">取消</button>
       <button class="btn btn-primary btn-sm" onclick="addLabel()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- Batch Delete Confirm Modal -->
+<div class="modal-overlay" id="batchDeleteModal" style="display:none;" onclick="if(event.target==this)closeBatchDeleteModal()">
+  <div class="modal" style="width:440px;">
+    <div class="modal-header">确认批量删除</div>
+    <div class="modal-body">
+      <div style="margin-bottom:12px;font-size:13px;">
+        确定要删除选中的 <strong id="batchDeleteCount">0</strong> 张图片吗？
+      </div>
+      <div style="background:#fff1f0;border:1px solid #ffccc7;border-radius:4px;padding:12px;font-size:12px;">
+        <strong>注意：</strong>此操作不可撤销。删除后图片及其标注数据将永久丢失。
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default btn-sm" onclick="closeBatchDeleteModal()">取消</button>
+      <button class="btn btn-danger btn-sm" onclick="executeBatchDelete()">确认删除</button>
     </div>
   </div>
 </div>
@@ -877,6 +898,7 @@ function renderOverviewTable() {
   }
 
   let html = '<table class="overview-table"><thead><tr>' +
+    '<th style="width:36px;"><input type="checkbox" id="checkAll" onchange="toggleSelectAll(this)" style="accent-color:var(--primary);"></th>' +
     '<th style="width:50px;">#</th>' +
     '<th style="width:110px;">图片 ID</th>' +
     '<th style="width:100px;">日期</th>' +
@@ -912,6 +934,7 @@ function renderOverviewTable() {
     const globalIdx = start + i + 1;
 
     html += '<tr>' +
+      '<td><input type="checkbox" class="row-checkbox" data-imgid="' + img.id + '" onchange="updateSelectedCount()" style="accent-color:var(--primary);"></td>' +
       '<td>' + globalIdx + '</td>' +
       '<td style="font-family:monospace;font-size:11px;">' + img.id + '</td>' +
       '<td>' + img.date + '</td>' +
@@ -921,13 +944,18 @@ function renderOverviewTable() {
       '<td>' + (img.author || '<span style="color:var(--text-muted);">—</span>') + '</td>' +
       '<td><div class="ov-notes" data-imgid="' + img.id + '" data-dataset="' + overviewState.currentDatasetKey + '" ondblclick="startEditNotes(this)" title="双击编辑备注">' + escapeHTML(img.notes) + '</div></td>' +
       '<td>' +
-        '<button class="btn btn-primary btn-sm" onclick="openImageInWorkspace(\'' + overviewState.currentDatasetKey + '\', \'' + img.id + '\', ' + img.idx + ')">' + (img.annotated ? '查看' : '标注') + '</button>' +
+        '<button class="btn btn-primary btn-sm" onclick="openImageInWorkspace(\'' + overviewState.currentDatasetKey + '\', \'' + img.id + '\', ' + img.idx + ')">' + (img.isAnnotated ? '查看' : '标注') + '</button>' +
       '</td>' +
     '</tr>';
   });
 
   html += '</tbody></table>';
   container.innerHTML = html;
+  // Reset selection state after re-render
+  var ca = document.getElementById('checkAll');
+  if (ca) ca.checked = false;
+  document.getElementById('selectedCount').textContent = '0';
+  document.getElementById('btnBatchDelete').disabled = true;
 }
 
 // ── Pagination ──
@@ -957,6 +985,56 @@ function renderPagination() {
   html += '<button class="page-btn" ' + (page >= totalPages ? 'disabled' : '') + ' onclick="goToPage(' + (page + 1) + ')">▶</button>';
   html += '<span class="page-info">共 ' + total + ' 条</span>';
   el.innerHTML = html;
+}
+
+// ── Batch delete ──
+function updateSelectedCount() {
+  var checked = document.querySelectorAll('#overviewTableContainer .row-checkbox:checked');
+  var count = checked.length;
+  document.getElementById('selectedCount').textContent = count;
+  document.getElementById('btnBatchDelete').disabled = count === 0;
+}
+
+function toggleSelectAll(el) {
+  var checkboxes = document.querySelectorAll('#overviewTableContainer .row-checkbox');
+  checkboxes.forEach(function(cb) { cb.checked = el.checked; });
+  updateSelectedCount();
+}
+
+function openBatchDeleteModal() {
+  var count = document.querySelectorAll('#overviewTableContainer .row-checkbox:checked').length;
+  if (count === 0) return;
+  document.getElementById('batchDeleteCount').textContent = count;
+  document.getElementById('batchDeleteModal').style.display = 'flex';
+}
+
+function closeBatchDeleteModal() {
+  document.getElementById('batchDeleteModal').style.display = 'none';
+}
+
+function executeBatchDelete() {
+  var checked = document.querySelectorAll('#overviewTableContainer .row-checkbox:checked');
+  var idsToDelete = [];
+  checked.forEach(function(cb) { idsToDelete.push(cb.getAttribute('data-imgid')); });
+
+  // Remove from data
+  overviewState.images = overviewState.images.filter(function(img) {
+    return idsToDelete.indexOf(img.id) === -1;
+  });
+  // Also remove from current ds info total
+  if (overviewState.currentDsInfo) {
+    overviewState.currentDsInfo.total -= idsToDelete.length;
+  }
+
+  // Reset selection
+  document.getElementById('checkAll').checked = false;
+  document.getElementById('selectedCount').textContent = '0';
+  document.getElementById('btnBatchDelete').disabled = true;
+
+  closeBatchDeleteModal();
+  updateOverviewStats();
+  onSearchChange();
+  showToast('已删除 ' + idsToDelete.length + ' 张图片');
 }
 
 function goToPage(p) {
