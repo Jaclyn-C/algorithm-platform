@@ -87,7 +87,8 @@
   </div>
   <nav class="sidebar-nav">
     <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
-      <a class="sidebar-item" href="projects.html">项目列表</a>
+      <a class="sidebar-item" href="my_projects.html">个人项目</a>
+      <a class="sidebar-item" href="projects.html">团队项目</a>
       <a class="sidebar-item" href="models.html">模型总览</a>
       <a class="sidebar-item" href="models_use.html">模型使用</a>
     </div>
@@ -208,13 +209,9 @@ function loadProfile() {
   document.getElementById('editEmail').value = user.email || '';
   document.getElementById('editRole').value = roleName;
 
-  // Project context
-  var project = localStorage.getItem('current_project');
-  if (project) {
-    document.getElementById('sidebarProjectGroup').style.display = 'block';
-    document.getElementById('sidebarSubPages').style.display = 'block';
-    document.getElementById('sidebarProject').value = project;
-  }
+  // 个人中心始终不显示项目侧边栏
+  document.getElementById('sidebarProjectGroup').style.display = 'none';
+  document.getElementById('sidebarSubPages').style.display = 'none';
 }
 
 function saveProfile() {
