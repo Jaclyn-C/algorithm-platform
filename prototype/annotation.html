@@ -588,7 +588,6 @@
         <strong id="bboxCount">0</strong>
       </div>
       <div class="info-actions">
-        <button class="btn btn-default btn-sm" onclick="backToOverview()">← 返回总览</button>
         <button class="btn btn-default btn-sm" onclick="saveDraft()">保存草稿</button>
         <button class="btn btn-danger btn-sm" onclick="resetAnnotation()">重置标注</button>
         <button class="btn btn-primary btn-sm" onclick="finishAnnotation()" id="btnFinishAnnotation" style="display:none;">完成标注</button>
@@ -1287,8 +1286,14 @@ function backToOverview() {
   // Refresh overview if a dataset was selected
   if (overviewState.currentDatasetKey) {
     populateDatasetDropdown();
-    document.getElementById('overviewDataset').value = overviewState.currentDatasetKey;
-    onDatasetChange();
+    var sel = document.getElementById('overviewDataset');
+    // Ensure the option exists before setting value
+    if (sel.querySelector('option[value="' + overviewState.currentDatasetKey + '"]')) {
+      sel.value = overviewState.currentDatasetKey;
+      onDatasetChange();
+    } else {
+      showOverviewEmpty();
+    }
   }
   // Clear context but keep project
   localStorage.removeItem('annotation_context');
@@ -2205,6 +2210,7 @@ function logout() { localStorage.removeItem('current_user'); location.href = 'lo
     document.getElementById('workspaceView').style.display = 'flex';
     document.getElementById('btnBackToOverview').style.display = 'inline-flex';
     currentImageIdx = imgIdx;
+    overviewState.currentDatasetKey = dsKey;
     updateBreadcrumb('workspace', dsKey);
     // Ensure canvas fits after DOM update
     if (demoImage.complete) {
