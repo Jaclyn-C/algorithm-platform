@@ -192,6 +192,37 @@ function renderProjects() {
   empty.style.display = 'none';
 
   projects.forEach(function(p) {
+    var isShared = p._shared || false;
+    // 共享标记放在项目名旁边
+    var shareLabel = isShared
+      ? '<span class="tag" style="background:#e6f7ff;color:#1890ff;margin-left:6px;">共享</span>'
+      : '';
+    // 状态标记放右上角
+    var stage = p.stage || '数据准备';
+    var stageClasses = { '运行中': 'tag-success', '标注中': 'tag-processing', '数据准备': 'tag-warning' };
+    var stageTag = '<span class="tag ' + (stageClasses[stage] || '') + '" style="margin-left:auto;">' + stage + '</span>';
+
+    var pipelineHtml =
+      '<div class="pipe-step"><div class="pipe-dot active"></div><div class="pipe-label">数据</div></div><div class="pipe-arrow">→</div>' +
+      '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">标注</div></div><div class="pipe-arrow">→</div>' +
+      '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">训练</div></div><div class="pipe-arrow">→</div>' +
+      '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">评估</div></div><div class="pipe-arrow">→</div>' +
+      '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">部署</div></div>';
+    var statsHtml = '<span>数据集：<strong>—</strong></span><span>标注：<strong>未开始</strong></span>';
+
+    var buttonsHtml;
+    if (isShared) {
+      buttonsHtml =
+        '<button class="btn btn-default btn-sm" onclick="event.stopPropagation();enterProject(\'' + p.id + '\')">进入项目</button>' +
+        '<button class="btn btn-default btn-sm" onclick="event.stopPropagation();convertToPersonal(\'' + p.id + '\',\'' + p.name + '\')">取消共享</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deletePersonalProject(\'' + p.id + '\',\'' + p.name + '\')">删除</button>';
+    } else {
+      buttonsHtml =
+        '<button class="btn btn-default btn-sm" onclick="event.stopPropagation();enterProject(\'' + p.id + '\')">进入项目</button>' +
+        '<button class="btn btn-default btn-sm" onclick="event.stopPropagation();convertToTeam(\'' + p.id + '\',\'' + p.name + '\')">共享到团队</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deletePersonalProject(\'' + p.id + '\',\'' + p.name + '\')">删除</button>';
+    }
+
     var card = document.createElement('div');
     card.className = 'project-card';
     card.onclick = function() { enterProject(p.id); };
@@ -199,23 +230,14 @@ function renderProjects() {
       '<div class="p-header">' +
         '<div class="p-icon" style="background:linear-gradient(135deg,' + getCardColor(p.id) + ');">' + p.name.charAt(0) + '</div>' +
         '<div>' +
-          '<div class="p-name">' + p.name + '</div>' +
+          '<div class="p-name">' + p.name + shareLabel + '</div>' +
           '<div class="p-date">创建于 ' + p.createdAt + '</div>' +
         '</div>' +
-        '<span class="tag" style="background:#f5f5f5;color:#8c8c8c;margin-left:auto;">数据准备</span>' +
+        stageTag +
       '</div>' +
-      '<div class="pipeline">' +
-        '<div class="pipe-step"><div class="pipe-dot active"></div><div class="pipe-label">数据</div></div><div class="pipe-arrow">→</div>' +
-        '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">标注</div></div><div class="pipe-arrow">→</div>' +
-        '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">训练</div></div><div class="pipe-arrow">→</div>' +
-        '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">评估</div></div><div class="pipe-arrow">→</div>' +
-        '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">部署</div></div>' +
-      '</div>' +
-      '<div class="p-stats"><span>数据集：<strong>—</strong></span><span>标注：<strong>未开始</strong></span></div>' +
-      '<div style="display:flex;gap:6px;">' +
-        '<button class="btn btn-default btn-sm" onclick="event.stopPropagation();enterProject(\'' + p.id + '\')">进入项目</button>' +
-        '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteProject(\'' + p.id + '\',\'' + p.name + '\')">删除</button>' +
-      '</div>';
+      '<div class="pipeline">' + pipelineHtml + '</div>' +
+      '<div class="p-stats">' + statsHtml + '</div>' +
+      '<div style="display:flex;gap:6px;">' + buttonsHtml + '</div>';
     grid.appendChild(card);
   });
 }
@@ -224,6 +246,34 @@ function getCardColor(id) {
   var colors = ['#1890ff,#36cfc9','#fa8c16,#f5222d','#722ed1,#eb2f96','#52c41a,#13c2c2','#2f54eb,#a0d911'];
   var idx = (id.charCodeAt(5) || 0) % colors.length;
   return colors[idx];
+}
+
+function convertToTeam(id, name) {
+  if (!confirm('共享到团队后，所有团队成员都可以访问「' + name + '」。\n\n该项目仍会保留在你的个人项目中。')) return;
+  var personal = getPersonalProjects();
+  var project = personal.find(function(p) { return p.id === id; });
+  if (!project) return;
+  project._shared = true;
+  savePersonalProjects(personal);
+  var team = JSON.parse(localStorage.getItem('project_list') || '[]');
+  if (!team.find(function(p) { return p.id === id; })) {
+    team.push({ id: id, name: project.name, createdAt: project.createdAt, _fromPersonal: true });
+  }
+  localStorage.setItem('project_list', JSON.stringify(team));
+  renderProjects();
+  showToast('「' + name + '」已共享到团队');
+}
+
+function convertToPersonal(id, name) {
+  if (!confirm('取消共享后，「' + name + '」将从团队项目中移除，仅保留在你的个人项目中。确认继续？')) return;
+  var personal = getPersonalProjects();
+  var project = personal.find(function(p) { return p.id === id; });
+  if (project) { project._shared = false; savePersonalProjects(personal); }
+  var team = JSON.parse(localStorage.getItem('project_list') || '[]');
+  team = team.filter(function(p) { return p.id !== id; });
+  localStorage.setItem('project_list', JSON.stringify(team));
+  renderProjects();
+  showToast('「' + name + '」已取消共享');
 }
 
 function showNewProjectModal() {
@@ -252,11 +302,15 @@ function enterProject(id) {
   location.href = 'data_center.html';
 }
 
-function deleteProject(id, name) {
+function deletePersonalProject(id, name) {
   if (!confirm('确定删除个人项目「' + name + '」吗？此操作不可撤销。')) return;
-  var projects = getPersonalProjects();
-  projects = projects.filter(function(p) { return p.id !== id; });
-  savePersonalProjects(projects);
+  var personal = getPersonalProjects();
+  personal = personal.filter(function(p) { return p.id !== id; });
+  savePersonalProjects(personal);
+  // Also remove from team if shared
+  var team = JSON.parse(localStorage.getItem('project_list') || '[]');
+  team = team.filter(function(p) { return p.id !== id; });
+  localStorage.setItem('project_list', JSON.stringify(team));
   renderProjects();
   showToast('项目「' + name + '」已删除');
 }
