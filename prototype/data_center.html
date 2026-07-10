@@ -417,7 +417,7 @@
 
     <!-- ===== Step 3: Image Dedup ===== -->
     <div class="card" id="step3">
-      <div class="card-header">图片去重</div>
+      <div class="card-header">图片去重<span class="text-secondary" style="font-weight:400;font-size:12px;"> 检测相似图片并去重，可跳过此步骤直接进入数据集管理</span></div>
       <div class="card-body">
         <div class="form-row">
           <div class="form-group">
@@ -436,7 +436,8 @@
             </div>
             <span class="input-hint">数值越高，匹配越严，去重越少（推荐 0.7-0.9）</span>
           </div>
-          <div class="form-group form-btn-group" style="margin-left:auto;">
+          <div class="form-group form-btn-group" style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+            <button class="btn btn-default btn-lg" onclick="skipDedup()" id="btnSkipDedup">跳过去重</button>
             <button class="btn btn-primary btn-lg" onclick="executeDedup()" id="btnDedup">执行去重</button>
           </div>
         </div>
@@ -1005,6 +1006,7 @@ function executeDedup() {
   progress.style.display = 'block';
   btn.disabled = true;
   btn.textContent = '去重中...';
+  document.getElementById('btnSkipDedup').disabled = true;
 
   let pct = 0;
   const interval = setInterval(() => {
@@ -1025,6 +1027,21 @@ function executeDedup() {
       detail.textContent = `已比对: ${Math.round(pct*12.48)}/1,248 张`;
     }
   }, 300);
+}
+
+function skipDedup() {
+  var src = document.getElementById('dedupSource').value;
+  var srcName = document.getElementById('dedupSource').selectedOptions[0].text || 'extracted_frames/';
+  var match = srcName.match(/\(([\d,]+)\s*张\)/);
+  var imgCount = match ? parseInt(match[1].replace(',', '')) : 0;
+  if (!confirm('确定跳过图片去重吗？\n\n源数据集 ' + srcName.trim() + ' 将直接作为去重后的数据集使用，进入后续标注和训练流程。')) return;
+
+  dedupDone = true;
+  updateStep(3, 'done');
+  document.getElementById('btnDedup').disabled = true;
+  document.getElementById('btnSkipDedup').disabled = true;
+  showToast('已跳过图片去重，' + (imgCount || '') + ' 张图片将直接进入数据集管理');
+  document.getElementById('step4').scrollIntoView({ behavior: 'smooth' });
 }
 
 function showDedupResult() {
