@@ -155,6 +155,42 @@
   </div>
 </div>
 
+<!-- Edit Member Modal -->
+<div class="modal-overlay" id="editMemberModal" style="display:none;" onclick="if(event.target==this)closeEditMemberModal()">
+  <div class="modal" style="width:400px;">
+    <div class="modal-header">编辑成员 — <span id="editMemberName"></span></div>
+    <div class="modal-body">
+      <div style="margin-bottom:12px;" id="editMemberRoleRow">
+        <label style="display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px;">团队角色</label>
+        <select id="editMemberRole" style="width:100%;padding:7px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);">
+          <option value="admin">管理员</option>
+          <option value="member">成员</option>
+        </select>
+        <span style="font-size:10px;color:var(--text-muted);">管理员可添加成员和管理团队</span>
+      </div>
+      <div style="margin-bottom:12px;" id="editMemberPermRow">
+        <label style="display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px;">项目权限</label>
+        <select id="editMemberPerm" style="width:100%;padding:7px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);">
+          <option value="write">可编辑</option>
+          <option value="read">仅查看</option>
+        </select>
+        <span style="font-size:10px;color:var(--text-muted);">可编辑：可操作项目数据；仅查看：只能查看</span>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:12px;" id="editMemberTransferRow">
+        <button class="btn btn-default btn-sm" onclick="transferOwnership()" style="width:100%;">转移创建者身份</button>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;text-align:center;">将创建者身份转移给该成员，你将降为管理员</div>
+      </div>
+      <div style="margin-top:12px;" id="editMemberRemoveRow">
+        <button class="btn btn-danger btn-sm" onclick="deleteEditMember()" style="width:100%;">从团队移除该成员</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default btn-sm" onclick="closeEditMemberModal()">取消</button>
+      <button class="btn btn-primary btn-sm" id="btnSaveEditMember" onclick="saveEditMember()">保存</button>
+    </div>
+  </div>
+</div>
+
 <!-- Add Member Modal -->
 <div class="modal-overlay" id="addMemberModal" style="display:none;" onclick="if(event.target==this)closeAddMemberModal()">
   <div class="modal">
@@ -220,30 +256,45 @@ function renderMemberPanel() {
 
   document.getElementById('memberPanelTitle').textContent = '团队成员 — ' + team.name;
   var isOwner = team.owner === currentUser;
-  document.getElementById('btnAddMember').style.display = isOwner ? 'inline-flex' : 'none';
+  var isAdmin = !isOwner && (team.members || []).some(function(m) { return m.username === currentUser && m.role === 'admin'; });
+  document.getElementById('btnAddMember').style.display = (isOwner || isAdmin) ? 'inline-flex' : 'none';
 
   var members = team.members || [];
   var body = document.getElementById('memberBody');
   var roleLabels = { owner: '创建者', admin: '管理员', member: '成员' };
   var roleClasses = { owner: 'tag-owner', admin: 'tag-admin', member: 'tag-member' };
+  var permLabels = { write: '可编辑', read: '仅查看' };
 
+  var canManage = isOwner || isAdmin;
   var html = '<table class="table"><thead><tr>' +
     '<th style="width:50px;">#</th>' +
     '<th>用户名</th>' +
-    '<th style="width:100px;">角色</th>' +
-    '<th style="width:130px;">加入时间</th>' +
-    (isOwner ? '<th style="width:80px;">操作</th>' : '') +
+    '<th style="width:80px;">角色</th>' +
+    '<th style="width:80px;">权限</th>' +
+    '<th style="width:110px;">加入时间</th>' +
+    (canManage ? '<th style="width:80px;">操作</th>' : '') +
     '</tr></thead><tbody>';
 
   members.forEach(function(m, i) {
+    var perm = m.permission || (m.role === 'owner' ? 'write' : 'read');
+    // 能否编辑该成员：owner 可编辑所有人（除自己），admin 只能编辑普通 member
+    var canEditThis = false;
+    if (isOwner) {
+      canEditThis = m.username !== currentUser;
+    } else if (isAdmin) {
+      canEditThis = m.role === 'member';
+    }
     html += '<tr>' +
       '<td>' + (i + 1) + '</td>' +
       '<td style="font-weight:500;">' + m.username + '</td>' +
       '<td><span class="tag ' + (roleClasses[m.role] || 'tag-member') + '">' + (roleLabels[m.role] || m.role) + '</span></td>' +
+      '<td><span class="tag" style="background:' + (perm === 'write' ? '#f6ffed' : '#f5f5f5') + ';color:' + (perm === 'write' ? '#52c41a' : '#8c8c8c') + ';">' + (permLabels[perm] || '仅查看') + '</span></td>' +
       '<td>' + (m.joinedAt || team.createdAt) + '</td>' +
-      (isOwner && m.role !== 'owner'
-        ? '<td><button class="btn btn-text btn-sm" onclick="removeMember(\'' + m.username + '\')" style="color:var(--danger);">移除</button></td>'
-        : (isOwner ? '<td></td>' : '')) +
+      (canManage
+        ? '<td>' + (canEditThis
+            ? '<button class="btn btn-text btn-sm" onclick="showEditMemberModal(\'' + m.username + '\')" style="color:var(--primary);">编辑</button>'
+            : '') + '</td>'
+        : '') +
     '</tr>';
   });
 
@@ -281,7 +332,7 @@ function addMember() {
   if (team.members.find(function(m) { return m.username === found.username; })) {
     showToast(found.username + ' 已在团队中'); return;
   }
-  team.members.push({ username: found.username, role: role, joinedAt: new Date().toISOString().slice(0, 10) });
+  team.members.push({ username: found.username, role: role, permission: 'read', joinedAt: new Date().toISOString().slice(0, 10) });
   saveTeams(teams);
   closeAddMemberModal();
   renderTeamList();
@@ -289,17 +340,101 @@ function addMember() {
   showToast(found.username + ' 已加入团队');
 }
 
-// ── Remove member ──
-function removeMember(username) {
-  if (!confirm('确定将 ' + username + ' 移出团队吗？')) return;
+// ── Edit member ──
+var editingMemberName = '';
+
+function showEditMemberModal(username) {
+  editingMemberName = username;
+  var team = getCurrentTeam();
+  if (!team) return;
+  var m = (team.members || []).find(function(x) { return x.username === username; });
+  if (!m) return;
+
+  var isOwner = team.owner === currentUser;
+  document.getElementById('editMemberName').textContent = username;
+  document.getElementById('editMemberRole').value = m.role || 'member';
+  document.getElementById('editMemberPerm').value = m.permission || 'read';
+
+  // 创建者编辑任何人：显示全部选项
+  // 管理员编辑成员：只显示权限和移除，不显示角色和转移
+  if (isOwner) {
+    document.getElementById('editMemberRoleRow').style.display = 'block';
+    document.getElementById('editMemberPermRow').style.display = 'block';
+    document.getElementById('editMemberTransferRow').style.display = 'block';
+    document.getElementById('editMemberRemoveRow').style.display = 'block';
+    document.getElementById('btnSaveEditMember').style.display = 'inline-flex';
+  } else {
+    document.getElementById('editMemberRoleRow').style.display = 'none';
+    document.getElementById('editMemberPermRow').style.display = 'block';
+    document.getElementById('editMemberTransferRow').style.display = 'none';
+    document.getElementById('editMemberRemoveRow').style.display = 'block';
+    document.getElementById('btnSaveEditMember').style.display = 'inline-flex';
+  }
+  document.getElementById('editMemberModal').style.display = 'flex';
+}
+
+function transferOwnership() {
+  if (!confirm('确定将创建者身份转移给 ' + editingMemberName + ' 吗？\n\n转移后你将成为管理员，' + editingMemberName + ' 成为新的创建者。此操作不可撤销。')) return;
   var teams = getTeams();
   var team = teams.find(function(t) { return t.id === currentTeamId; });
   if (!team) return;
-  team.members = (team.members || []).filter(function(m) { return m.username !== username; });
+
+  // 当前创建者降为管理员
+  var oldOwner = (team.members || []).find(function(x) { return x.username === currentUser; });
+  if (oldOwner) { oldOwner.role = 'admin'; }
+
+  // 目标成员升为创建者
+  var newOwner = (team.members || []).find(function(x) { return x.username === editingMemberName; });
+  if (newOwner) { newOwner.role = 'owner'; newOwner.permission = 'write'; }
+
+  team.owner = editingMemberName;
   saveTeams(teams);
+  closeEditMemberModal();
   renderTeamList();
   renderMemberPanel();
-  showToast(username + ' 已移出团队');
+  showToast('创建者身份已转移给 ' + editingMemberName);
+}
+
+function closeEditMemberModal() {
+  document.getElementById('editMemberModal').style.display = 'none';
+}
+
+function saveEditMember() {
+  var role = document.getElementById('editMemberRole').value;
+  var perm = document.getElementById('editMemberPerm').value;
+  var teams = getTeams();
+  var team = teams.find(function(t) { return t.id === currentTeamId; });
+  if (!team) return;
+  var m = (team.members || []).find(function(x) { return x.username === editingMemberName; });
+  if (!m) return;
+
+  var isOwner = team.owner === currentUser;
+  if (isOwner) {
+    // 创建者可以改角色和权限
+    m.role = role;
+    m.permission = perm;
+  } else {
+    // 管理员只能改成员的权限
+    m.permission = perm;
+  }
+  saveTeams(teams);
+  closeEditMemberModal();
+  renderTeamList();
+  renderMemberPanel();
+  showToast(editingMemberName + ' 的信息已更新');
+}
+
+function deleteEditMember() {
+  if (!confirm('确定将 ' + editingMemberName + ' 从团队中移除吗？')) return;
+  var teams = getTeams();
+  var team = teams.find(function(t) { return t.id === currentTeamId; });
+  if (!team) return;
+  team.members = (team.members || []).filter(function(m) { return m.username !== editingMemberName; });
+  saveTeams(teams);
+  closeEditMemberModal();
+  renderTeamList();
+  renderMemberPanel();
+  showToast(editingMemberName + ' 已移出团队');
 }
 
 function initPlatformUsers() {
@@ -332,38 +467,38 @@ function initTeams() {
   if (needInit) {
     teams = [
       { id: 'team_anbao', name: '安保检测组', createdAt: '2026-05-01', owner: 'admin', members: [
-        { username: 'admin', role: 'owner', joinedAt: '2026-05-01' },
-        { username: '张三', role: 'admin', joinedAt: '2026-06-10' },
-        { username: '王五', role: 'member', joinedAt: '2026-07-03' },
-        { username: '赵六', role: 'member', joinedAt: '2026-07-08' },
+        { username: 'admin', role: 'owner', permission: 'write', joinedAt: '2026-05-01' },
+        { username: '张三', role: 'admin', permission: 'write', joinedAt: '2026-06-10' },
+        { username: '王五', role: 'member', permission: 'write', joinedAt: '2026-07-03' },
+        { username: '赵六', role: 'member', permission: 'read', joinedAt: '2026-07-08' },
       ]},
       { id: 'team_xiaofang', name: '消防安全组', createdAt: '2026-06-01', owner: '张三', members: [
-        { username: '张三', role: 'owner', joinedAt: '2026-06-01' },
-        { username: 'admin', role: 'member', joinedAt: '2026-06-15' },
-        { username: '李四', role: 'member', joinedAt: '2026-06-20' },
-        { username: '孙七', role: 'admin', joinedAt: '2026-07-01' },
-        { username: '周八', role: 'member', joinedAt: '2026-07-05' },
+        { username: '张三', role: 'owner', permission: 'write', joinedAt: '2026-06-01' },
+        { username: 'admin', role: 'member', permission: 'read', joinedAt: '2026-06-15' },
+        { username: '李四', role: 'member', permission: 'write', joinedAt: '2026-06-20' },
+        { username: '孙七', role: 'admin', permission: 'write', joinedAt: '2026-07-01' },
+        { username: '周八', role: 'member', permission: 'read', joinedAt: '2026-07-05' },
       ]},
       { id: 'team_default', name: '默认团队', createdAt: '2026-04-01', owner: 'admin', members: [
-        { username: 'admin', role: 'owner', joinedAt: '2026-04-01' },
-        { username: '张三', role: 'member', joinedAt: '2026-04-10' },
-        { username: '李四', role: 'member', joinedAt: '2026-04-15' },
-        { username: '王五', role: 'admin', joinedAt: '2026-05-20' },
-        { username: '赵六', role: 'member', joinedAt: '2026-06-01' },
+        { username: 'admin', role: 'owner', permission: 'write', joinedAt: '2026-04-01' },
+        { username: '张三', role: 'member', permission: 'write', joinedAt: '2026-04-10' },
+        { username: '李四', role: 'member', permission: 'read', joinedAt: '2026-04-15' },
+        { username: '王五', role: 'admin', permission: 'write', joinedAt: '2026-05-20' },
+        { username: '赵六', role: 'member', permission: 'read', joinedAt: '2026-06-01' },
       ]},
       { id: 'team_zhineng', name: '智能交通组', createdAt: '2026-06-15', owner: '王五', members: [
-        { username: '王五', role: 'owner', joinedAt: '2026-06-15' },
-        { username: '张三', role: 'admin', joinedAt: '2026-06-18' },
-        { username: '孙七', role: 'member', joinedAt: '2026-07-02' },
-        { username: '周八', role: 'member', joinedAt: '2026-07-10' },
+        { username: '王五', role: 'owner', permission: 'write', joinedAt: '2026-06-15' },
+        { username: '张三', role: 'admin', permission: 'write', joinedAt: '2026-06-18' },
+        { username: '孙七', role: 'member', permission: 'write', joinedAt: '2026-07-02' },
+        { username: '周八', role: 'member', permission: 'read', joinedAt: '2026-07-10' },
       ]},
       { id: 'team_shipin', name: '视频分析组', createdAt: '2026-07-01', owner: '李四', members: [
-        { username: '李四', role: 'owner', joinedAt: '2026-07-01' },
-        { username: 'admin', role: 'admin', joinedAt: '2026-07-02' },
-        { username: '王五', role: 'member', joinedAt: '2026-07-03' },
-        { username: '赵六', role: 'member', joinedAt: '2026-07-05' },
-        { username: '孙七', role: 'member', joinedAt: '2026-07-08' },
-        { username: '周八', role: 'member', joinedAt: '2026-07-11' },
+        { username: '李四', role: 'owner', permission: 'write', joinedAt: '2026-07-01' },
+        { username: 'admin', role: 'admin', permission: 'write', joinedAt: '2026-07-02' },
+        { username: '王五', role: 'member', permission: 'write', joinedAt: '2026-07-03' },
+        { username: '赵六', role: 'member', permission: 'read', joinedAt: '2026-07-05' },
+        { username: '孙七', role: 'member', permission: 'read', joinedAt: '2026-07-08' },
+        { username: '周八', role: 'member', permission: 'read', joinedAt: '2026-07-11' },
       ]},
     ];
     saveTeams(teams);
