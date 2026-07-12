@@ -333,7 +333,7 @@ function renderAllProjects() {
       '</div>' +
       '<div class="pipeline">' + pipelineHtml + '</div>' +
       '<div class="p-stats">' + statsHtml + '</div>' +
-      '<div style="display:flex;gap:6px;" onclick="event.stopPropagation();">' +
+      '<div style="display:flex;gap:6px;justify-content:space-between;" onclick="event.stopPropagation();">' +
         '<button class="btn btn-default btn-sm" onclick="enterProject(\'' + p.id + '\')">进入项目</button>' +
         '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject(\'' + p.id + '\',\'' + p.name + '\')">删除</button>' +
       '</div>';

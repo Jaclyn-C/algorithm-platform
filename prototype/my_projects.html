@@ -246,12 +246,13 @@ function renderProjects() {
     var statsHtml = '<span>数据集：<strong>—</strong></span><span>标注：<strong>未开始</strong></span>';
 
     var buttonsHtml =
-      '<button class="btn btn-default btn-sm" onclick="event.stopPropagation();enterProject(\'' + p.id + '\')">进入项目</button>' +
-      '<button class="btn btn-default btn-sm" onclick="event.stopPropagation();openEditProjectModal(\'' + p.id + '\')">编辑</button>' +
-      (isShared
-        ? '<button class="btn btn-default btn-sm" onclick="event.stopPropagation();convertToPersonal(\'' + p.id + '\',\'' + p.name + '\')">取消共享</button>'
-        : '') +
-      '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deletePersonalProject(\'' + p.id + '\',\'' + p.name + '\')">删除</button>';
+      '<div style="display:flex;gap:6px;justify-content:space-between;">' +
+        '<button class="btn btn-default btn-sm" onclick="event.stopPropagation();enterProject(\'' + p.id + '\')">进入项目</button>' +
+        '<span>' +
+          '<button class="btn btn-default btn-sm" onclick="event.stopPropagation();openEditProjectModal(\'' + p.id + '\')">编辑</button>' +
+          '<button class="btn btn-danger btn-sm" style="margin-left:6px;" onclick="event.stopPropagation();deletePersonalProject(\'' + p.id + '\',\'' + p.name + '\')">删除</button>' +
+        '</span>' +
+      '</div>';
 
     var card = document.createElement('div');
     card.className = 'project-card';
@@ -267,7 +268,7 @@ function renderProjects() {
       '</div>' +
       '<div class="pipeline">' + pipelineHtml + '</div>' +
       '<div class="p-stats">' + statsHtml + '</div>' +
-      '<div style="display:flex;gap:6px;">' + buttonsHtml + '</div>';
+      buttonsHtml;
     grid.appendChild(card);
   });
 }
@@ -280,18 +281,6 @@ function getCardColor(id) {
 
 function getTeams() {
   try { return JSON.parse(localStorage.getItem('platform_teams')) || []; } catch(e) { return []; }
-}
-
-function convertToPersonal(id, name) {
-  if (!confirm('取消共享后，「' + name + '」将从团队项目中移除，仅保留在你的个人项目中。确认继续？')) return;
-  var personal = getPersonalProjects();
-  var project = personal.find(function(p) { return p.id === id; });
-  if (project) { project._shared = false; project.teamId = ''; savePersonalProjects(personal); }
-  var team = JSON.parse(localStorage.getItem('project_list') || '[]');
-  team = team.filter(function(p) { return p.id !== id; });
-  localStorage.setItem('project_list', JSON.stringify(team));
-  renderProjects();
-  showToast('「' + name + '」已取消共享');
 }
 
 // ── Edit project modal ──
