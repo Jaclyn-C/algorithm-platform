@@ -83,6 +83,10 @@
   .text-secondary { color: var(--text-secondary); }
   .text-muted { color: var(--text-muted); }
 
+  .team-edit-btn { font-size: 12px; color: var(--text-muted); cursor: pointer; padding: 2px 4px; border-radius: 3px; opacity: 0; transition: opacity var(--transition); flex-shrink: 0; }
+  .team-item:hover .team-edit-btn { opacity: 1; }
+  .team-edit-btn:hover { background: #e6f7ff; color: var(--primary); }
+
   .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: flex; align-items: center; justify-content: center; }
   .modal { background: #fff; border-radius: 8px; width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
   .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 15px; }
@@ -145,6 +149,7 @@
     <div class="member-panel">
       <div class="member-header">
         <span id="memberPanelTitle">选择左侧团队查看成员</span>
+        <span style="flex:1;"></span>
         <button class="btn btn-primary btn-sm" id="btnAddMember" onclick="showAddMemberModal()" style="display:none;">+ 添加成员</button>
       </div>
       <div class="member-body" id="memberBody">
@@ -233,10 +238,64 @@ function renderTeamList() {
   body.innerHTML = teams.map(function(t) {
     var count = (t.members || []).length;
     return '<div class="team-item' + (t.id === currentTeamId ? ' active' : '') + '" onclick="selectTeam(\'' + t.id + '\')">' +
-      '<div class="team-name">' + t.name + '</div>' +
-      '<div class="team-meta">' + count + ' 位成员 · 创建于 ' + t.createdAt + '</div>' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;">' +
+        '<div>' +
+          '<div class="team-name">' + escapeHTML(t.name) + '</div>' +
+          '<div class="team-meta">' + count + ' 位成员 · 创建于 ' + t.createdAt + '</div>' +
+        '</div>' +
+        (currentUser === t.owner || (t.members || []).some(function(m) { return m.username === currentUser && m.role === 'admin'; })
+          ? '<span class="team-edit-btn" onclick="startEditTeamName(event, \'' + t.id + '\')" title="编辑团队名称">✎</span>'
+          : '') +
+      '</div>' +
     '</div>';
   }).join('');
+}
+
+// ── Edit team name (click ✎ in team list) ──
+function startEditTeamName(e, teamId) {
+  e.stopPropagation();
+  var teams = getTeams();
+  var team = teams.find(function(t) { return t.id === teamId; });
+  if (!team) return;
+
+  var btn = e.target;
+  var itemEl = btn.closest('.team-item');
+  var nameEl = itemEl.querySelector('.team-name');
+  var currentName = team.name;
+
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.value = currentName;
+  input.style.cssText = 'font-size:13px;font-weight:600;padding:2px 6px;border:1px solid var(--primary);border-radius:3px;font-family:var(--font);outline:none;width:100%;box-sizing:border-box;';
+  nameEl.replaceWith(input);
+  input.focus();
+  input.select();
+
+  function finish(save) {
+    var newName = save ? input.value.trim() : currentName;
+    if (!newName) newName = currentName;
+    var div = document.createElement('div');
+    div.className = 'team-name';
+    div.textContent = newName;
+    input.replaceWith(div);
+    if (save && newName !== currentName) {
+      team.name = newName;
+      saveTeams(teams);
+      renderTeamList();
+      renderMemberPanel();
+      showToast('团队名称已更新为「' + newName + '」');
+    }
+  }
+
+  input.addEventListener('blur', function() { finish(true); });
+  input.addEventListener('keydown', function(ev) {
+    if (ev.key === 'Enter') { finish(true); }
+    if (ev.key === 'Escape') { finish(false); }
+  });
+}
+
+function escapeHTML(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 // ── Select team & show members ──
