@@ -140,181 +140,198 @@
   <div class="content">
     <div class="page-header">
       <h2>团队项目</h2>
-      <button class="btn btn-primary" onclick="showNewProjectModal()">+ 新建项目</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select id="teamFilter" onchange="onTeamFilter()" style="padding:6px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);min-width:180px;">
+          <option value="all">全部团队</option>
+        </select>
+      </div>
     </div>
 
-    <div class="project-grid">
-
-      <!-- Project 1: 保安服检测 -->
-      <div class="project-card" onclick="enterProject('security')">
-        <div class="p-header">
-          <div class="p-icon" style="background:linear-gradient(135deg,#1890ff,#36cfc9);">👮</div>
-          <div>
-            <div class="p-name">保安服检测</div>
-            <div class="p-date">创建于 2026-06-28 · 摄像头A</div>
-          </div>
-          <span class="tag tag-success" style="margin-left:auto;">运行中</span>
-        </div>
-        <div class="pipeline">
-          <div class="pipe-step"><div class="pipe-dot done"></div><div class="pipe-label">数据</div></div>
-          <div class="pipe-arrow">→</div>
-          <div class="pipe-step"><div class="pipe-dot done"></div><div class="pipe-label">标注</div></div>
-          <div class="pipe-arrow">→</div>
-          <div class="pipe-step"><div class="pipe-dot done"></div><div class="pipe-label">训练</div></div>
-          <div class="pipe-arrow">→</div>
-          <div class="pipe-step"><div class="pipe-dot done"></div><div class="pipe-label">评估</div></div>
-          <div class="pipe-arrow">→</div>
-          <div class="pipe-step"><div class="pipe-dot done"></div><div class="pipe-label">部署</div></div>
-        </div>
-        <div class="p-stats">
-          <span>模型：<strong>best.pt v1.3.0</strong></span>
-          <span>mAP@50：<strong style="color:var(--success);">0.872</strong></span>
-          <span>数据集：<strong>1,102 张</strong></span>
-        </div>
-        <div style="display:flex;gap:6px;" onclick="event.stopPropagation();">
-          <button class="btn btn-default btn-sm" onclick="enterProject('security')">进入项目</button>
-          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject('security','保安服检测')">删除</button>
-        </div>
-      </div>
-
-      <!-- Project 2: 烟火检测 -->
-      <div class="project-card" onclick="enterProject('fire')">
-        <div class="p-header">
-          <div class="p-icon" style="background:linear-gradient(135deg,#fa8c16,#f5222d);">🔥</div>
-          <div>
-            <div class="p-name">烟火检测</div>
-            <div class="p-date">创建于 2026-07-01 · 摄像头B</div>
-          </div>
-          <span class="tag tag-processing" style="margin-left:auto;">标注中</span>
-        </div>
-        <div class="pipeline">
-          <div class="pipe-step"><div class="pipe-dot done"></div><div class="pipe-label">数据</div></div>
-          <div class="pipe-arrow">→</div>
-          <div class="pipe-step"><div class="pipe-dot active"></div><div class="pipe-label">标注</div></div>
-          <div class="pipe-arrow">→</div>
-          <div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">训练</div></div>
-          <div class="pipe-arrow">→</div>
-          <div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">评估</div></div>
-          <div class="pipe-arrow">→</div>
-          <div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">部署</div></div>
-        </div>
-        <div class="p-stats">
-          <span>标注进度：<strong style="color:var(--primary);">47/200</strong></span>
-          <span>数据集：<strong>856 张</strong></span>
-        </div>
-        <div style="display:flex;gap:6px;" onclick="event.stopPropagation();">
-          <button class="btn btn-default btn-sm" onclick="enterProject('fire')">进入项目</button>
-          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject('fire','烟火检测')">删除</button>
-        </div>
-      </div>
-
-      <!-- Project 3: 安全帽检测 -->
-      <div class="project-card" onclick="enterProject('helmet')">
-        <div class="p-header">
-          <div class="p-icon" style="background:linear-gradient(135deg,#722ed1,#eb2f96);">🪖</div>
-          <div>
-            <div class="p-name">安全帽检测</div>
-            <div class="p-date">创建于 2026-07-02 · 摄像头C</div>
-          </div>
-          <span class="tag tag-warning" style="margin-left:auto;">数据准备</span>
-        </div>
-        <div class="pipeline">
-          <div class="pipe-step"><div class="pipe-dot done"></div><div class="pipe-label">数据</div></div>
-          <div class="pipe-arrow">→</div>
-          <div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">标注</div></div>
-          <div class="pipe-arrow">→</div>
-          <div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">训练</div></div>
-          <div class="pipe-arrow">→</div>
-          <div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">评估</div></div>
-          <div class="pipe-arrow">→</div>
-          <div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">部署</div></div>
-        </div>
-        <div class="p-stats">
-          <span>数据集：<strong>1,517 张</strong></span>
-          <span>标注：<strong>未开始</strong></span>
-        </div>
-        <div style="display:flex;gap:6px;" onclick="event.stopPropagation();">
-          <button class="btn btn-default btn-sm" onclick="enterProject('helmet')">进入项目</button>
-          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject('helmet','安全帽检测')">删除</button>
-        </div>
-      </div>
-
+    <div class="project-grid" id="projectGrid">
+      <!-- Preset cards will be rendered dynamically -->
     </div>
   </div>
 </div>
 
 <script>
-function getUser() { try { return JSON.parse(localStorage.getItem('current_user')); } catch(e) { return null; } }
-function logout() { localStorage.removeItem('current_user'); location.href = 'login.html'; }
+// ── Teams ──
+var TEAMS_KEY = 'platform_teams';
+function initTeams() {
+  if (!localStorage.getItem(TEAMS_KEY)) {
+    localStorage.setItem(TEAMS_KEY, JSON.stringify([
+      { id: 'team_anbao', name: '安保检测组', createdAt: '2026-05-01' },
+      { id: 'team_xiaofang', name: '消防安全组', createdAt: '2026-06-01' },
+      { id: 'team_default', name: '默认团队', createdAt: '2026-04-01' },
+    ]));
+  }
+}
 
-(function() {
-  var user = getUser();
-  if (!user) { location.href = 'login.html'; return; }
-  document.getElementById('headerUserName').textContent = user.name;
-  document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
+function getTeams() {
+  try { return JSON.parse(localStorage.getItem(TEAMS_KEY)) || []; } catch(e) { return []; }
+}
 
-  // 初始化预设项目列表（如果还不存在）
+// ── Project data with teamId ──
+function initProjects() {
   var pl = JSON.parse(localStorage.getItem('project_list') || '[]');
   if (pl.length === 0) {
-    var preset = [
-      { id: 'security', name: '保安服检测', createdAt: '2026-06-28' },
-      { id: 'fire', name: '烟火检测', createdAt: '2026-07-01' },
-      { id: 'helmet', name: '安全帽检测', createdAt: '2026-07-02' }
+    pl = [
+      { id: 'security', name: '保安服检测', createdAt: '2026-06-28', teamId: 'team_anbao' },
+      { id: 'fire',     name: '烟火检测',   createdAt: '2026-07-01', teamId: 'team_xiaofang' },
+      { id: 'helmet',   name: '安全帽检测', createdAt: '2026-07-02', teamId: 'team_default' },
     ];
-    localStorage.setItem('project_list', JSON.stringify(preset));
+    localStorage.setItem('project_list', JSON.stringify(pl));
   }
-  // 初始化预设项目列表
-  var pl = JSON.parse(localStorage.getItem('project_list') || '[]');
-  if (pl.length === 0) {
-    var preset = [
-      { id: 'security', name: '保安服检测', createdAt: '2026-06-28' },
-      { id: 'fire', name: '烟火检测', createdAt: '2026-07-01' },
-      { id: 'helmet', name: '安全帽检测', createdAt: '2026-07-02' }
-    ];
-    localStorage.setItem('project_list', JSON.stringify(preset));
-  }
-  // 渲染动态项目卡片
-  renderDynamicProjects();
-  localStorage.removeItem('current_project'); // 进入项目列表即清除项目
-})();
-
-function renderDynamicProjects() {
-  var pl = JSON.parse(localStorage.getItem('project_list') || '[]');
-  var grid = document.querySelector('.project-grid');
-  grid.querySelectorAll('.dynamic-card').forEach(function(c) { c.remove(); });
+  // 确保旧数据也有 teamId，没有的话补上
+  var presetTeamMap = { security: 'team_anbao', fire: 'team_xiaofang', helmet: 'team_default' };
+  var changed = false;
   pl.forEach(function(p) {
-    // 仅对预设团队项目（security/fire/helmet）做过滤，其余全部渲染
-    if (p.id === 'security' || p.id === 'fire' || p.id === 'helmet') return;
+    if (!p.teamId) {
+      p.teamId = presetTeamMap[p.id] || 'team_default';
+      changed = true;
+    }
+  });
+  if (changed) { localStorage.setItem('project_list', JSON.stringify(pl)); }
+}
+
+// ── Preset project card data ──
+var PRESET_INFO = {
+  security: {
+    icon: '👮', color: '#1890ff,#36cfc9',
+    stage: '运行中', stageClass: 'tag-success',
+    pipe: ['done','done','done','done','done'],
+    stats: '<span>模型：<strong>best.pt v1.3.0</strong></span><span>mAP@50：<strong style="color:var(--success);">0.872</strong></span><span>数据集：<strong>1,102 张</strong></span>',
+    dateExtra: ' · 摄像头A',
+  },
+  fire: {
+    icon: '🔥', color: '#fa8c16,#f5222d',
+    stage: '标注中', stageClass: 'tag-processing',
+    pipe: ['done','active','wait','wait','wait'],
+    stats: '<span>标注进度：<strong style="color:var(--primary);">47/200</strong></span><span>数据集：<strong>856 张</strong></span>',
+    dateExtra: ' · 摄像头B',
+  },
+  helmet: {
+    icon: '🪖', color: '#722ed1,#eb2f96',
+    stage: '数据准备', stageClass: 'tag-warning',
+    pipe: ['done','wait','wait','wait','wait'],
+    stats: '<span>数据集：<strong>1,517 张</strong></span><span>标注：<strong>未开始</strong></span>',
+    dateExtra: ' · 摄像头C',
+  },
+};
+
+function getCardColor(id) {
+  var colors = ['#1890ff,#36cfc9','#fa8c16,#f5222d','#722ed1,#eb2f96','#52c41a,#13c2c2','#2f54eb,#a0d911'];
+  var idx = (id.charCodeAt(5) || 0) % colors.length;
+  return colors[idx];
+}
+
+// ── Populate team filter dropdown ──
+function populateTeamFilter() {
+  var teams = getTeams();
+  var sel = document.getElementById('teamFilter');
+  while (sel.options.length > 1) sel.remove(1);
+  teams.forEach(function(t) {
+    var opt = document.createElement('option');
+    opt.value = t.id;
+    opt.textContent = t.name;
+    sel.appendChild(opt);
+  });
+}
+
+function onTeamFilter() {
+  renderAllProjects();
+}
+
+// ── Render all project cards ──
+function renderAllProjects() {
+  var grid = document.getElementById('projectGrid');
+  grid.innerHTML = '';
+  var teamFilter = document.getElementById('teamFilter').value;
+
+  var pl = JSON.parse(localStorage.getItem('project_list') || '[]');
+  var teams = getTeams();
+
+  pl.forEach(function(p) {
+    // Filter by team
+    if (teamFilter !== 'all' && p.teamId !== teamFilter) return;
+
+    var info = PRESET_INFO[p.id];
+    var isPreset = !!info;
     var isShared = p._fromPersonal || false;
-    // 共享标记放在项目名旁边
+    var teamName = '';
+    var team = teams.find(function(t) { return t.id === p.teamId; });
+    if (team) teamName = team.name;
+
+    // Shared / Team badge
     var shareLabel = isShared
       ? '<span class="tag" style="background:#e6f7ff;color:#1890ff;margin-left:6px;">个人共享</span>'
       : '';
-    // 状态放右上角
-    var stage = p.stage || '数据准备';
-    var stageClasses = { '运行中': 'tag-success', '标注中': 'tag-processing', '数据准备': 'tag-warning' };
-    var stageTag = '<span class="tag ' + (stageClasses[stage] || '') + '" style="margin-left:auto;">' + stage + '</span>';
+
+    // Stage tag (top right)
+    var stageTag;
+    if (isPreset) {
+      stageTag = '<span class="tag ' + info.stageClass + '" style="margin-left:auto;">' + info.stage + '</span>';
+    } else {
+      var stage = p.stage || '数据准备';
+      var stageClasses = { '运行中': 'tag-success', '标注中': 'tag-processing', '数据准备': 'tag-warning' };
+      stageTag = '<span class="tag ' + (stageClasses[stage] || '') + '" style="margin-left:auto;">' + stage + '</span>';
+    }
+
+    // Pipeline
+    var pipeDots;
+    if (isPreset) {
+      pipeDots = info.pipe;
+    } else {
+      pipeDots = ['active','wait','wait','wait','wait'];
+    }
+    var labels = ['数据','标注','训练','评估','部署'];
+    var pipelineHtml = '';
+    for (var i = 0; i < 5; i++) {
+      pipelineHtml += '<div class="pipe-step"><div class="pipe-dot ' + pipeDots[i] + '"></div><div class="pipe-label">' + labels[i] + '</div></div>';
+      if (i < 4) pipelineHtml += '<div class="pipe-arrow">→</div>';
+    }
+
+    // Stats
+    var statsHtml;
+    if (isPreset) {
+      statsHtml = info.stats;
+    } else {
+      statsHtml = '<span>数据集：<strong>—</strong></span><span>标注：<strong>未开始</strong></span>';
+    }
+
+    // Icon & color
+    var iconChar, iconColor;
+    if (isPreset) {
+      iconChar = info.icon;
+      iconColor = info.color;
+    } else {
+      iconChar = p.name.charAt(0);
+      iconColor = getCardColor(p.id);
+    }
+
+    // Date
+    var dateExtra = isPreset ? (info.dateExtra || '') : '';
+
+    // Team info line
+    var teamLine = '';
+    if (teamFilter === 'all') {
+      teamLine = '<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">' + teamName + '</div>';
+    }
 
     var card = document.createElement('div');
-    card.className = 'project-card dynamic-card';
+    card.className = 'project-card';
+    card.setAttribute('data-project-id', p.id);
     card.onclick = function() { enterProject(p.id); };
     card.innerHTML =
       '<div class="p-header">' +
-        '<div class="p-icon" style="background:linear-gradient(135deg,' + getCardColor(p.id) + ');">' + p.name.charAt(0) + '</div>' +
+        '<div class="p-icon" style="background:linear-gradient(135deg,' + iconColor + ');">' + iconChar + '</div>' +
         '<div>' +
           '<div class="p-name">' + p.name + shareLabel + '</div>' +
-          '<div class="p-date">创建于 ' + p.createdAt + '</div>' +
+          '<div class="p-date">创建于 ' + p.createdAt + dateExtra + teamLine + '</div>' +
         '</div>' +
         stageTag +
       '</div>' +
-      '<div class="pipeline">' +
-        '<div class="pipe-step"><div class="pipe-dot active"></div><div class="pipe-label">数据</div></div><div class="pipe-arrow">→</div>' +
-        '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">标注</div></div><div class="pipe-arrow">→</div>' +
-        '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">训练</div></div><div class="pipe-arrow">→</div>' +
-        '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">评估</div></div><div class="pipe-arrow">→</div>' +
-        '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">部署</div></div>' +
-      '</div>' +
-      '<div class="p-stats"><span>数据集：<strong>—</strong></span><span>标注：<strong>未开始</strong></span></div>' +
+      '<div class="pipeline">' + pipelineHtml + '</div>' +
+      '<div class="p-stats">' + statsHtml + '</div>' +
       '<div style="display:flex;gap:6px;" onclick="event.stopPropagation();">' +
         '<button class="btn btn-default btn-sm" onclick="enterProject(\'' + p.id + '\')">进入项目</button>' +
         '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject(\'' + p.id + '\',\'' + p.name + '\')">删除</button>' +
@@ -323,16 +340,22 @@ function renderDynamicProjects() {
   });
 }
 
-function getCardColor(id) {
-  var colors = ['#1890ff,#36cfc9','#fa8c16,#f5222d','#722ed1,#eb2f96','#52c41a,#13c2c2','#2f54eb,#a0d911'];
-  var idx = (id.charCodeAt(5) || 0) % colors.length;
-  return colors[idx];
-}
+// ── Auth & Init ──
+function getUser() { try { return JSON.parse(localStorage.getItem('current_user')); } catch(e) { return null; } }
+function logout() { localStorage.removeItem('current_user'); location.href = 'login.html'; }
+function enterProject(val) { localStorage.setItem('current_project', val); location.href = 'data_center.html'; }
 
-function enterProject(val) {
-  localStorage.setItem('current_project', val);
-  location.href = 'data_center.html';
-}
+(function() {
+  var user = getUser();
+  if (!user) { location.href = 'login.html'; return; }
+  document.getElementById('headerUserName').textContent = user.name;
+  document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
+  initTeams();
+  initProjects();
+  populateTeamFilter();
+  renderAllProjects();
+  localStorage.removeItem('current_project');
+})();
 
 document.addEventListener('click', function(e) {
   if (!e.target.closest('.user-menu')) {
@@ -341,25 +364,8 @@ document.addEventListener('click', function(e) {
   }
 });
 
-function showNewProjectModal() {
-  document.getElementById('newProjectModal').style.display = 'flex';
-  document.getElementById('newProjectName').focus();
-}
-function closeNewProjectModal() {
-  document.getElementById('newProjectModal').style.display = 'none';
-  document.getElementById('newProjectName').value = '';
-}
-function createProject() {
-  var name = document.getElementById('newProjectName').value.trim();
-  if (!name) { alert('请输入项目名称'); return; }
-  var projects = JSON.parse(localStorage.getItem('project_list') || '[]');
-  var id = 'proj_' + Date.now();
-  projects.push({ id: id, name: name, createdAt: new Date().toISOString().slice(0,10) });
-  localStorage.setItem('project_list', JSON.stringify(projects));
-  localStorage.setItem('current_project', id);
-  location.href = 'data_center.html';
-}
 
+// ── Delete ──
 function confirmDeleteProject(projectId, projectName) {
   document.getElementById('deleteProjectId').value = projectId;
   document.getElementById('deleteProjectName').textContent = projectName;
@@ -371,42 +377,20 @@ function closeDeleteProjectModal() {
 function executeDeleteProject() {
   var id = document.getElementById('deleteProjectId').value;
   var name = document.getElementById('deleteProjectName').textContent;
-  // Remove from displayed cards
-  ['.project-card', '.dynamic-card'].forEach(function(sel) {
-    document.querySelectorAll(sel).forEach(function(c) {
-      if (c.textContent.includes(name)) c.style.display = 'none';
-    });
-  });
-  // Remove from project_list
   var pl = JSON.parse(localStorage.getItem('project_list') || '[]');
   var item = pl.find(function(p) { return p.id === id; });
   pl = pl.filter(function(p) { return p.id !== id; });
   localStorage.setItem('project_list', JSON.stringify(pl));
-  // If shared from personal, also update personal unshare
   if (item && item._fromPersonal) {
     var personal = JSON.parse(localStorage.getItem('personal_projects') || '[]');
     var pp = personal.find(function(p) { return p.id === id; });
     if (pp) { pp._shared = false; localStorage.setItem('personal_projects', JSON.stringify(personal)); }
   }
   closeDeleteProjectModal();
+  renderAllProjects();
   alert('项目「' + name + '」已删除。其下的全部数据集、标注数据、训练记录、评估记录、部署记录将一并删除。');
 }
 </script>
-
-<div id="newProjectModal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1000;display:none;align-items:center;justify-content:center;" onclick="if(event.target==this)closeNewProjectModal()">
-  <div style="background:#fff;border-radius:8px;width:400px;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-    <div style="padding:16px 20px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:15px;">新建项目</div>
-    <div style="padding:20px;">
-      <label style="display:block;font-size:12px;color:#8c8c8c;margin-bottom:4px;">项目名称</label>
-      <input type="text" id="newProjectName" placeholder="请输入项目名称，如：区域入侵检测" style="width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:4px;font-size:14px;outline:none;" onkeydown="if(event.key==='Enter')createProject()">
-    </div>
-    <div style="padding:12px 20px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:8px;">
-      <button class="btn btn-default btn-sm" onclick="closeNewProjectModal()">取消</button>
-      <button class="btn btn-primary btn-sm" onclick="createProject()">确定</button>
-    </div>
-  </div>
-</div>
-
 <div id="deleteProjectModal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1100;display:none;align-items:center;justify-content:center;" onclick="if(event.target==this)closeDeleteProjectModal()">
   <div style="background:#fff;border-radius:8px;width:480px;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
     <div style="padding:16px 20px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:15px;">确认删除项目</div>
