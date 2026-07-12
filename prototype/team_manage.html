@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>算法训练平台 — 团队管理</title>
+<style>
+  :root {
+    --sidebar-bg: #001529; --sidebar-hover: #002140; --sidebar-active: #1890ff;
+    --sidebar-text: #ffffffb3; --sidebar-text-active: #fff; --header-bg: #fff;
+    --header-height: 48px; --sidebar-width: 220px; --bg: #f0f2f5; --card-bg: #fff;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.08); --primary: #1890ff; --primary-light: #e6f7ff;
+    --success: #52c41a; --warning: #faad14; --danger: #ff4d4f; --text: #262626;
+    --text-secondary: #8c8c8c; --text-muted: #bfbfbf; --border: #f0f0f0;
+    --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    --radius: 6px; --transition: 0.2s ease;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font); background: var(--bg); display: flex; height: 100vh; overflow: hidden; color: var(--text); font-size: 13px; }
+
+  .sidebar { width: var(--sidebar-width); min-width: var(--sidebar-width); background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; z-index: 100; }
+  .sidebar-logo { height: 56px; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-logo .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, #1890ff, #36cfc9); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; margin-right: 10px; }
+  .sidebar-logo .logo-text { color: #fff; font-size: 15px; font-weight: 600; }
+  .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+  .sidebar-group { margin-bottom: 4px; }
+  .sidebar-group-title { padding: 8px 20px; font-size: 11px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; }
+  .sidebar-item { display: flex; align-items: center; padding: 10px 20px; cursor: pointer; transition: var(--transition); color: var(--sidebar-text); text-decoration: none; font-size: 13px; border-left: 3px solid transparent; margin: 1px 0; }
+  .sidebar-item:hover { background: var(--sidebar-hover); color: #fff; }
+  .sidebar-item.active { background: var(--sidebar-active); color: var(--sidebar-text-active); border-left-color: #fff; }
+
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .header { height: var(--header-height); background: var(--header-bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .header .breadcrumb { font-size: 12px; color: var(--text-secondary); }
+  .header .breadcrumb span { color: var(--text); font-weight: 500; }
+  .header .breadcrumb .sep { margin: 0 6px; color: var(--text-muted); }
+  .header-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .user-menu { position: relative; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .user-dropdown { position: absolute; top: 38px; right: 0; background: #fff; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 130px; z-index: 999; display: none; }
+  .user-dropdown.show { display: block; }
+  .user-dropdown a { display: block; padding: 10px 16px; font-size: 13px; color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); }
+  .user-dropdown a:hover { background: #f5f5f5; }
+  .user-dropdown a:last-child { border-bottom: none; }
+
+  .content { flex: 1; overflow: hidden; display: flex; gap: 12px; padding: 16px 20px; }
+
+  /* Left team list */
+  .team-list-panel { width: 240px; min-width: 240px; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--card-shadow); display: flex; flex-direction: column; overflow: hidden; }
+  .team-list-header { padding: 14px 16px; font-weight: 600; font-size: 14px; border-bottom: 1px solid var(--border); }
+  .team-list-body { flex: 1; overflow-y: auto; padding: 4px 0; }
+  .team-item { padding: 12px 16px; cursor: pointer; transition: var(--transition); border-left: 3px solid transparent; }
+  .team-item:hover { background: #fafafa; }
+  .team-item.active { background: var(--primary-light); border-left-color: var(--primary); }
+  .team-item .team-name { font-weight: 600; font-size: 13px; }
+  .team-item .team-meta { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Right member panel */
+  .member-panel { flex: 1; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--card-shadow); display: flex; flex-direction: column; overflow: hidden; }
+  .member-header { padding: 14px 20px; font-weight: 600; font-size: 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .member-body { flex: 1; overflow-y: auto; }
+
+  .table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .table th { background: #fafafa; padding: 12px 14px; text-align: left; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .table tbody tr:hover td { background: #fafafa; }
+
+  .btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px; border-radius: var(--radius); font-size: 12px; cursor: pointer; border: 1px solid transparent; font-family: var(--font); transition: var(--transition); white-space: nowrap; }
+  .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-primary:hover { background: #40a9ff; }
+  .btn-default { background: #fff; color: var(--text); border-color: #d9d9d9; }
+  .btn-default:hover { color: var(--primary); border-color: var(--primary); }
+  .btn-danger { background: #fff; color: var(--danger); border-color: var(--danger); }
+  .btn-danger:hover { background: #fff1f0; }
+  .btn-sm { padding: 3px 8px; font-size: 11px; }
+  .btn-text { background: transparent; color: var(--primary); border: none; padding: 4px 8px; }
+  .btn-text:hover { background: var(--primary-light); }
+
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+  .tag-owner { background: #fff7e6; color: #fa8c16; }
+  .tag-admin { background: #e6f7ff; color: #1890ff; }
+  .tag-member { background: #f5f5f5; color: #8c8c8c; }
+
+  .text-secondary { color: var(--text-secondary); }
+  .text-muted { color: var(--text-muted); }
+
+  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+  .modal { background: #fff; border-radius: 8px; width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 15px; }
+  .modal-body { padding: 20px; }
+  .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+  .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #262626; color: #fff; padding: 10px 24px; border-radius: 6px; font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">AI</div>
+    <div class="logo-text">算法训练平台</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
+      <a class="sidebar-item" href="my_projects.html">个人项目</a>
+      <a class="sidebar-item" href="projects.html">团队项目</a>
+      <a class="sidebar-item" href="models.html">模型总览</a>
+      <a class="sidebar-item" href="models_use.html">模型使用</a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
+      <a class="sidebar-item active" href="#">团队管理</a>
+      <a class="sidebar-item" href="profile.html">个人中心</a>
+    </div>
+  </nav>
+</aside>
+
+<div class="main">
+  <header class="header">
+    <div class="breadcrumb">算法训练平台 <span class="sep">›</span> <span>团队管理</span></div>
+    <div class="header-actions">
+      <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
+        <span style="font-size:12px;" id="headerUserName">用户</span>
+        <div id="headerUserAvatar" style="width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">U</div>
+        <div class="user-dropdown" id="userDropdown">
+          <a href="profile.html">个人中心</a>
+          <a href="#" onclick="event.stopPropagation();logout()">退出登录</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- Left: Team List -->
+    <div class="team-list-panel">
+      <div class="team-list-header">我的团队</div>
+      <div class="team-list-body" id="teamListBody"></div>
+    </div>
+
+    <!-- Right: Members -->
+    <div class="member-panel">
+      <div class="member-header">
+        <span id="memberPanelTitle">选择左侧团队查看成员</span>
+        <button class="btn btn-primary btn-sm" id="btnAddMember" onclick="showAddMemberModal()" style="display:none;">+ 添加成员</button>
+      </div>
+      <div class="member-body" id="memberBody">
+        <div style="text-align:center;padding:80px 20px;color:var(--text-muted);">← 请选择一个团队</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Add Member Modal -->
+<div class="modal-overlay" id="addMemberModal" style="display:none;" onclick="if(event.target==this)closeAddMemberModal()">
+  <div class="modal">
+    <div class="modal-header">添加成员</div>
+    <div class="modal-body">
+      <div style="margin-bottom:12px;">
+        <label style="display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px;">用户邮箱</label>
+        <input type="email" id="addMemberEmail" placeholder="请输入对方的注册邮箱" style="width:100%;padding:7px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);">
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px;">角色</label>
+        <select id="selectRole" style="width:100%;padding:7px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);">
+          <option value="member">成员</option>
+          <option value="admin">管理员</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default btn-sm" onclick="closeAddMemberModal()">取消</button>
+      <button class="btn btn-primary btn-sm" onclick="addMember()">添加</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var TEAMS_KEY = 'platform_teams';
+
+function getTeams() { try { return JSON.parse(localStorage.getItem(TEAMS_KEY)) || []; } catch(e) { return []; } }
+function saveTeams(teams) { localStorage.setItem(TEAMS_KEY, JSON.stringify(teams)); }
+
+var currentTeamId = '';
+var currentUser = '';
+
+// ── Render team list ──
+function renderTeamList() {
+  var teams = getTeams();
+  var body = document.getElementById('teamListBody');
+  body.innerHTML = teams.map(function(t) {
+    var count = (t.members || []).length;
+    return '<div class="team-item' + (t.id === currentTeamId ? ' active' : '') + '" onclick="selectTeam(\'' + t.id + '\')">' +
+      '<div class="team-name">' + t.name + '</div>' +
+      '<div class="team-meta">' + count + ' 位成员 · 创建于 ' + t.createdAt + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Select team & show members ──
+function selectTeam(teamId) {
+  currentTeamId = teamId;
+  renderTeamList();
+  renderMemberPanel();
+}
+
+function getCurrentTeam() {
+  return getTeams().find(function(t) { return t.id === currentTeamId; });
+}
+
+function renderMemberPanel() {
+  var team = getCurrentTeam();
+  if (!team) return;
+
+  document.getElementById('memberPanelTitle').textContent = '团队成员 — ' + team.name;
+  var isOwner = team.owner === currentUser;
+  document.getElementById('btnAddMember').style.display = isOwner ? 'inline-flex' : 'none';
+
+  var members = team.members || [];
+  var body = document.getElementById('memberBody');
+  var roleLabels = { owner: '创建者', admin: '管理员', member: '成员' };
+  var roleClasses = { owner: 'tag-owner', admin: 'tag-admin', member: 'tag-member' };
+
+  var html = '<table class="table"><thead><tr>' +
+    '<th style="width:50px;">#</th>' +
+    '<th>用户名</th>' +
+    '<th style="width:100px;">角色</th>' +
+    '<th style="width:130px;">加入时间</th>' +
+    (isOwner ? '<th style="width:80px;">操作</th>' : '') +
+    '</tr></thead><tbody>';
+
+  members.forEach(function(m, i) {
+    html += '<tr>' +
+      '<td>' + (i + 1) + '</td>' +
+      '<td style="font-weight:500;">' + m.username + '</td>' +
+      '<td><span class="tag ' + (roleClasses[m.role] || 'tag-member') + '">' + (roleLabels[m.role] || m.role) + '</span></td>' +
+      '<td>' + (m.joinedAt || team.createdAt) + '</td>' +
+      (isOwner && m.role !== 'owner'
+        ? '<td><button class="btn btn-text btn-sm" onclick="removeMember(\'' + m.username + '\')" style="color:var(--danger);">移除</button></td>'
+        : (isOwner ? '<td></td>' : '')) +
+    '</tr>';
+  });
+
+  html += '</tbody></table>';
+  body.innerHTML = html;
+}
+
+// ── Add member ──
+function showAddMemberModal() {
+  var team = getCurrentTeam();
+  if (!team) return;
+  document.getElementById('addMemberEmail').value = '';
+  document.getElementById('selectRole').value = 'member';
+  document.getElementById('addMemberModal').style.display = 'flex';
+}
+
+function closeAddMemberModal() {
+  document.getElementById('addMemberModal').style.display = 'none';
+}
+
+function addMember() {
+  var email = document.getElementById('addMemberEmail').value.trim();
+  var role = document.getElementById('selectRole').value;
+  if (!email) { showToast('请输入用户邮箱'); return; }
+
+  var allUsers = [];
+  try { allUsers = JSON.parse(localStorage.getItem('platform_users')) || []; } catch(e) {}
+  var found = allUsers.find(function(u) { return u.email === email; });
+  if (!found) { showToast('未找到该邮箱对应的用户'); return; }
+
+  var teams = getTeams();
+  var team = teams.find(function(t) { return t.id === currentTeamId; });
+  if (!team) return;
+  if (!team.members) team.members = [];
+  if (team.members.find(function(m) { return m.username === found.username; })) {
+    showToast(found.username + ' 已在团队中'); return;
+  }
+  team.members.push({ username: found.username, role: role, joinedAt: new Date().toISOString().slice(0, 10) });
+  saveTeams(teams);
+  closeAddMemberModal();
+  renderTeamList();
+  renderMemberPanel();
+  showToast(found.username + ' 已加入团队');
+}
+
+// ── Remove member ──
+function removeMember(username) {
+  if (!confirm('确定将 ' + username + ' 移出团队吗？')) return;
+  var teams = getTeams();
+  var team = teams.find(function(t) { return t.id === currentTeamId; });
+  if (!team) return;
+  team.members = (team.members || []).filter(function(m) { return m.username !== username; });
+  saveTeams(teams);
+  renderTeamList();
+  renderMemberPanel();
+  showToast(username + ' 已移出团队');
+}
+
+function initPlatformUsers() {
+  var users = [];
+  try { users = JSON.parse(localStorage.getItem('platform_users')) || []; } catch(e) {}
+  if (users.length < 7) {
+    var defaults = [
+      { username: 'admin', password: '123456', email: 'admin@example.com', role: 'admin', name: '管理员', avatar: '管', createdAt: '2026-06-01' },
+      { username: '张三', password: '123456', email: 'zhangsan@example.com', role: 'engineer', name: '张三', avatar: '张', createdAt: '2026-06-10' },
+      { username: '李四', password: '123456', email: 'lisi@example.com', role: 'annotator', name: '李四', avatar: '李', createdAt: '2026-06-15' },
+      { username: '王五', password: '123456', email: 'wangwu@example.com', role: 'engineer', name: '王五', avatar: '王', createdAt: '2026-06-20' },
+      { username: '赵六', password: '123456', email: 'zhaoliu@example.com', role: 'annotator', name: '赵六', avatar: '赵', createdAt: '2026-07-01' },
+      { username: '孙七', password: '123456', email: 'sunqi@example.com', role: 'engineer', name: '孙七', avatar: '孙', createdAt: '2026-07-05' },
+      { username: '周八', password: '123456', email: 'zhouba@example.com', role: 'annotator', name: '周八', avatar: '周', createdAt: '2026-07-10' },
+    ];
+    localStorage.setItem('platform_users', JSON.stringify(defaults));
+  }
+}
+
+// ── Init teams with members ──
+function initTeams() {
+  var teams = getTeams();
+  // Force overwrite if teams are missing members or fewer than 5
+  var needInit = teams.length < 5;
+  if (!needInit) {
+    for (var i = 0; i < teams.length; i++) {
+      if (!teams[i].members || teams[i].members.length === 0) { needInit = true; break; }
+    }
+  }
+  if (needInit) {
+    teams = [
+      { id: 'team_anbao', name: '安保检测组', createdAt: '2026-05-01', owner: 'admin', members: [
+        { username: 'admin', role: 'owner', joinedAt: '2026-05-01' },
+        { username: '张三', role: 'admin', joinedAt: '2026-06-10' },
+        { username: '王五', role: 'member', joinedAt: '2026-07-03' },
+        { username: '赵六', role: 'member', joinedAt: '2026-07-08' },
+      ]},
+      { id: 'team_xiaofang', name: '消防安全组', createdAt: '2026-06-01', owner: '张三', members: [
+        { username: '张三', role: 'owner', joinedAt: '2026-06-01' },
+        { username: 'admin', role: 'member', joinedAt: '2026-06-15' },
+        { username: '李四', role: 'member', joinedAt: '2026-06-20' },
+        { username: '孙七', role: 'admin', joinedAt: '2026-07-01' },
+        { username: '周八', role: 'member', joinedAt: '2026-07-05' },
+      ]},
+      { id: 'team_default', name: '默认团队', createdAt: '2026-04-01', owner: 'admin', members: [
+        { username: 'admin', role: 'owner', joinedAt: '2026-04-01' },
+        { username: '张三', role: 'member', joinedAt: '2026-04-10' },
+        { username: '李四', role: 'member', joinedAt: '2026-04-15' },
+        { username: '王五', role: 'admin', joinedAt: '2026-05-20' },
+        { username: '赵六', role: 'member', joinedAt: '2026-06-01' },
+      ]},
+      { id: 'team_zhineng', name: '智能交通组', createdAt: '2026-06-15', owner: '王五', members: [
+        { username: '王五', role: 'owner', joinedAt: '2026-06-15' },
+        { username: '张三', role: 'admin', joinedAt: '2026-06-18' },
+        { username: '孙七', role: 'member', joinedAt: '2026-07-02' },
+        { username: '周八', role: 'member', joinedAt: '2026-07-10' },
+      ]},
+      { id: 'team_shipin', name: '视频分析组', createdAt: '2026-07-01', owner: '李四', members: [
+        { username: '李四', role: 'owner', joinedAt: '2026-07-01' },
+        { username: 'admin', role: 'admin', joinedAt: '2026-07-02' },
+        { username: '王五', role: 'member', joinedAt: '2026-07-03' },
+        { username: '赵六', role: 'member', joinedAt: '2026-07-05' },
+        { username: '孙七', role: 'member', joinedAt: '2026-07-08' },
+        { username: '周八', role: 'member', joinedAt: '2026-07-11' },
+      ]},
+    ];
+    saveTeams(teams);
+  }
+}
+
+// ── Auth ──
+function getUser() { try { return JSON.parse(localStorage.getItem('current_user')); } catch(e) { return null; } }
+function logout() { localStorage.removeItem('current_user'); location.href = 'login.html'; }
+
+(function() {
+  var user = getUser();
+  if (!user) { location.href = 'login.html'; return; }
+  currentUser = user.username;
+  initPlatformUsers();
+  document.getElementById('headerUserName').textContent = user.name;
+  document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
+  initTeams();
+  renderTeamList();
+})();
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.user-menu')) {
+    var dd = document.getElementById('userDropdown');
+    if (dd) dd.classList.remove('show');
+  }
+});
+
+var toastTimer;
+function showToast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2000);
+}
+</script>
+</body>
+</html>

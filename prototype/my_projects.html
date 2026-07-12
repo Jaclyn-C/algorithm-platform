@@ -118,6 +118,7 @@
       <a class="sidebar-item" href="models_use.html">模型使用</a>
     </div>
     <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
+      <a class="sidebar-item" href="team_manage.html">团队管理</a>
       <a class="sidebar-item" href="profile.html">个人中心</a>
     </div>
   </nav>
@@ -330,9 +331,15 @@ function showNewTeamInput() {
 function createNewTeam() {
   var name = document.getElementById('newTeamName').value.trim();
   if (!name) { showToast('请输入团队名称'); return; }
+  var user = getUser();
+  var username = user ? user.username : 'admin';
   var teams = getTeams();
   var newId = 'team_' + Date.now();
-  teams.push({ id: newId, name: name, createdAt: new Date().toISOString().slice(0,10) });
+  teams.push({
+    id: newId, name: name, createdAt: new Date().toISOString().slice(0,10),
+    owner: username,
+    members: [{ username: username, role: 'owner', joinedAt: new Date().toISOString().slice(0,10) }]
+  });
   localStorage.setItem('platform_teams', JSON.stringify(teams));
   // Add to dropdown and select it
   var sel = document.getElementById('editProjectTeam');
