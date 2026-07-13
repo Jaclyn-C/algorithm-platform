@@ -257,6 +257,33 @@
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
+  /* Sidebar collapse */
+  .sidebar-logo { position: relative; }
+  .sidebar-toggle {
+    width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border-radius: 6px; transition: all 0.2s;
+    color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1);
+    background: transparent;
+  }
+  .sidebar-toggle:hover { color:#fff; border-color:rgba(255,255,255,0.3); background:rgba(255,255,255,0.06); }
+  .sidebar-toggle svg { width:14px; height:14px; }
+  .sidebar-toggle-collapse { margin-left: auto; }
+  .sidebar-toggle-expand { display: none; margin-left: auto; }
+  .sidebar { transition: width 0.2s ease; }
+  .sidebar.collapsed { width: 72px !important; min-width: 72px !important; }
+  .sidebar.collapsed .logo-text { display: none; }
+  .sidebar.collapsed .sidebar-logo { justify-content: space-between; padding: 0 12px; gap: 5px; }
+  .sidebar.collapsed .logo-icon { margin-right: 0; }
+  .sidebar.collapsed .sidebar-toggle-collapse { display: none; }
+  .sidebar.collapsed .sidebar-toggle-expand { display: flex; }
+  .sidebar.collapsed .sidebar-item { font-size:0; justify-content:center; padding:10px 0; }
+  .sidebar.collapsed .sidebar-item::before { content:attr(data-icon); font-size:16px; }
+  .sidebar.collapsed .sidebar-item .badge { display:none; }
+  .sidebar.collapsed .sidebar-group-title { font-size:0; padding:6px 20px; overflow:hidden; }
+  .sidebar.collapsed .sidebar-group-title::after { content:''; display:block; margin:0 auto; width:22px; height:1px; background:rgba(255,255,255,0.12); }
+  .sidebar.collapsed #sidebarProjectName,
+  .sidebar.collapsed #sidebarProjectGroup .sidebar-group-title { display:none; }
+
 </style>
 </head>
 <body>
@@ -265,20 +292,20 @@
 <aside class="sidebar">
   <div class="sidebar-logo">
     <div class="logo-icon">AI</div>
-    <div class="logo-text">算法训练平台</div>
+    <div class="logo-text">算法训练平台</div><div class="sidebar-toggle sidebar-toggle-collapse" onclick="toggleSidebar()" title="收起侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="10" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div><div class="sidebar-toggle sidebar-toggle-expand" onclick="toggleSidebar()" title="展开侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
   </div>
   <nav class="sidebar-nav">
-    <div class="sidebar-group" id="sidebarTopHome"><a class="sidebar-item" id="sidebarHomeLink" href="my_projects.html">首页</a></div>
+    <div class="sidebar-group" id="sidebarTopHome"><a class="sidebar-item" id="sidebarHomeLink" href="my_projects.html" data-icon="🏠">首页</a></div>
     <div class="sidebar-group" id="sidebarProjectGroup" style="display:none;">
       <div class="sidebar-group-title" style="font-size:13px;color:#fff;font-weight:600;text-transform:none;opacity:1;" id="sidebarProjectName">当前项目：—</div>
     </div>
     <div class="sidebar-group" id="sidebarSubPages" style="display:none;">
-      <a class="sidebar-item active" href="#">数据中心</a>
+      <a class="sidebar-item active" href="#" data-icon="📦">数据中心</a>
       <a class="sidebar-item" href="annotation.html">数据标注<span class="badge">3</span></a>
-      <a class="sidebar-item" href="training.html">模型训练</a>
-      <a class="sidebar-item" href="evaluation.html">模型评估</a>
-      <a class="sidebar-item" href="trial.html">模型试用</a>
-      <a class="sidebar-item" href="deployment.html">模型部署</a>
+      <a class="sidebar-item" href="training.html" data-icon="🏋">模型训练</a>
+      <a class="sidebar-item" href="evaluation.html" data-icon="📈">模型评估</a>
+      <a class="sidebar-item" href="trial.html" data-icon="🧪">模型试用</a>
+      <a class="sidebar-item" href="deployment.html" data-icon="🚀">模型部署</a>
     </div>
     
   </nav>
@@ -297,7 +324,7 @@
         <span style="font-size:12px;" id="headerUserName">用户</span>
         <div class="user-avatar" id="headerUserAvatar" style="width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">U</div>
         <div class="user-dropdown" id="userDropdown">
-          <a href="profile.html">个人中心</a>
+          <a href="profile.html" data-icon="👤">个人中心</a>
           <a href="#" onclick="event.stopPropagation();logout()">退出登录</a>
         </div>
       </div>
@@ -1559,6 +1586,9 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
 }
+
+function toggleSidebar(){var s=document.querySelector(".sidebar");s.classList.toggle("collapsed");try{localStorage.setItem("sidebar_collapsed",s.classList.contains("collapsed"))}catch(e){}}
+!function(){try{if(localStorage.getItem("sidebar_collapsed")==="true"){var s=document.querySelector(".sidebar");if(s)s.classList.add("collapsed")}}catch(e){}}();
 </script>
 </body>
 </html>
