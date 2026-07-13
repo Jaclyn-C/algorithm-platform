@@ -92,12 +92,12 @@
   .card-body.no-padding { padding: 0; }
 
   /* ===== Upload Zone ===== */
-  .upload-zone { border: 2px dashed #d9d9d9; border-radius: var(--radius); padding: 40px; text-align: center; cursor: pointer; transition: var(--transition); background: #fafafa; }
+  .upload-zone { border: 2px dashed #d9d9d9; border-radius: var(--radius); width: 160px; height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition); background: #fafafa; text-align: center; flex-shrink: 0; }
   .upload-zone:hover { border-color: var(--primary); background: var(--primary-light); }
   .upload-zone.dragover { border-color: var(--primary); background: var(--primary-light); }
-  .upload-zone .upload-icon { font-size: 36px; color: var(--primary); margin-bottom: 12px; }
-  .upload-zone .upload-text { font-size: 14px; color: var(--text); margin-bottom: 6px; }
-  .upload-zone .upload-hint { font-size: 12px; color: var(--text-secondary); }
+  .upload-zone .upload-icon { font-size: 28px; color: var(--primary); margin-bottom: 4px; }
+  .upload-zone .upload-text { font-size: 12px; color: var(--text); margin-bottom: 2px; }
+  .upload-zone .upload-hint { font-size: 10px; color: var(--text-muted); }
 
   /* ===== File List ===== */
   .file-list { max-height: 200px; overflow-y: auto; }
@@ -376,21 +376,23 @@
     <div class="card" id="step1">
       <div class="card-header">文件上传 <span class="text-secondary" style="font-weight:400;font-size:12px;">支持视频（MP4、AVI、MOV）、图片（JPG、PNG）、文件夹拖拽，单文件最大 2GB</span></div>
       <div class="card-body">
-        <!-- Upload Zone -->
-        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-          <div class="upload-icon">+</div>
-          <div class="upload-text">点击或拖拽文件到此区域上传</div>
-          <div class="upload-hint">支持视频、单张/多张图片、文件夹（可混合上传）</div>
-        </div>
-        <input type="file" id="fileInput" accept="video/*,image/*" multiple style="display:none;" onchange="handleFiles(this.files)">
+        <div style="display:flex;gap:20px;align-items:flex-start;">
+          <!-- Upload Zone (compact square) -->
+          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon">+</div>
+            <div class="upload-text">点击或拖拽上传</div>
+            <div class="upload-hint">视频 / 图片 / 文件夹</div>
+          </div>
+          <input type="file" id="fileInput" accept="video/*,image/*" multiple style="display:none;" onchange="handleFiles(this.files)">
 
-        <!-- Uploaded File List -->
-        <div id="fileListContainer" style="display:none;" class="mt-16">
-          <div style="font-weight:600;font-size:13px;margin-bottom:8px;">已选择的文件（<span id="fileCount">0</span> 个）</div>
-          <div class="file-list" id="fileList"></div>
-          <div class="flex gap-8 mt-12">
-            <button class="btn btn-default btn-sm" onclick="document.getElementById('fileInput').click()">继续添加</button>
-            <button class="btn btn-default btn-sm" onclick="clearAllFiles()">清空全部</button>
+          <!-- Uploaded File List (right side) -->
+          <div id="fileListContainer" style="display:none;flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:13px;margin-bottom:8px;">已选择的文件（<span id="fileCount">0</span> 个）</div>
+            <div class="file-list" id="fileList"></div>
+            <div class="flex gap-8 mt-12">
+              <button class="btn btn-default btn-sm" onclick="document.getElementById('fileInput').click()">继续添加</button>
+              <button class="btn btn-default btn-sm" onclick="clearAllFiles()">清空全部</button>
+            </div>
           </div>
         </div>
       </div>
