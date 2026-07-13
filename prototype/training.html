@@ -483,41 +483,7 @@
             <th>操作</th>
           </tr>
         </thead>
-        <tbody id="historyBody">
-          <tr>
-            <td>2026-07-02 15:30</td>
-            <td>烟火检测</td>
-            <td>烟火检测-yolo11m-1000e-16b</td>
-            <td>train (892) / val (383)</td>
-            <td>yolo11m.pt</td>
-            <td>1000</td>
-            <td style="color:var(--success);font-weight:600;">0.918</td>
-            <td><span class="tag tag-success">已完成</span></td>
-            <td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(0)">查看</button> <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td>
-          </tr>
-          <tr>
-            <td>2026-06-28 09:15</td>
-            <td>保安服检测</td>
-            <td>保安服检测-yolo11m-800e-16b</td>
-            <td>train (771) / val (331)</td>
-            <td>yolo11m.pt</td>
-            <td>800</td>
-            <td style="color:var(--success);font-weight:600;">0.872</td>
-            <td><span class="tag tag-success">已完成</span></td>
-            <td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(1)">查看</button> <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td>
-          </tr>
-          <tr>
-            <td>2026-06-20 14:00</td>
-            <td>安全帽检测</td>
-            <td>安全帽检测-yolo11n-500e-16b</td>
-            <td>train (650) / val (279)</td>
-            <td>yolo11n.pt</td>
-            <td>500</td>
-            <td>—</td>
-            <td><span class="tag tag-error">手动终止</span></td>
-            <td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(2)">查看</button> <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td>
-          </tr>
-        </tbody>
+        <tbody id="historyBody"></tbody>
       </table>
     </div>
   </div>
@@ -568,8 +534,13 @@ let mapData = { mAP50: [], mAP5095: [], epochs: [] };
 
 // ==================== HISTORY DATA ====================
 const historyResults = [
-  { project:'烟火检测', taskName:'烟火检测-yolo11m-1000e-16b', time:'2026-07-02 15:30', model:'yolo11m.pt', epochs:'1000', train:'892', val:'383', mAP50:'0.918', mAP5095:'0.734', status:'done', path:'models/fire_v1/best.pt' },
+  { project:'保安服检测', taskName:'保安服检测-夜间场景优化', time:'2026-07-12 08:20', model:'yolo11m.pt', epochs:'1000', train:'771', val:'331', mAP50:'-', mAP5095:'-', status:'running', path:'models/security_v4/best.pt' },
   { project:'保安服检测', taskName:'保安服检测-yolo11m-800e-16b', time:'2026-06-28 09:15', model:'yolo11m.pt', epochs:'800', train:'771', val:'331', mAP50:'0.872', mAP5095:'0.651', status:'done', path:'models/security_v3/best.pt' },
+  { project:'保安服检测', taskName:'保安服检测-yolo11l-500e-32b', time:'2026-06-20 14:00', model:'yolo11l.pt', epochs:'500', train:'771', val:'331', mAP50:'0.813', mAP5095:'0.587', status:'stopped', path:'models/security_v2/last.pt' },
+  { project:'烟火检测', taskName:'烟火检测-高精度版', time:'2026-07-10 16:45', model:'yolo11x.pt', epochs:'1500', train:'892', val:'383', mAP50:'-', mAP5095:'-', status:'running', path:'models/fire_v2/best.pt' },
+  { project:'烟火检测', taskName:'烟火检测-yolo11m-1000e-16b', time:'2026-07-02 15:30', model:'yolo11m.pt', epochs:'1000', train:'892', val:'383', mAP50:'0.918', mAP5095:'0.734', status:'done', path:'models/fire_v1/best.pt' },
+  { project:'烟火检测', taskName:'烟火检测-yolo11m-600e-16b', time:'2026-06-30 16:45', model:'yolo11m.pt', epochs:'600', train:'892', val:'383', mAP50:'0.886', mAP5095:'0.691', status:'done', path:'models/security_v3/best.pt' },
+  { project:'烟火检测', taskName:'烟火检测-yolo11n-400e-8b', time:'2026-06-25 10:00', model:'yolo11n.pt', epochs:'400', train:'650', val:'279', mAP50:'0.745', mAP5095:'-', status:'stopped', path:'models/fire_v0/last.pt' },
   { project:'安全帽检测', taskName:'安全帽检测-yolo11n-500e-16b', time:'2026-06-20 14:00', model:'yolo11n.pt', epochs:'500', train:'650', val:'279', mAP50:'-', mAP5095:'-', status:'stopped', path:'models/helmet_v1/last.pt' },
 ];
 
@@ -898,31 +869,47 @@ function resetToConfig() {
   document.getElementById('btnPause').disabled = false;
 }
 
-function addHistoryRow(statusText, statusType) {
-  const now = new Date();
-  const timeStr = now.toISOString().slice(0, 16).replace('T', ' ');
-  const project = document.querySelector('.page-header select').selectedOptions[0].text;
-  const trainDS = document.getElementById('trainDataset').value;
-  const valDS = document.getElementById('valDataset').value;
-  const model = document.getElementById('pretrainedModel').value;
-  const finalMap50 = mapData.mAP50.length > 0 ? mapData.mAP50[mapData.mAP50.length-1].toFixed(3) : '-';
-  const finalMap5095 = mapData.mAP5095.length > 0 ? mapData.mAP5095[mapData.mAP5095.length-1].toFixed(3) : '-';
+function renderHistoryTable() {
+  var project = getProjectName(localStorage.getItem('current_project') || '');
+  var body = document.getElementById('historyBody');
+  body.innerHTML = '';
+  historyResults.forEach(function(r, idx) {
+    if (r.project !== project) return;
+    var mapClass = r.status === 'done' ? 'tag-success' : r.status === 'running' ? 'tag-processing' : 'tag-error';
+    var statusLabel = r.status === 'done' ? '已完成' : r.status === 'running' ? '进行中' : '已终止';
+    body.innerHTML +=
+      '<tr>' +
+      '<td>' + r.time + '</td>' +
+      '<td>' + r.project + '</td>' +
+      '<td>' + (r.taskName || '') + '</td>' +
+      '<td>train (' + r.train + ') / val (' + r.val + ')</td>' +
+      '<td>' + r.model + '</td>' +
+      '<td>' + r.epochs + '</td>' +
+      '<td style="color:var(--success);font-weight:600;">' + r.mAP50 + '</td>' +
+      '<td><span class="tag ' + mapClass + '">' + statusLabel + '</span></td>' +
+      '<td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(' + idx + ')">查看</button> <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td>' +
+      '</tr>';
+  });
+}
 
-  const taskName = document.getElementById('taskName').value.trim() || (project + '-' + model.replace('.pt','') + '-' + currentEpoch + 'e-' + document.getElementById('batch').value + 'b');
-  const tagClass = statusType === 'done' ? 'tag-success' : 'tag-error';
-  const row = document.createElement('tr');
-  row.innerHTML = `
-    <td>${timeStr}</td>
-    <td>${project}</td>
-    <td>${taskName}</td>
-    <td>train (771) / val (331)</td>
-    <td>${model}</td>
-    <td>${currentEpoch}</td>
-    <td style="color:var(--success);font-weight:600;">${finalMap50}</td>
-    <td><span class="tag ${tagClass}">${statusText}</span></td>
-    <td><button class="btn btn-text btn-sm" onclick="viewLatestResult()">查看</button> <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td>
-  `;
-  document.getElementById('historyBody').insertBefore(row, document.getElementById('historyBody').firstChild);
+function addHistoryRow(statusText, statusType) {
+  var now = new Date();
+  var timeStr = now.toISOString().slice(0, 16).replace('T', ' ');
+  var project = getProjectName(localStorage.getItem('current_project') || '');
+  var trainDS = document.getElementById('trainDataset').value;
+  var valDS = document.getElementById('valDataset').value;
+  var model = document.getElementById('pretrainedModel').value;
+  var finalMap50 = mapData.mAP50.length > 0 ? mapData.mAP50[mapData.mAP50.length-1].toFixed(3) : '-';
+  var finalMap5095 = mapData.mAP5095.length > 0 ? mapData.mAP5095[mapData.mAP5095.length-1].toFixed(3) : '-';
+
+  var taskName = document.getElementById('taskName').value.trim() || (project + '-' + model.replace('.pt','') + '-' + currentEpoch + 'e-' + document.getElementById('batch').value + 'b');
+  // Add to historyResults and reload
+  historyResults.unshift({
+    project: project, taskName: taskName, time: timeStr, model: model, epochs: String(currentEpoch),
+    train: trainDS, val: valDS, mAP50: finalMap50, mAP5095: finalMap5095,
+    status: statusType === 'done' ? 'done' : 'stopped', path: 'models/' + project + '/train/weights'
+  });
+  renderHistoryTable();
 }
 
 // ==================== CHARTS ====================
@@ -1134,6 +1121,7 @@ function logout() { localStorage.removeItem('current_user'); location.href = 'lo
   var project = localStorage.getItem('current_project'); if (!project) { location.href = 'projects.html'; return; } document.getElementById("sidebarProjectGroup").style.display = "block"; document.getElementById("sidebarSubPages").style.display = "block";
   document.getElementById('sidebarProjectName').textContent = '当前项目：' + getProjectName(project);
   updateTaskName();
+  renderHistoryTable();
 })();
 
 
