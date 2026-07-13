@@ -124,7 +124,7 @@
     <div class="logo-text">算法训练平台</div>
   </div>
   <nav class="sidebar-nav">
-    <div class="sidebar-group" id="sidebarTopHome"><a class="sidebar-item" href="my_projects.html">首页</a></div>
+    <div class="sidebar-group" id="sidebarTopHome"><a class="sidebar-item" id="sidebarHomeLink" href="my_projects.html">首页</a></div>
     <div class="sidebar-group" id="sidebarProjectGroup" style="display:none;">
       <div class="sidebar-group-title" style="font-size:13px;color:#fff;font-weight:600;text-transform:none;opacity:1;" id="sidebarProjectName">当前项目：—</div>
     </div>
@@ -362,7 +362,7 @@ function logout() { localStorage.removeItem('current_user'); location.href = 'lo
   document.getElementById('headerUserName').textContent = user.name;
   document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
 
-  var project = localStorage.getItem('current_project'); if (!project) { location.href = 'projects.html'; return; } document.getElementById("sidebarProjectGroup").style.display = "block"; document.getElementById("sidebarSubPages").style.display = "block";
+  var project = localStorage.getItem('current_project'); if (!project) { location.href = 'projects.html'; return; } document.getElementById("sidebarProjectGroup").style.display = "block"; document.getElementById("sidebarSubPages").style.display = "block"; document.getElementById("sidebarHomeLink").href = (project.indexOf("my_") === 0) ? "my_projects.html" : "projects.html";
   document.getElementById('sidebarProjectName').textContent = '当前项目：' + getProjectName(project);
 })();
 
