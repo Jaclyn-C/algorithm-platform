@@ -374,10 +374,31 @@ function renderAllProjects() {
       '<div class="p-stats">' + statsHtml + '</div>' +
       '<div style="display:flex;gap:6px;justify-content:space-between;" onclick="event.stopPropagation();">' +
         '<button class="btn btn-default btn-sm" onclick="enterProject(\'' + p.id + '\')">进入项目</button>' +
-        '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject(\'' + p.id + '\',\'' + p.name + '\')">删除</button>' +
+        (canDeleteProject(p) ? '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject(\'' + p.id + '\',\'' + p.name + '\')">删除</button>' : '') +
       '</div>';
     grid.appendChild(card);
   });
+}
+
+var currentLoginUser = '';
+
+function canDeleteProject(p) {
+  if (p.id === 'security' || p.id === 'fire' || p.id === 'helmet') {
+    var teams = getTeams();
+    // Map preset ids to teamIds
+    var tid = { security: 'team_anbao', fire: 'team_xiaofang', helmet: 'team_default' }[p.id];
+    var team = teams.find(function(t) { return t.id === tid; });
+    if (team) {
+      return team.owner === currentLoginUser || (team.members || []).some(function(m) { return m.username === currentLoginUser && (m.role === 'admin' || m.role === 'owner'); });
+    }
+    return true;
+  }
+  var team = getTeams().find(function(t) { return t.id === p.teamId; });
+  if (team) {
+    return team.owner === currentLoginUser || (team.members || []).some(function(m) { return m.username === currentLoginUser && (m.role === 'admin' || m.role === 'owner'); });
+  }
+  // No team info, default to allow (e.g. personal shared projects)
+  return true;
 }
 
 // ── Auth & Init ──
@@ -388,6 +409,7 @@ function enterProject(val) { localStorage.setItem('current_project', val); locat
 (function() {
   var user = getUser();
   if (!user) { location.href = 'login.html'; return; }
+  currentLoginUser = user.username;
   document.getElementById('headerUserName').textContent = user.name;
   document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
   initTeams();
