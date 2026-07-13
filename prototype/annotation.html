@@ -505,7 +505,7 @@
     </div>
     <div class="sidebar-group" id="sidebarSubPages" style="display:none;">
       <a class="sidebar-item" href="data_center.html" data-icon="📦">数据中心</a>
-      <a class="sidebar-item active" href="#">数据标注<span class="badge">3</span></a>
+      <a class="sidebar-item active" href="#">数据标注</a>
       <a class="sidebar-item" href="training.html" data-icon="🏋">模型训练</a>
       <a class="sidebar-item" href="evaluation.html" data-icon="📈">模型评估</a>
       <a class="sidebar-item" href="trial.html" data-icon="🧪">模型试用</a>
@@ -524,7 +524,7 @@
       <a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>数据标注</span>
     </div>
     <div class="header-actions">
-      <button class="btn btn-default btn-sm" id="btnBackToOverview" style="display:none;" onclick="backToOverview()">← 返回数据标注总览</button>
+      <button class="btn btn-default btn-sm" id="btnBackToOverview" style="display:none;" onclick="backToOverview()">返回数据标注总览</button>
       <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
         <span style="font-size:12px;" id="headerUserName">用户</span>
         <div id="headerUserAvatar" style="width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">U</div>
@@ -1325,20 +1325,22 @@ function backToOverview() {
 
 // ── Breadcrumb update ──
 function updateBreadcrumb(mode, dsKey) {
-  const bc = document.getElementById('breadcrumb');
-  const project = getCurrentProject();
-  const projNames = { security: '保安服检测', fire: '烟火检测', helmet: '安全帽检测' };
-  const projName = projNames[project] || '项目';
+  var bc = document.getElementById('breadcrumb');
+  var project = getCurrentProject();
+  var projNames = { security: '保安服检测', fire: '烟火检测', helmet: '安全帽检测' };
+  var projName = projNames[project] || getProjectName(project);
   if (mode === 'overview') {
-    bc.innerHTML = '<a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>数据标注</span> <span class="sep">›</span> <span>数据标注总览</span>';
+    bc.innerHTML = '<a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>数据标注总览</span>';
   } else {
-    let dsName = '';
+    var dsName = '';
     if (dsKey) {
-      const dss = DATASET_REGISTRY[project] || [];
-      const found = dss.find(d => d.key === dsKey);
+      var dss = DATASET_REGISTRY[project] || [];
+      var found = dss.find(function(d) { return d.key === dsKey; });
       if (found) dsName = found.name.split(' ')[0];
     }
-    bc.innerHTML = '<a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>数据标注</span> <span class="sep">›</span> <span>' + projName + ' — ' + (dsName || '标注任务') + '</span>';
+    bc.innerHTML = '<a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span>' +
+      '<a href="javascript:void(0)" onclick="backToOverview()" style="color:var(--text-secondary);text-decoration:none;">数据标注总览</a> <span class="sep">›</span>' +
+      '<span>数据标注 — ' + projName + ' — ' + (dsName || '标注任务') + '</span>';
   }
 }
 
