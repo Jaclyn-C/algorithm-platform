@@ -83,6 +83,7 @@
   .tag-success { background: #f6ffed; color: var(--success); }
   .tag-warning { background: #fff7e6; color: var(--warning); }
   .tag-processing { background: #e6f7ff; color: var(--primary); }
+  .tag-iterating { background: #f9f0ff; color: #722ed1; }
 
   .empty-state { text-align: center; padding: 80px 20px; color: var(--text-muted); }
   .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
@@ -300,7 +301,7 @@ function renderProjects() {
       : '';
     // 状态标记放右上角
     var stage = p.stage || '数据准备';
-    var stageClasses = { '运行中': 'tag-success', '标注中': 'tag-processing', '数据准备': 'tag-warning' };
+    var stageClasses = { '运行中': 'tag-success', '标注中': 'tag-processing', '数据准备': 'tag-warning', '迭代中': 'tag-iterating' };
     var stageTag = '<span class="tag ' + (stageClasses[stage] || '') + '" style="margin-left:auto;">' + stage + '</span>';
 
     var pipelineHtml =
@@ -308,7 +309,8 @@ function renderProjects() {
       '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">标注</div></div><div class="pipe-arrow">→</div>' +
       '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">训练</div></div><div class="pipe-arrow">→</div>' +
       '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">评估</div></div><div class="pipe-arrow">→</div>' +
-      '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">部署</div></div>';
+      '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">部署</div></div><div class="pipe-arrow">→</div>' +
+      '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">迭代</div></div>';
     var statsHtml = '<span>数据集：<strong>—</strong></span><span>标注：<strong>未开始</strong></span>';
 
     var buttonsHtml =

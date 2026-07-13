@@ -83,6 +83,7 @@
   .tag-success { background: #f6ffed; color: var(--success); }
   .tag-warning { background: #fff7e6; color: var(--warning); }
   .tag-processing { background: #e6f7ff; color: var(--primary); }
+  .tag-iterating { background: #f9f0ff; color: #722ed1; }
 
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -236,22 +237,22 @@ function initProjects() {
 var PRESET_INFO = {
   security: {
     icon: '👮', color: '#1890ff,#36cfc9',
-    stage: '运行中', stageClass: 'tag-success',
-    pipe: ['done','done','done','done','done'],
+    stage: '迭代中', stageClass: 'tag-iterating',
+    pipe: ['done','done','done','done','done','active'],
     stats: '<span>模型：<strong>best.pt v1.3.0</strong></span><span>mAP@50：<strong style="color:var(--success);">0.872</strong></span><span>数据集：<strong>1,102 张</strong></span>',
     dateExtra: ' · 摄像头A',
   },
   fire: {
     icon: '🔥', color: '#fa8c16,#f5222d',
     stage: '标注中', stageClass: 'tag-processing',
-    pipe: ['done','active','wait','wait','wait'],
+    pipe: ['done','active','wait','wait','wait','wait'],
     stats: '<span>标注进度：<strong style="color:var(--primary);">47/200</strong></span><span>数据集：<strong>856 张</strong></span>',
     dateExtra: ' · 摄像头B',
   },
   helmet: {
     icon: '🪖', color: '#722ed1,#eb2f96',
     stage: '数据准备', stageClass: 'tag-warning',
-    pipe: ['done','wait','wait','wait','wait'],
+    pipe: ['done','wait','wait','wait','wait','wait'],
     stats: '<span>数据集：<strong>1,517 张</strong></span><span>标注：<strong>未开始</strong></span>',
     dateExtra: ' · 摄像头C',
   },
@@ -311,7 +312,7 @@ function renderAllProjects() {
       stageTag = '<span class="tag ' + info.stageClass + '" style="margin-left:auto;">' + info.stage + '</span>';
     } else {
       var stage = p.stage || '数据准备';
-      var stageClasses = { '运行中': 'tag-success', '标注中': 'tag-processing', '数据准备': 'tag-warning' };
+      var stageClasses = { '运行中': 'tag-success', '标注中': 'tag-processing', '数据准备': 'tag-warning', '迭代中': 'tag-iterating' };
       stageTag = '<span class="tag ' + (stageClasses[stage] || '') + '" style="margin-left:auto;">' + stage + '</span>';
     }
 
@@ -320,13 +321,13 @@ function renderAllProjects() {
     if (isPreset) {
       pipeDots = info.pipe;
     } else {
-      pipeDots = ['active','wait','wait','wait','wait'];
+      pipeDots = ['active','wait','wait','wait','wait','wait'];
     }
-    var labels = ['数据','标注','训练','评估','部署'];
+    var labels = ['数据','标注','训练','评估','部署','迭代'];
     var pipelineHtml = '';
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < 6; i++) {
       pipelineHtml += '<div class="pipe-step"><div class="pipe-dot ' + pipeDots[i] + '"></div><div class="pipe-label">' + labels[i] + '</div></div>';
-      if (i < 4) pipelineHtml += '<div class="pipe-arrow">→</div>';
+      if (i < 5) pipelineHtml += '<div class="pipe-arrow">→</div>';
     }
 
     // Stats
