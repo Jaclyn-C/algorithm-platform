@@ -227,9 +227,10 @@
   .model-option:last-child { border-bottom: none; }
   .model-option:hover { background: #f5f5f5; }
   .model-option.selected { background: var(--primary-light); }
-  .model-option input[type="radio"] { display: none; }
-  .model-option-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #d9d9d9; flex-shrink: 0; transition: var(--transition); }
-  .model-option.selected .model-option-dot { border-color: var(--primary); border-width: 5px; }
+  .model-option input[type="checkbox"] { display: none; }
+  .model-option-dot { width: 16px; height: 16px; border-radius: 3px; border: 2px solid #d9d9d9; flex-shrink: 0; transition: var(--transition); }
+  .model-option.selected .model-option-dot { border-color: var(--primary); background: var(--primary); }
+  .model-option.selected .model-option-dot::after { content: ''; display: block; width: 10px; height: 10px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 5l2 2 4-4' stroke='white' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") center/contain no-repeat; margin: 2px; }
   .model-option-info { flex: 1; min-width: 0; }
   .model-option-name { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
   .model-option-tag { font-size: 10px; padding: 1px 6px; border-radius: 3px; background: var(--primary-light); color: var(--primary); font-weight: 400; }
@@ -254,6 +255,8 @@
   .conf-ticks span { font-size: 14px; color: #d9d9d9; line-height: 1; }
   .conf-current { text-align: center; margin-top: 10px; font-size: 11px; color: var(--text-secondary); }
   .auto-conf-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 22px; padding: 0 8px; border-radius: 11px; background: var(--primary); color: #fff; font-weight: 700; font-size: 13px; vertical-align: middle; }
+  .file-upload-row-custom:hover { border-color: var(--primary) !important; background: var(--primary-light); }
+  .file-upload-row-custom.has-file { border-style: solid !important; background: #f6ffed; border-color: var(--success) !important; }
 
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -564,10 +567,10 @@
 
       <!-- Model selection -->
       <div class="auto-section">
-        <div class="auto-section-title">选择标注模型</div>
+        <div class="auto-section-title">选择标注模型 <span style="font-weight:400;font-size:10px;color:var(--text-muted);">可多选，合并所有模型的类别</span></div>
         <div class="auto-section-body" style="padding:0;">
           <label class="model-option selected" id="modelOpt_best_v1.3">
-            <input type="radio" name="autoModel" value="best_v1.3" checked onclick="switchAnnoModel('best_v1.3')">
+            <input type="checkbox" name="autoModel" value="best_v1.3" checked onchange="onAnnoModelChange()">
             <span class="model-option-dot"></span>
             <div class="model-option-info">
               <div class="model-option-name">best.pt — v1.3.0<span class="model-option-tag">保安服检测</span></div>
@@ -575,7 +578,7 @@
             </div>
           </label>
           <label class="model-option" id="modelOpt_best_v2.0">
-            <input type="radio" name="autoModel" value="best_v2.0" onclick="switchAnnoModel('best_v2.0')">
+            <input type="checkbox" name="autoModel" value="best_v2.0" onchange="onAnnoModelChange()">
             <span class="model-option-dot"></span>
             <div class="model-option-info">
               <div class="model-option-name">best.pt — v2.0.0<span class="model-option-tag">烟火检测</span></div>
@@ -583,13 +586,22 @@
             </div>
           </label>
           <label class="model-option" id="modelOpt_yolo11m">
-            <input type="radio" name="autoModel" value="yolo11m" onclick="switchAnnoModel('yolo11m')">
+            <input type="checkbox" name="autoModel" value="yolo11m" onchange="onAnnoModelChange()">
             <span class="model-option-dot"></span>
             <div class="model-option-info">
               <div class="model-option-name">yolo11m.pt<span class="model-option-tag" style="background:#f0f0f0;color:#8c8c8c;">预训练</span></div>
               <div class="model-option-meta">COCO 预训练 · 80 个类别 · 52.0 MB</div>
             </div>
           </label>
+        </div>
+        <!-- Upload custom model -->
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);" id="uploadModelRow">
+          <div class="file-upload-row-custom" id="customModelUploadZone" onclick="document.getElementById('customModelFileInput').click()" style="flex:1;padding:6px 10px;border:1px dashed #d9d9d9;border-radius:4px;cursor:pointer;transition:var(--transition);">
+            <span id="customModelFileName" style="font-size:11px;color:var(--text-muted);">+ 上传 .pt 模型文件</span>
+          </div>
+          <input type="file" id="customModelFileInput" accept=".pt" style="display:none;" onchange="handleCustomModelUpload(this.files)">
+          <input type="text" id="customModelVersion" placeholder="版本号" style="width:70px;padding:4px 6px;border:1px solid #d9d9d9;border-radius:4px;font-size:11px;font-family:var(--font);display:none;">
+          <button class="btn btn-primary btn-sm" id="btnAddCustomModel" onclick="addUploadedModel()" style="display:none;">添加</button>
         </div>
       </div>
 
@@ -603,6 +615,12 @@
           <span class="auto-cat-count" id="annoCatCount">已选 5</span>
         </div>
         <div class="auto-section-body cat-check-grid" id="annoCategoryList"></div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:8px;" id="addCatRow">
+          <input type="text" id="newCatName" placeholder="输入新类别名称" style="display:none;flex:1;padding:5px 8px;border:1px solid #d9d9d9;border-radius:4px;font-size:12px;font-family:var(--font);">
+          <button class="btn btn-text btn-sm" id="btnAddCat" onclick="toggleAddCatInput()">+ 添加类别</button>
+          <button class="btn btn-primary btn-sm" id="btnConfirmAddCat" onclick="addCustomCategory()" style="display:none;">确定</button>
+          <button class="btn btn-text btn-sm" id="btnCancelAddCat" onclick="toggleAddCatInput()" style="display:none;">取消</button>
+        </div>
       </div>
 
       <!-- Confidence threshold -->
@@ -1093,10 +1111,11 @@ function openDataset(type) {
   // Action buttons based on dataset type
   const actions = document.getElementById('datasetModalActions');
   if (type === 'deduplicated') {
-    // 数据源 1 — 已完成
+    // 数据源 1 — 已完成（标注过一次，仍可再次自动标注）
     actions.innerHTML = `
       <button class="btn btn-default btn-sm">导出 ZIP</button>
       <button class="btn btn-primary" onclick="goToAnnotation('deduplicated')">查看 / 修改标注</button>
+      <button class="btn btn-default" onclick="closeDatasetModal();openAutoAnnoModal('01')">自动标注</button>
       <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '01')">删除</button>`;
   } else if (type === 'deduplicated_02') {
     const status02 = getPipelineStatus('02');
@@ -1104,6 +1123,7 @@ function openDataset(type) {
       actions.innerHTML = `
         <button class="btn btn-default btn-sm">导出 ZIP</button>
         <button class="btn btn-primary" onclick="goToAnnotation('deduplicated_02')">审核修正标注</button>
+        <button class="btn btn-default" onclick="closeDatasetModal();openAutoAnnoModal('02')">自动标注</button>
         <button class="btn btn-default btn-sm" onclick="discardAutoAnno('02')">丢弃预标注</button>
         <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '02')">删除</button>`;
     } else {
@@ -1120,6 +1140,7 @@ function openDataset(type) {
         <button class="btn btn-default btn-sm">导出 ZIP</button>
         <button class="btn btn-primary" onclick="goToAnnotation('deduplicated_03')">审核修正标注</button>
         <button class="btn btn-default btn-sm" onclick="discardAutoAnno('03')">丢弃预标注</button>
+        <button class="btn btn-default" onclick="closeDatasetModal();openAutoAnnoModal('03')">自动标注</button>
         <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '03')">删除</button>`;
     } else {
       actions.innerHTML = `
@@ -1454,29 +1475,90 @@ const MODEL_CATEGORIES = {
 };
 
 const MODEL_CAT_COLORS = ['#ff4d4f', '#1890ff', '#52c41a', '#faad14', '#722ed1', '#eb2f96', '#13c2c2', '#fa8c16'];
+var annoCustomCats = [];
 
 function openAutoAnnoModal(suffix) {
   autoAnnoPipeline = suffix;
-  var nameMap = { '02': '上传批次_20260701 (856 张)', '03': '上传批次_20260702 (1,517 张)' };
+  annoCustomCats = [];
+  var nameMap = { '01': '上传批次_20260628 deduplicated/ (1,102 张)', '02': '上传批次_20260701 deduplicated/ (856 张)', '03': '上传批次_20260702 deduplicated/ (1,517 张)' };
   document.getElementById('autoAnnoTarget').textContent = nameMap[suffix] || '';
-  // 默认选中第一个模型
-  var radios = document.querySelectorAll('input[name="autoModel"]');
-  if (radios.length > 0) { radios[0].checked = true; }
+  // 默认只选中第一个模型
+  var cbs = document.querySelectorAll('input[name="autoModel"]');
+  var labels = document.querySelectorAll('.model-option');
+  for (var i = 0; i < cbs.length; i++) {
+    cbs[i].checked = (i === 0);
+    if (i === 0) labels[i].classList.add('selected');
+    else labels[i].classList.remove('selected');
+  }
+  // Reset upload area
+  document.getElementById('customModelFileName').textContent = '+ 上传 .pt 模型文件';
+  document.getElementById('customModelUploadZone').classList.remove('has-file');
+  document.getElementById('customModelVersion').style.display = 'none';
+  document.getElementById('customModelVersion').value = '';
+  document.getElementById('btnAddCustomModel').style.display = 'none';
+  document.getElementById('customModelFileInput').value = '';
+  uploadedCustomModelFile = null;
   document.getElementById('autoAnnoModal').style.display = 'flex';
   renderAnnoCategories();
 }
 
-// 切换模型时更新选中样式和类别列表
-function switchAnnoModel(modelVal) {
-  var radios = document.querySelectorAll('input[name="autoModel"]');
-  for (var i = 0; i < radios.length; i++) {
-    radios[i].checked = (radios[i].value === modelVal);
+// ── Custom model upload ──
+var uploadedCustomModelFile = null;
+
+function handleCustomModelUpload(files) {
+  if (!files || files.length === 0) return;
+  uploadedCustomModelFile = files[0];
+  var zone = document.getElementById('customModelUploadZone');
+  zone.classList.add('has-file');
+  document.getElementById('customModelFileName').textContent = uploadedCustomModelFile.name;
+  document.getElementById('customModelVersion').style.display = 'inline-block';
+  document.getElementById('btnAddCustomModel').style.display = 'inline-flex';
+  document.getElementById('customModelVersion').focus();
+}
+
+function addUploadedModel() {
+  if (!uploadedCustomModelFile) return;
+  var version = document.getElementById('customModelVersion').value.trim();
+  if (!version) { showToast('请输入版本号'); return; }
+  var modelName = uploadedCustomModelFile.name;
+  var modelVal = 'custom_' + Date.now();
+  MODEL_CATEGORIES[modelVal] = [];
+  // Insert new model option after last built-in
+  var container = document.querySelector('#autoAnnoModal .auto-section-body');
+  var labels = container.querySelectorAll('.model-option');
+  var newLabel = document.createElement('label');
+  newLabel.className = 'model-option selected';
+  newLabel.id = 'modelOpt_' + modelVal;
+  newLabel.innerHTML =
+    '<input type="checkbox" name="autoModel" value="' + modelVal + '" checked onchange="onAnnoModelChange()">' +
+    '<span class="model-option-dot"></span>' +
+    '<div class="model-option-info">' +
+      '<div class="model-option-name">' + modelName + '<span class="model-option-tag">v' + version + '</span></div>' +
+      '<div class="model-option-meta">上传模型 · ' + (uploadedCustomModelFile.size < 1048576 ? (uploadedCustomModelFile.size / 1024).toFixed(1) + ' KB' : (uploadedCustomModelFile.size / 1048576).toFixed(1) + ' MB') + '</div>' +
+    '</div>';
+  if (labels.length > 0) {
+    labels[labels.length - 1].parentNode.insertBefore(newLabel, labels[labels.length - 1].nextSibling);
+  } else {
+    container.appendChild(newLabel);
   }
-  // Update selected class on labels
+  // Reset upload area
+  document.getElementById('customModelFileName').textContent = '+ 上传 .pt 模型文件';
+  document.getElementById('customModelUploadZone').classList.remove('has-file');
+  document.getElementById('customModelVersion').style.display = 'none';
+  document.getElementById('customModelVersion').value = '';
+  document.getElementById('btnAddCustomModel').style.display = 'none';
+  document.getElementById('customModelFileInput').value = '';
+  uploadedCustomModelFile = null;
+  renderAnnoCategories();
+  showToast(modelName + ' 已添加');
+}
+
+// 模型选中/取消时更新样式并刷新类别
+function onAnnoModelChange() {
   var labels = document.querySelectorAll('.model-option');
   for (var j = 0; j < labels.length; j++) {
-    var radio = labels[j].querySelector('input[name="autoModel"]');
-    if (radio && radio.value === modelVal) {
+    var cb = labels[j].querySelector('input[name="autoModel"]');
+    if (cb && cb.checked) {
       labels[j].classList.add('selected');
     } else {
       labels[j].classList.remove('selected');
@@ -1486,9 +1568,17 @@ function switchAnnoModel(modelVal) {
 }
 
 function renderAnnoCategories() {
-  var model = document.querySelector('input[name="autoModel"]:checked');
-  var modelVal = model ? model.value : 'best_v1.3';
-  var categories = MODEL_CATEGORIES[modelVal] || [];
+  var checked = document.querySelectorAll('input[name="autoModel"]:checked');
+  // Merge categories from all checked models (deduplicate)
+  var seen = {};
+  var categories = [];
+  for (var m = 0; m < checked.length; m++) {
+    var modelCats = MODEL_CATEGORIES[checked[m].value] || [];
+    for (var n = 0; n < modelCats.length; n++) {
+      var cat = modelCats[n];
+      if (!seen[cat]) { seen[cat] = true; categories.push(cat); }
+    }
+  }
   var container = document.getElementById('annoCategoryList');
   if (!container) return;
   var html = '';
@@ -1502,8 +1592,47 @@ function renderAnnoCategories() {
         '<span>' + cat + '</span>' +
       '</label>';
   }
+  // Also render custom categories
+  for (var j = 0; j < annoCustomCats.length; j++) {
+    var ccat = annoCustomCats[j];
+    var colorIdx = (categories.length + j) % MODEL_CAT_COLORS.length;
+    html +=
+      '<label class="cat-check-item">' +
+        '<input type="checkbox" class="anno-cat-checkbox" value="' + ccat + '" checked onchange="updateAnnoCatCount()">' +
+        '<span class="cat-dot" style="background:' + MODEL_CAT_COLORS[colorIdx] + ';"></span>' +
+        '<span>' + ccat + '</span>' +
+      '</label>';
+  }
   container.innerHTML = html;
   updateAnnoCatCount();
+}
+
+function toggleAddCatInput() {
+  var input = document.getElementById('newCatName');
+  var btn = document.getElementById('btnAddCat');
+  var confirmBtn = document.getElementById('btnConfirmAddCat');
+  var cancelBtn = document.getElementById('btnCancelAddCat');
+  var visible = input.style.display !== 'none';
+  input.style.display = visible ? 'none' : 'inline-block';
+  btn.style.display = visible ? 'inline-flex' : 'none';
+  confirmBtn.style.display = visible ? 'none' : 'inline-flex';
+  cancelBtn.style.display = visible ? 'none' : 'inline-flex';
+  if (!visible) { input.value = ''; input.focus(); }
+}
+
+function addCustomCategory() {
+  var name = document.getElementById('newCatName').value.trim();
+  if (!name) { showToast('请输入类别名称'); return; }
+  if (annoCustomCats.indexOf(name) >= 0) { showToast('该类别已存在'); return; }
+  // Check against all selected models' categories
+  var checked = document.querySelectorAll('input[name="autoModel"]:checked');
+  for (var i = 0; i < checked.length; i++) {
+    var builtIn = MODEL_CATEGORIES[checked[i].value] || [];
+    if (builtIn.indexOf(name) >= 0) { showToast('该类别已存在'); return; }
+  }
+  annoCustomCats.push(name);
+  toggleAddCatInput();
+  renderAnnoCategories();
 }
 
 function toggleAllAnnoCats() {
@@ -1529,13 +1658,23 @@ function updateAnnoCatCount() {
 
 function closeAutoAnnoModal() {
   document.getElementById('autoAnnoModal').style.display = 'none';
+  document.getElementById('newCatName').style.display = 'none';
+  document.getElementById('btnAddCat').style.display = 'inline-flex';
+  document.getElementById('btnConfirmAddCat').style.display = 'none';
+  document.getElementById('btnCancelAddCat').style.display = 'none';
 }
 
 function startAutoAnno() {
-  const model = document.querySelector('input[name="autoModel"]:checked').value;
+  // Collect all checked models
+  const checkedModels = document.querySelectorAll('input[name="autoModel"]:checked');
+  if (checkedModels.length === 0) { showToast('请至少选择一个标注模型'); return; }
+  var modelNames = [];
+  for (var mi = 0; mi < checkedModels.length; mi++) {
+    modelNames.push(checkedModels[mi].value.replace('best_v1.3', 'best.pt v1.3.0').replace('best_v2.0', 'best.pt v2.0.0'));
+  }
+  const modelLabel = modelNames.join(' + ');
   const threshold = parseFloat(document.getElementById('autoConfThreshold').value) || 0.3;
   const btn = document.getElementById('btnStartAutoAnno');
-  const modelNames = { 'best_v1.3': 'best.pt v1.3.0', 'best_v2.0': 'best.pt v2.0.0', yolo11m: 'yolo11m.pt' };
 
   // Collect selected categories
   const selectedCats = [];
@@ -1556,18 +1695,13 @@ function startAutoAnno() {
     setPipelineStatus(autoAnnoPipeline, 'review');
 
     // Update badge + pipeline tag
-    const badge = document.getElementById('dedupBadge' + autoAnnoPipeline);
-    const tag = document.getElementById('pipeline' + autoAnnoPipeline + 'Tag');
-    if (autoAnnoPipeline === '02') {
-      if (badge) { badge.textContent = '待审核'; badge.className = 'ds-badge review'; }
-      if (tag) { tag.textContent = '待审核'; tag.className = 'tag'; tag.style.color = '#eb2f96'; tag.style.background = '#fff0f6'; }
-    } else {
-      if (badge) { badge.textContent = '待审核'; badge.className = 'ds-badge review'; }
-      if (tag) { tag.textContent = '待审核'; tag.style.color = '#eb2f96'; tag.style.background = '#fff0f6'; }
-    }
+    var badge = document.getElementById('dedupBadge' + autoAnnoPipeline);
+    var tag = document.getElementById('pipeline' + autoAnnoPipeline + 'Tag');
+    if (badge) { badge.textContent = '待审核'; badge.className = 'ds-badge review'; }
+    if (tag) { tag.textContent = '待审核'; tag.className = 'tag'; tag.style.color = '#eb2f96'; tag.style.background = '#fff0f6'; }
 
-    const imgCount = autoAnnoPipeline === '02' ? 856 : 1517;
-    showToast('自动标注完成！' + modelNames[model] + ' 已标注 ' + imgCount + ' 张图片，类别：' + selectedCats.length + ' 个，等待人工审核');
+    var imgCount = ({ '01': 1102, '02': 856, '03': 1517 })[autoAnnoPipeline] || 0;
+    showToast('自动标注完成！' + modelLabel + ' 已标注 ' + imgCount + ' 张图片，类别：' + selectedCats.length + ' 个，等待人工审核');
   }, 2000);
 }
 
