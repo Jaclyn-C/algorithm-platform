@@ -211,6 +211,27 @@
   .sidebar.collapsed #sidebarProjectName,
   .sidebar.collapsed #sidebarProjectGroup .sidebar-group-title { display:none; }
 
+
+  .sidebar-logo { position: relative; }
+  .sidebar-collapse-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 6px; color: rgba(255,255,255,0.45); border: 1px solid rgba(255,255,255,0.12); background: transparent; transition: all 0.2s; }
+  .sidebar-collapse-btn:hover { color: #fff; border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.06); }
+  .sidebar-collapse-btn svg { width: 12px; height: 12px; }
+  .sidebar-expand-btn { display: none; width: 36px; height: 36px; margin: 10px auto 0; align-items: center; justify-content: center; cursor: pointer; border-radius: 6px; color: rgba(255,255,255,0.45); border: 1px solid rgba(255,255,255,0.12); background: transparent; transition: all 0.2s; }
+  .sidebar.collapsed .sidebar-expand-btn { display: flex; }
+  .sidebar-expand-btn:hover { color: #fff; border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.06); }
+  .sidebar-expand-btn svg { width: 16px; height: 16px; }
+  .sidebar { transition: width 0.2s ease; }
+  .sidebar.collapsed { width: 72px !important; min-width: 72px !important; }
+  .sidebar.collapsed .logo-text { display: none; }
+  .sidebar.collapsed .sidebar-logo { justify-content: space-between; padding: 0 12px; gap: 5px; }
+  .sidebar.collapsed .sidebar-logo .logo-icon { margin-right: 0; }
+  .sidebar.collapsed .sidebar-collapse-btn { display: none; }
+  .sidebar.collapsed .sidebar-item { font-size: 0; justify-content: center; padding: 10px 0; }
+  .sidebar.collapsed .sidebar-item::before { content: attr(data-icon); font-size: 16px; }
+  .sidebar.collapsed .sidebar-item .badge { display: none; }
+  .sidebar.collapsed .sidebar-group-title { font-size: 0; padding: 6px 20px; overflow: hidden; }
+  .sidebar.collapsed .sidebar-group-title::after { content: ''; display: block; margin: 0 auto; width: 22px; height: 1px; background: rgba(255,255,255,0.12); }
+  .sidebar.collapsed #sidebarProjectName, .sidebar.collapsed #sidebarProjectGroup .sidebar-group-title { display: none; }
 </style>
 </head>
 <body>
@@ -219,8 +240,9 @@
 <aside class="sidebar">
   <div class="sidebar-logo">
     <div class="logo-icon">AI</div>
-    <div class="logo-text">算法训练平台</div><div class="sidebar-toggle sidebar-toggle-collapse" onclick="toggleSidebar()" title="收起侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="10" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div><div class="sidebar-toggle sidebar-toggle-expand" onclick="toggleSidebar()" title="展开侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+    <div class="logo-text">算法训练平台</div><div class="sidebar-collapse-btn" onclick="toggleSidebar()" title="收起侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="10" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div><div class="sidebar-toggle sidebar-toggle-collapse" onclick="toggleSidebar()" title="收起侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="10" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div><div class="sidebar-toggle sidebar-toggle-expand" onclick="toggleSidebar()" title="展开侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
   </div>
+  <div class="sidebar-expand-btn" onclick="toggleSidebar()" title="展开侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
   <nav class="sidebar-nav">
     <div class="sidebar-group" id="sidebarTopHome"><a class="sidebar-item" href="my_projects.html" data-icon="🏠">首页</a></div>
     <div class="sidebar-group" id="sidebarProjectGroup" style="display:none;">
@@ -228,7 +250,7 @@
     </div>
     <div class="sidebar-group" id="sidebarSubPages" style="display:none;">
       <a class="sidebar-item" href="data_center.html" data-icon="📦">数据中心</a>
-      <a class="sidebar-item" href="annotation.html">数据标注</a>
+      <a class="sidebar-item" href="annotation.html" data-icon="🏷">数据标注</a>
       <a class="sidebar-item active" href="#" data-icon="🏋">模型训练</a>
       <a class="sidebar-item" href="evaluation.html" data-icon="📈">模型评估</a>
       <a class="sidebar-item" href="trial.html" data-icon="🧪">模型试用</a>
@@ -292,8 +314,14 @@
             </div>
             <div class="form-row">
               <div class="form-group" style="flex:2;">
+                <label>任务名称 <span style="font-size:10px;color:var(--text-muted);">选填，不填自动生成</span></label>
+                <input type="text" id="taskName" placeholder="如：保安服检测-yolo11m-800e-16b" style="padding:5px 8px;border:1px solid #d9d9d9;border-radius:4px;font-size:12px;font-family:var(--font);">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group" style="flex:2;">
                 <label>预训练模型</label>
-                <select id="pretrainedModel" style="flex:1;">
+                <select id="pretrainedModel" style="flex:1;" onchange="updateTaskName()">
                   <option value="yolo11n.pt">yolo11n.pt (轻量)</option>
                   <option value="yolo11m.pt" selected>yolo11m.pt (默认)</option>
                   <option value="yolo11l.pt">yolo11l.pt (较大)</option>
@@ -310,11 +338,11 @@
             <div class="form-row">
               <div class="form-group">
                 <label>训练轮数 (epochs)</label>
-                <input type="number" id="epochs" value="50" min="1">
+                <input type="number" id="epochs" onchange="updateTaskName()" value="50" min="1">
               </div>
               <div class="form-group">
                 <label>批处理大小 (batch)</label>
-                <input type="number" id="batch" value="16" min="1">
+                <input type="number" id="batch" onchange="updateTaskName()" value="16" min="1">
               </div>
               <div class="form-group">
                 <label>图像尺寸 (imgsz)</label>
@@ -388,7 +416,7 @@
           </div>
 
           <!-- Train Button -->
-          <button class="btn btn-primary btn-lg" style="width:100%;" onclick="startTraining()" id="btnStart">开始训练</button>
+          <button class="btn btn-primary btn-lg" style="width:100%;" onclick="submitToQueue()" id="btnStart">提交到训练队列</button>
         </div>
 
         <!-- Monitor View (hidden initially) -->
@@ -446,11 +474,11 @@
           <tr>
             <th>时间</th>
             <th>项目</th>
+            <th>任务名称</th>
             <th>数据集</th>
             <th>模型</th>
             <th>Epochs</th>
             <th>mAP@50</th>
-            <th>mAP@50-95</th>
             <th>状态</th>
             <th>操作</th>
           </tr>
@@ -459,32 +487,32 @@
           <tr>
             <td>2026-07-02 15:30</td>
             <td>烟火检测</td>
+            <td>烟火检测-yolo11m-1000e-16b</td>
             <td>train (892) / val (383)</td>
             <td>yolo11m.pt</td>
             <td>1000</td>
             <td style="color:var(--success);font-weight:600;">0.918</td>
-            <td style="color:var(--success);">0.734</td>
             <td><span class="tag tag-success">已完成</span></td>
             <td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(0)">查看</button> <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td>
           </tr>
           <tr>
             <td>2026-06-28 09:15</td>
             <td>保安服检测</td>
+            <td>保安服检测-yolo11m-800e-16b</td>
             <td>train (771) / val (331)</td>
             <td>yolo11m.pt</td>
             <td>800</td>
             <td style="color:var(--success);font-weight:600;">0.872</td>
-            <td style="color:var(--success);">0.651</td>
             <td><span class="tag tag-success">已完成</span></td>
             <td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(1)">查看</button> <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td>
           </tr>
           <tr>
             <td>2026-06-20 14:00</td>
             <td>安全帽检测</td>
+            <td>安全帽检测-yolo11n-500e-16b</td>
             <td>train (650) / val (279)</td>
             <td>yolo11n.pt</td>
             <td>500</td>
-            <td>—</td>
             <td>—</td>
             <td><span class="tag tag-error">手动终止</span></td>
             <td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(2)">查看</button> <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td>
@@ -540,9 +568,9 @@ let mapData = { mAP50: [], mAP5095: [], epochs: [] };
 
 // ==================== HISTORY DATA ====================
 const historyResults = [
-  { project:'烟火检测', time:'2026-07-02 15:30', model:'yolo11m.pt', epochs:'1000', train:'892', val:'383', mAP50:'0.918', mAP5095:'0.734', status:'done', path:'models/fire_v1/best.pt' },
-  { project:'保安服检测', time:'2026-06-28 09:15', model:'yolo11m.pt', epochs:'800', train:'771', val:'331', mAP50:'0.872', mAP5095:'0.651', status:'done', path:'models/security_v3/best.pt' },
-  { project:'安全帽检测', time:'2026-06-20 14:00', model:'yolo11n.pt', epochs:'500', train:'650', val:'279', mAP50:'-', mAP5095:'-', status:'stopped', path:'models/helmet_v1/last.pt' },
+  { project:'烟火检测', taskName:'烟火检测-yolo11m-1000e-16b', time:'2026-07-02 15:30', model:'yolo11m.pt', epochs:'1000', train:'892', val:'383', mAP50:'0.918', mAP5095:'0.734', status:'done', path:'models/fire_v1/best.pt' },
+  { project:'保安服检测', taskName:'保安服检测-yolo11m-800e-16b', time:'2026-06-28 09:15', model:'yolo11m.pt', epochs:'800', train:'771', val:'331', mAP50:'0.872', mAP5095:'0.651', status:'done', path:'models/security_v3/best.pt' },
+  { project:'安全帽检测', taskName:'安全帽检测-yolo11n-500e-16b', time:'2026-06-20 14:00', model:'yolo11n.pt', epochs:'500', train:'650', val:'279', mAP50:'-', mAP5095:'-', status:'stopped', path:'models/helmet_v1/last.pt' },
 ];
 
 
@@ -555,6 +583,48 @@ function toggleAdvanced() {
 }
 
 // ==================== TRAINING ====================
+// ── Auto-generate task name from params ──
+function updateTaskName() {
+  var nameInput = document.getElementById("taskName");
+  if (!nameInput) return;
+  var projectName = getProjectName(localStorage.getItem("current_project") || "");
+  var pretrained = document.getElementById("pretrainedModel").value.replace(".pt", "");
+  var epochs = document.getElementById("epochs").value;
+  var batch = document.getElementById("batch").value;
+  nameInput.placeholder = projectName + "-" + pretrained + "-" + epochs + "e-" + batch + "b";
+}
+// ── Submit to training queue ──
+function submitToQueue() {
+  var trainDS = document.getElementById("trainDataset").value;
+  var valDS = document.getElementById("valDataset").value;
+  if (!trainDS || !valDS) { showToast("请选择训练集和验证集"); return; }
+  var projectName = getProjectName(localStorage.getItem("current_project") || "");
+  var config = "epochs=" + document.getElementById("epochs").value + ", batch=" + document.getElementById("batch").value + ", imgsz=" + document.getElementById("imgsz").value + ", " + document.getElementById("optimizer").value + ", lr=" + document.getElementById("lr0").value;
+  // Use user-entered name or auto-generate from params
+  var taskName = document.getElementById("taskName").value.trim();
+  if (!taskName) {
+    var pretrained = document.getElementById("pretrainedModel").value.replace(".pt", "");
+    var epochs = document.getElementById("epochs").value;
+    var batch = document.getElementById("batch").value;
+    taskName = projectName + "-" + pretrained + "-" + epochs + "e-" + batch + "b";
+  }
+  var queue = [];
+  try { queue = JSON.parse(localStorage.getItem("training_queue")) || []; } catch(e) {}
+  queue.push({
+    id: "q_" + Date.now(),
+    project: projectName,
+    name: taskName,
+    model: document.getElementById("pretrainedModel").value,
+    version: "v" + new Date().toISOString().slice(2,10).replace(/-/g,""),
+    config: config,
+    status: "queued",
+    progress: 0,
+    currentEpoch: 0, totalEpochs: parseInt(document.getElementById("epochs").value) || 1000,
+    submittedAt: new Date().toISOString().slice(0,16).replace("T"," ")
+  });
+  localStorage.setItem("training_queue", JSON.stringify(queue));
+  showToast("训练任务已提交到队列！当前队列共 " + queue.length + " 个任务，查看训练队列页面");
+}
 function startTraining() {
   const trainDS = document.getElementById('trainDataset').value;
   const valDS = document.getElementById('valDataset').value;
@@ -838,16 +908,17 @@ function addHistoryRow(statusText, statusType) {
   const finalMap50 = mapData.mAP50.length > 0 ? mapData.mAP50[mapData.mAP50.length-1].toFixed(3) : '-';
   const finalMap5095 = mapData.mAP5095.length > 0 ? mapData.mAP5095[mapData.mAP5095.length-1].toFixed(3) : '-';
 
+  const taskName = document.getElementById('taskName').value.trim() || (project + '-' + model.replace('.pt','') + '-' + currentEpoch + 'e-' + document.getElementById('batch').value + 'b');
   const tagClass = statusType === 'done' ? 'tag-success' : 'tag-error';
   const row = document.createElement('tr');
   row.innerHTML = `
     <td>${timeStr}</td>
     <td>${project}</td>
+    <td>${taskName}</td>
     <td>train (771) / val (331)</td>
     <td>${model}</td>
     <td>${currentEpoch}</td>
     <td style="color:var(--success);font-weight:600;">${finalMap50}</td>
-    <td style="color:var(--success);">${finalMap5095}</td>
     <td><span class="tag ${tagClass}">${statusText}</span></td>
     <td><button class="btn btn-text btn-sm" onclick="viewLatestResult()">查看</button> <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td>
   `;
@@ -981,7 +1052,7 @@ function closeHistoryModal() {
 
 function viewHistoryResult(idx) {
   const r = historyResults[idx];
-  document.getElementById('resultModalTitle').textContent = `${r.time} — ${r.project}`;
+  document.getElementById('resultModalTitle').textContent = r.taskName + ' — ' + r.time;
   document.getElementById('resultModalMetrics').innerHTML = `
     <div class="result-item"><div class="metric-value" style="color:var(--success);">${r.mAP50}</div><div class="metric-label">mAP@50</div></div>
     <div class="result-item"><div class="metric-value" style="color:var(--primary);">${r.mAP5095}</div><div class="metric-label">mAP@50-95</div></div>
@@ -1062,6 +1133,7 @@ function logout() { localStorage.removeItem('current_user'); location.href = 'lo
 
   var project = localStorage.getItem('current_project'); if (!project) { location.href = 'projects.html'; return; } document.getElementById("sidebarProjectGroup").style.display = "block"; document.getElementById("sidebarSubPages").style.display = "block";
   document.getElementById('sidebarProjectName').textContent = '当前项目：' + getProjectName(project);
+  updateTaskName();
 })();
 
 

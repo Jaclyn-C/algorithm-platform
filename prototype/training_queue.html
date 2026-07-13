@@ -244,12 +244,12 @@ function init() {
   var fmt = function(ts) { return new Date(ts).toISOString().slice(0,16).replace("T"," "); };
   var n = Date.now();
   var tasks = [
-    { id:"r2", project:"区域入侵检测", model:"best.pt", version:"v1.0.0", config:"epochs=500 batch=8 lr=0.001", status:"running", progress:58, currentEpoch:290, totalEpochs:500, submittedAt:fmt(n-3600000), eta:"42m" },
-    { id:"r1", project:"烟火检测", model:"best.pt", version:"v2.0.0", config:"epochs=1000 batch=16 lr=0.0001", status:"running", progress:34, currentEpoch:342, totalEpochs:1000, submittedAt:fmt(n-5400000), eta:"1h 23m" },
-    { id:"p1", project:"安全帽检测", model:"last.pt", version:"v0.5.0", config:"epochs=300 batch=32 lr=0.01", status:"paused", progress:22, currentEpoch:67, totalEpochs:300, pausedAt:67, submittedAt:fmt(n-7200000) },
-    { id:"q1", project:"安全帽检测", model:"best.pt", version:"v1.0.0", config:"epochs=800 batch=16 lr=0.0001", status:"queued", progress:0, currentEpoch:0, totalEpochs:800, submittedAt:fmt(n-1200000) },
-    { id:"c1", project:"保安服检测", model:"best.pt", version:"v1.3.0", config:"epochs=800 batch=16 lr=0.0001", status:"completed", progress:100, mAP50:"0.872", currentEpoch:800, totalEpochs:800, submittedAt:fmt(n-7200000), duration:"2h 15m" },
-    { id:"s1", project:"烟火检测", model:"best.pt", version:"v1.0.0", config:"epochs=600 batch=16 lr=0.01", status:"stopped", progress:50, mAP50:"0.712", currentEpoch:500, totalEpochs:1000, submittedAt:fmt(n-14400000), stoppedAt:"Epoch 500/1000" },
+    { id:"r2", project:"区域入侵检测", name:"区域入侵检测-yolo11m-500e-8b", model:"best.pt", version:"v1.0.0", config:"epochs=500 batch=8 lr=0.001", status:"running", progress:58, currentEpoch:290, totalEpochs:500, submittedAt:fmt(n-3600000), eta:"42m" },
+    { id:"r1", project:"烟火检测", name:"烟火检测-夜间优化版", model:"best.pt", version:"v2.0.0", config:"epochs=1000 batch=16 lr=0.0001", status:"running", progress:34, currentEpoch:342, totalEpochs:1000, submittedAt:fmt(n-5400000), eta:"1h 23m" },
+    { id:"p1", project:"安全帽检测", name:"安全帽检测-yolo11n-300e-32b", model:"last.pt", version:"v0.5.0", config:"epochs=300 batch=32 lr=0.01", status:"paused", progress:22, currentEpoch:67, totalEpochs:300, pausedAt:67, submittedAt:fmt(n-7200000) },
+    { id:"q1", project:"安全帽检测", name:"安全帽检测-yolo11m-800e-16b", model:"best.pt", version:"v1.0.0", config:"epochs=800 batch=16 lr=0.0001", status:"queued", progress:0, currentEpoch:0, totalEpochs:800, submittedAt:fmt(n-1200000) },
+    { id:"c1", project:"保安服检测", name:"保安服检测-yolo11m-800e-16b", model:"best.pt", version:"v1.3.0", config:"epochs=800 batch=16 lr=0.0001", status:"completed", progress:100, mAP50:"0.872", currentEpoch:800, totalEpochs:800, submittedAt:fmt(n-7200000), duration:"2h 15m" },
+    { id:"s1", project:"烟火检测", name:"烟火检测-yolo11m-600e-16b", model:"best.pt", version:"v1.0.0", config:"epochs=600 batch=16 lr=0.01", status:"stopped", progress:50, mAP50:"0.712", currentEpoch:500, totalEpochs:1000, submittedAt:fmt(n-14400000), stoppedAt:"Epoch 500/1000" },
   ];
   write(doSort(tasks));
 }
@@ -302,7 +302,8 @@ function renderQueue() {
     else if (t.status === "paused") acts = a("resume","act-link")+"继续</span><span class=act-sep>·</span>"+a("stop","act-link danger")+"终止</span>";
     if (t.status !== "queued") acts += (acts?"<span class=act-sep>·</span>":"")+a("detail","act-link")+"详情</span>";
 
-    rows += "<tr><td><span class=task-name>"+t.project+"<span>"+t.model+" "+t.version+"</span></span></td><td style=font-size:11px;color:var(--text-muted)>"+t.config+"</td><td><span class=\"badge "+b[1]+"\"><span class=\"blip "+b[2]+"\"></span>"+b[0]+pos+"</span></td><td style=width:160px>"+pct+"</td><td style=font-size:11px;color:var(--text-secondary)>"+meta+"</td><td style=white-space:nowrap>"+acts+"</td></tr>";
+    var nameDisplay = t.name || (t.project + "-" + t.model.replace(".pt",""));
+    rows += "<tr><td><span class=task-name>"+nameDisplay+"<span>"+t.project+" · "+t.model+" "+t.version+"</span></span></td><td style=font-size:11px;color:var(--text-muted)>"+t.config+"</td><td><span class=\"badge "+b[1]+"\"><span class=\"blip "+b[2]+"\"></span>"+b[0]+pos+"</span></td><td style=width:160px>"+pct+"</td><td style=font-size:11px;color:var(--text-secondary)>"+meta+"</td><td style=white-space:nowrap>"+acts+"</td></tr>";
   }
   table.innerHTML = "<table><thead><tr><th>项目 / 模型</th><th>配置</th><th>状态</th><th style=width:160px>进度</th><th>信息</th><th style=width:140px>操作</th></tr></thead><tbody>"+rows+"</tbody></table>";
 }
@@ -363,7 +364,8 @@ var detailId = "";
 function viewTaskDetail(id) {
   var q = read(), t = find(q, id); if(!t)return;
   detailId = id;
-  document.getElementById("detailTitle").textContent = t.project+" — "+t.model+" "+t.version;
+  var title = t.name || (t.project + " — " + t.model + " " + t.version);
+  document.getElementById("detailTitle").textContent = title;
   var st = {running:"训练中",queued:"排队中",completed:"已完成",stopped:"已终止",paused:"已暂停"};
   var r = t.status==="running", p = t.status==="paused";
   document.getElementById("btnDetailPause").style.display = r?"inline-flex":"none";
