@@ -229,7 +229,7 @@
 
           <div id="fileList"></div>
 
-          <button class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="startUse()" id="btnUse">开始使用</button>
+          <button class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="startUse()" id="btnUse">开始推理</button>
         </div>
       </div>
 
@@ -423,7 +423,7 @@ function startUse() {
     row.innerHTML = html;
 
     document.getElementById('btnUse').disabled = false;
-    document.getElementById('btnUse').textContent = '重新使用';
+    document.getElementById('btnUse').textContent = '重新推理';
     useRunning = false;
     showToast('检测完成！共检测到 ' + totalDetections + ' 个目标');
   }, 2000);
