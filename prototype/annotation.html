@@ -756,16 +756,16 @@
 // ── Dataset registry (per project) ──
 const DATASET_REGISTRY = {
   security: [
-    { key: 'security_deduplicated_01', name: 'deduplicated/ (上传批次_20260628)', total: 1102, annotated: 1102, autoTotal: 400, unreviewed: 120, pipeline: '01' },
-    { key: 'security_deduplicated_02', name: 'deduplicated/ (上传批次_20260701)', total: 856, annotated: 380, autoTotal: 300, unreviewed: 120, pipeline: '02' },
-    { key: 'security_deduplicated_03', name: 'deduplicated/ (上传批次_20260702)', total: 1517, annotated: 0, autoTotal: 460, unreviewed: 460, pipeline: '03' },
+    { key: 'security_deduplicated_01', name: '上传批次_20260628 deduplicated/', total: 1102, annotated: 1102, autoTotal: 400, unreviewed: 120, pipeline: '01' },
+    { key: 'security_deduplicated_02', name: '上传批次_20260701 deduplicated/', total: 856, annotated: 380, autoTotal: 300, unreviewed: 120, pipeline: '02' },
+    { key: 'security_deduplicated_03', name: '上传批次_20260702 deduplicated/', total: 1517, annotated: 0, autoTotal: 460, unreviewed: 460, pipeline: '03' },
   ],
   fire: [
-    { key: 'fire_deduplicated_01', name: 'deduplicated/ (上传批次_20260701)', total: 892, annotated: 320, autoTotal: 200, unreviewed: 70, pipeline: '01' },
-    { key: 'fire_deduplicated_02', name: 'deduplicated/ (上传批次_20260705)', total: 450, annotated: 0, autoTotal: 0, unreviewed: 0, pipeline: '02' },
+    { key: 'fire_deduplicated_01', name: '上传批次_20260701 deduplicated/', total: 892, annotated: 320, autoTotal: 200, unreviewed: 70, pipeline: '01' },
+    { key: 'fire_deduplicated_02', name: '上传批次_20260705 deduplicated/', total: 450, annotated: 0, autoTotal: 0, unreviewed: 0, pipeline: '02' },
   ],
   helmet: [
-    { key: 'helmet_deduplicated_01', name: 'deduplicated/ (上传批次_20260702)', total: 650, annotated: 80, autoTotal: 80, unreviewed: 30, pipeline: '01' },
+    { key: 'helmet_deduplicated_01', name: '上传批次_20260702 deduplicated/', total: 650, annotated: 80, autoTotal: 80, unreviewed: 30, pipeline: '01' },
   ],
 };
 
@@ -1327,8 +1327,6 @@ function backToOverview() {
 function updateBreadcrumb(mode, dsKey) {
   var bc = document.getElementById('breadcrumb');
   var project = getCurrentProject();
-  var projNames = { security: '保安服检测', fire: '烟火检测', helmet: '安全帽检测' };
-  var projName = projNames[project] || getProjectName(project);
   if (mode === 'overview') {
     bc.innerHTML = '<a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>数据标注总览</span>';
   } else {
@@ -1340,7 +1338,7 @@ function updateBreadcrumb(mode, dsKey) {
     }
     bc.innerHTML = '<a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span>' +
       '<a href="javascript:void(0)" onclick="backToOverview()" style="color:var(--text-secondary);text-decoration:none;">数据标注总览</a> <span class="sep">›</span>' +
-      '<span>数据标注 — ' + projName + ' — ' + (dsName || '标注任务') + '</span>';
+      '<span>数据标注 — ' + (dsName || '标注任务') + '</span>';
   }
 }
 

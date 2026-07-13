@@ -448,7 +448,7 @@
             <label>源数据集</label>
             <select id="dedupSource" class="form-control" style="width:200px;">
               <option value="">— 选择待去重的数据集 —</option>
-              <option value="extracted">extracted_frames/ (1,248 张)</option>
+              <option value="extracted">上传批次_20260628 extracted_frames/ (1,248 张)</option>
             </select>
             <span class="input-hint">选择需要去重的数据集</span>
           </div>
@@ -725,7 +725,7 @@
     </div>
     <div style="padding:20px;">
       <div class="flex-between" style="margin-bottom:12px;">
-        <span style="font-size:13px;">源数据集：<strong>labeled/</strong>（images + labels + data.yaml）</span>
+        <span style="font-size:13px;">源数据集：<strong>上传批次_20260628 labeled/</strong>（images + labels + data.yaml）</span>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -1094,20 +1094,20 @@ function openDataset(type) {
 
   const info = {
     // 数据源 1 — 已完成
-    raw_videos: { title: 'files/ — 原始文件', count: '4 个文件（视频 + 图片）', imgs: [] },
-    extracted: { title: 'extracted_frames/ — 抽帧结果', count: '1,248 张图片 · 4 个子文件夹', imgs: 24 },
-    deduplicated: { title: 'deduplicated/ — 去重后图片', count: '1,102 张图片 · 已去重 11.7% · 已标注', imgs: 24 },
-    labeled: { title: 'labeled/ — 标注完成（YOLO格式）', count: '1,102 张图片 · images/ + labels/ + data.yaml', imgs: 24 },
-    train: { title: 'train/ — 训练集（YOLO格式）', count: '771 张图片 + 标签', imgs: 18 },
-    val: { title: 'val/ — 验证集（YOLO格式）', count: '331 张图片 + 标签', imgs: 8 },
+    raw_videos: { title: '上传批次_20260628 files/ — 原始文件', count: '4 个文件（视频 + 图片）', imgs: [] },
+    extracted: { title: '上传批次_20260628 extracted_frames/ — 抽帧结果', count: '1,248 张图片 · 4 个子文件夹', imgs: 24 },
+    deduplicated: { title: '上传批次_20260628 deduplicated/ — 去重后图片', count: '1,102 张图片 · 已去重 11.7% · 已标注', imgs: 24 },
+    labeled: { title: '上传批次_20260628 labeled/ — 标注完成（YOLO格式）', count: '1,102 张图片 · images/ + labels/ + data.yaml', imgs: 24 },
+    train: { title: '上传批次_20260628 train/ — 训练集（YOLO格式）', count: '771 张图片 + 标签', imgs: 18 },
+    val: { title: '上传批次_20260628 val/ — 验证集（YOLO格式）', count: '331 张图片 + 标签', imgs: 8 },
     // 数据源 2 — 标注中
-    raw_videos_02: { title: 'files/ — 原始文件', count: '3 个文件', imgs: [] },
-    extracted_02: { title: 'extracted_frames/ — 抽帧结果', count: '920 张图片 · 3 个子文件夹', imgs: 20 },
-    deduplicated_02: { title: 'deduplicated/ — 去重后图片', count: '856 张图片 · 已去重 12.3% · 标注中 (47/200)', imgs: 20 },
+    raw_videos_02: { title: '上传批次_20260701 files/ — 原始文件', count: '3 个文件', imgs: [] },
+    extracted_02: { title: '上传批次_20260701 extracted_frames/ — 抽帧结果', count: '920 张图片 · 3 个子文件夹', imgs: 20 },
+    deduplicated_02: { title: '上传批次_20260701 deduplicated/ — 去重后图片', count: '856 张图片 · 已去重 12.3% · 标注中 (47/200)', imgs: 20 },
     // 数据源 3 — 未标注
-    raw_videos_03: { title: 'files/ — 原始文件', count: '6 个文件', imgs: [] },
-    extracted_03: { title: 'extracted_frames/ — 抽帧结果', count: '1,650 张图片 · 6 个子文件夹', imgs: 24 },
-    deduplicated_03: { title: 'deduplicated/ — 去重后图片', count: '1,517 张图片 · 已去重 9.5% · 未标注', imgs: 24 },
+    raw_videos_03: { title: '上传批次_20260702 files/ — 原始文件', count: '6 个文件', imgs: [] },
+    extracted_03: { title: '上传批次_20260702 extracted_frames/ — 抽帧结果', count: '1,650 张图片 · 6 个子文件夹', imgs: 24 },
+    deduplicated_03: { title: '上传批次_20260702 deduplicated/ — 去重后图片', count: '1,517 张图片 · 已去重 9.5% · 未标注', imgs: 24 },
   };
 
   const d = info[type];
