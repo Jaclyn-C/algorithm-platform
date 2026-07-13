@@ -420,6 +420,13 @@
   .label-item:hover .label-del-btn { display: flex; }
   .label-del-btn:hover { background: #fff1f0; color: var(--danger); }
 
+  .label-eye { font-size: 12px; cursor: pointer; padding: 2px 4px; border-radius: 2px; opacity: 0.5; transition: var(--transition); flex-shrink: 0; }
+  .label-eye:hover { opacity: 1; background: #e6f7ff; }
+  .label-eye.hidden { opacity: 0.2; }
+  .label-eye-all { font-size: 14px; cursor: pointer; padding: 2px 6px; border-radius: 2px; opacity: 0.5; transition: var(--transition); }
+  .label-eye-all:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+  .label-eye-all.all-hidden { opacity: 0.2; }
+
   /* Regions List */
   .region-list { padding: 4px 8px; max-height: 260px; overflow-y: auto; }
   .region-item {
@@ -585,7 +592,7 @@
     </div>
 
     <!-- ==================== WORKSPACE VIEW ==================== -->
-    <div id="workspaceView" style="display:none;flex:1;flex-direction:column;gap:12px;">
+    <div id="workspaceView" style="display:none;flex:1;flex-direction:column;gap:12px;overflow:hidden;">
 
     <!-- Info Bar -->
     <div class="info-bar">
@@ -665,6 +672,7 @@
         <div class="panel-card">
           <div class="panel-card-header">
             标签列表
+            <span class="label-eye-all" title="全部显示/隐藏" onclick="toggleAllLabelVisibility()">👁</span>
             <button class="btn btn-text btn-sm" onclick="showAddLabelModal()" style="margin-left:auto;">+ 添加</button>
           </div>
           <div class="label-list" id="labelList"></div>
@@ -1524,6 +1532,8 @@ function render() {
 
   regions.forEach(r => {
     const label = LABELS.find(l => l.id === r.labelId) || LABELS[0];
+    // Skip hidden labels
+    if (label._hidden) return;
     const isSelected = r.id === selectedRegionId;
     const isPreAnno = r.conf !== undefined && r.conf < 1;
 
@@ -1804,17 +1814,43 @@ function setTool(tool) {
 
 // ── LABEL LIST RENDERING ──
 function renderLabelList() {
-  const container = document.getElementById('labelList');
-  container.innerHTML = LABELS.map((l, i) => {
-    const idx = i + 1;
-    return `
-      <div class="label-item ${l.id === activeLabel ? 'active' : ''}" data-label="${l.id}" onclick="selectLabel(${l.id})">
-        <span class="label-color" style="background:${l.color};border:2px solid ${l.color};"></span>
-        <span>${l.name}</span>
-        <span class="label-shortcut">${idx <= 9 ? idx : ''}</span>
-        <button class="label-del-btn" title="删除标签" onclick="event.stopPropagation();deleteLabel(${l.id})">✕</button>
-      </div>`;
+  var container = document.getElementById('labelList');
+  var allHidden = LABELS.every(function(l) { return l._hidden; });
+  var allEye = document.querySelector('.label-eye-all');
+  if (allEye) {
+    allEye.textContent = allHidden ? '👁‍🗨' : '👁';
+    if (allHidden) allEye.classList.add('all-hidden');
+    else allEye.classList.remove('all-hidden');
+  }
+  container.innerHTML = LABELS.map(function(l, i) {
+    var idx = i + 1;
+    var isHidden = l._hidden || false;
+    return '<div class="label-item ' + (l.id === activeLabel ? 'active' : '') + (isHidden ? ' label-hidden' : '') + '" data-label="' + l.id + '" onclick="selectLabel(' + l.id + ')">' +
+      '<span class="label-color" style="background:' + l.color + ';border:2px solid ' + l.color + ';"></span>' +
+      '<span style="opacity:' + (isHidden ? '0.4' : '1') + ';">' + l.name + '</span>' +
+      '<span class="label-eye' + (isHidden ? ' hidden' : '') + '" title="' + (isHidden ? '显示' : '隐藏') + '该类别" onclick="event.stopPropagation();toggleLabelVisibility(' + l.id + ')">👁</span>' +
+      '<span style="flex:1;"></span>' +
+      '<span class="label-shortcut">' + (idx <= 9 ? idx : '') + '</span>' +
+      '<button class="label-del-btn" title="删除标签" onclick="event.stopPropagation();deleteLabel(' + l.id + ')">✕</button>' +
+    '</div>';
   }).join('');
+}
+
+function toggleLabelVisibility(labelId) {
+  var label = LABELS.find(function(l) { return l.id === labelId; });
+  if (!label) return;
+  label._hidden = !label._hidden;
+  renderLabelList();
+  render();
+  updateRegionList();
+}
+
+function toggleAllLabelVisibility() {
+  var allHidden = LABELS.every(function(l) { return l._hidden; });
+  LABELS.forEach(function(l) { l._hidden = !allHidden; });
+  renderLabelList();
+  render();
+  updateRegionList();
 }
 
 function selectLabel(id) {
@@ -1939,29 +1975,33 @@ function undo() {
 
 // ── UI UPDATES ──
 function updateRegionList() {
-  const container = document.getElementById('regionList');
-  const countEl = document.getElementById('regionCount');
-  countEl.textContent = regions.length + ' 个标注框';
+  var container = document.getElementById('regionList');
+  var countEl = document.getElementById('regionCount');
+  var visibleRegions = regions.filter(function(r) {
+    var label = LABELS.find(function(l) { return l.id === r.labelId; }) || LABELS[0];
+    return !label._hidden;
+  });
 
-  if (regions.length === 0) {
-    container.innerHTML = `<div style="color:var(--text-muted);text-align:center;padding:24px;font-size:12px;">暂无标注框<br><span style="font-size:11px;">选择标签后，在画布上拖拽绘制</span></div>`;
+  countEl.textContent = visibleRegions.length + ' 个标注框';
+
+  if (visibleRegions.length === 0) {
+    container.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;font-size:12px;">暂无标注框<br><span style="font-size:11px;">选择标签后，在画布上拖拽绘制</span></div>';
     return;
   }
 
-  container.innerHTML = regions.map((r, i) => {
-    const label = LABELS.find(l => l.id === r.labelId) || LABELS[0];
-    const isPre = r.conf !== undefined && r.conf < 1;
-    const selClass = r.id === selectedRegionId ? 'selected' : '';
-    return `
-      <div class="region-item ${selClass}" onclick="selectRegion(${r.id})">
-        <span style="width:10px;height:10px;border-radius:2px;background:${label.color};flex-shrink:0;"></span>
-        <span class="region-idx">#${i + 1}</span>
-        <span class="region-label">${label.name.split('/')[0].trim()}</span>
-        ${isPre ? `<span class="region-conf">${Math.round(r.conf * 100)}%</span>` : `<span style="font-size:9px;color:var(--success);">人工</span>`}
-        <span class="region-actions">
-          <button class="region-act-btn del" title="删除" onclick="event.stopPropagation();deleteRegion(${r.id})">🗑</button>
-        </span>
-      </div>`;
+  container.innerHTML = visibleRegions.map(function(r, i) {
+    var label = LABELS.find(function(l) { return l.id === r.labelId; }) || LABELS[0];
+    var isPre = r.conf !== undefined && r.conf < 1;
+    var selClass = r.id === selectedRegionId ? 'selected' : '';
+    return '<div class="region-item ' + selClass + '" onclick="selectRegion(' + r.id + ')">' +
+      '<span style="width:10px;height:10px;border-radius:2px;background:' + label.color + ';flex-shrink:0;"></span>' +
+      '<span class="region-idx">#' + (i + 1) + '</span>' +
+      '<span class="region-label">' + label.name.split('/')[0].trim() + '</span>' +
+      (isPre ? '<span class="region-conf">' + Math.round(r.conf * 100) + '%</span>' : '<span style="font-size:9px;color:var(--success);">人工</span>') +
+      '<span class="region-actions">' +
+        '<button class="region-act-btn del" title="删除" onclick="event.stopPropagation();deleteRegion(' + r.id + ')">🗑</button>' +
+      '</span>' +
+    '</div>';
   }).join('');
 }
 
