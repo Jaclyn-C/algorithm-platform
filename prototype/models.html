@@ -211,6 +211,7 @@
               <th>模型名</th>
               <th style="width:90px;">版本号</th>
               <th style="width:80px;">mAP@50</th>
+              <th style="width:80px;">训练阶段</th>
               <th style="width:90px;">使用状态</th>
               <th>备注</th>
               <th style="width:80px;">操作</th>
@@ -282,13 +283,13 @@
 <script>
 // ── Model registry (all models across all projects) ──
 const ALL_MODELS = [
-  { id: 1, project: '保安服检测', time: '2026-07-02 15:30', model: 'best.pt', version: 'v1.3.0', epochs: 800, mAP50: '0.872', mAP5095: '0.651', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '' },
-  { id: 2, project: '保安服检测', time: '2026-06-28 09:15', model: 'best.pt', version: 'v1.2.0', epochs: 500, mAP50: '0.851', mAP5095: '0.624', inUse: false, pretrained: 'yolo11m.pt', size: '12.7 MB', notes: '检测精度略有下降' },
-  { id: 3, project: '保安服检测', time: '2026-06-20 14:00', model: 'last.pt', version: 'v1.1.0', epochs: 500, mAP50: '0.813', mAP5095: '0.587', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '' },
-  { id: 4, project: '烟火检测', time: '2026-07-05 10:20', model: 'best.pt', version: 'v2.0.0', epochs: 1000, mAP50: '0.918', mAP5095: '0.734', inUse: false, pretrained: 'yolo11m.pt', size: '12.9 MB', notes: '误报率偏高，需调整阈值' },
-  { id: 5, project: '烟火检测', time: '2026-06-30 16:45', model: 'best.pt', version: 'v1.0.0', epochs: 600, mAP50: '0.886', mAP5095: '0.691', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '' },
-  { id: 6, project: '安全帽检测', time: '2026-07-08 11:00', model: 'best.pt', version: 'v1.0.0', epochs: 800, mAP50: '0.835', mAP5095: '0.612', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '' },
-  { id: 7, project: '安全帽检测', time: '2026-06-20 14:00', model: 'best.pt', version: 'v0.5.0', epochs: 500, mAP50: '0.784', mAP5095: '0.543', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '' },
+  { id: 1, project: '保安服检测', time: '2026-07-02 15:30', model: 'best.pt', version: 'v1.3.0', epochs: 800, mAP50: '0.872', mAP5095: '0.651', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+  { id: 2, project: '保安服检测', time: '2026-06-28 09:15', model: 'best.pt', version: 'v1.2.0', epochs: 500, mAP50: '0.851', mAP5095: '0.624', inUse: false, pretrained: 'yolo11m.pt', size: '12.7 MB', notes: '检测精度略有下降', stage: '已完成' },
+  { id: 3, project: '保安服检测', time: '2026-06-20 14:00', model: 'last.pt', version: 'v1.1.0', epochs: 500, mAP50: '0.813', mAP5095: '0.587', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
+  { id: 4, project: '烟火检测', time: '2026-07-05 10:20', model: 'best.pt', version: 'v2.0.0', epochs: 1000, mAP50: '0.918', mAP5095: '0.734', inUse: false, pretrained: 'yolo11m.pt', size: '12.9 MB', notes: '误报率偏高，需调整阈值', stage: '训练中' },
+  { id: 5, project: '烟火检测', time: '2026-06-30 16:45', model: 'best.pt', version: 'v1.0.0', epochs: 600, mAP50: '0.886', mAP5095: '0.691', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+  { id: 6, project: '安全帽检测', time: '2026-07-08 11:00', model: 'best.pt', version: 'v1.0.0', epochs: 800, mAP50: '0.835', mAP5095: '0.612', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+  { id: 7, project: '安全帽检测', time: '2026-06-20 14:00', model: 'best.pt', version: 'v0.5.0', epochs: 500, mAP50: '0.784', mAP5095: '0.543', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
 ];
 
 // ── Render table ──
@@ -323,6 +324,18 @@ function renderModelTable() {
 
   models.forEach(function(m, i) {
     projects[m.project] = true;
+    var stage = m.stage || '';
+    var stageTag = '';
+    if (stage === '训练中') {
+      stageTag = '<span class="tag" style="background:#fff7e6;color:#fa8c16;">训练中</span>';
+    } else if (stage === '已完成') {
+      stageTag = '<span class="tag tag-success">已完成</span>';
+    } else if (stage === '已终止') {
+      stageTag = '<span class="tag" style="background:#fff1f0;color:#ff4d4f;">已终止</span>';
+    } else {
+      stageTag = '<span class="text-muted">—</span>';
+    }
+
     var inUseHtml = m.inUse
       ? '<span style="color:var(--success);"><span class="in-use-dot on"></span>使用中</span>'
       : '<span class="text-muted"><span class="in-use-dot off"></span>—</span>';
@@ -338,6 +351,7 @@ function renderModelTable() {
       '</td>' +
       '<td><span style="color:var(--primary);font-weight:600;">' + m.version + '</span></td>' +
       '<td style="color:var(--success);font-weight:600;">' + (m.mAP50 || '<span class="text-muted">—</span>') + '</td>' +
+      '<td>' + stageTag + '</td>' +
       '<td>' + inUseHtml + '</td>' +
       '<td><div class="ov-notes" data-modelid="' + m.id + '" ondblclick="startEditModelNotes(this)" title="双击编辑备注">' + escapeHTML(m.notes || '') + '</div></td>' +
       '<td><button class="btn btn-text btn-sm" onclick="exportModel(\'' + m.project + '\', \'' + m.version + '\')" style="color:var(--primary);">导出</button></td>' +
