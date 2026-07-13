@@ -398,14 +398,25 @@ document.addEventListener('click', function(e) {
 function confirmDeleteProject(projectId, projectName) {
   document.getElementById('deleteProjectId').value = projectId;
   document.getElementById('deleteProjectName').textContent = projectName;
+  document.getElementById('deleteInputName').value = '';
+  document.getElementById('btnConfirmDelete').disabled = true;
   document.getElementById('deleteProjectModal').style.display = 'flex';
+  setTimeout(function() { document.getElementById('deleteInputName').focus(); }, 100);
+}
+function checkDeleteInput() {
+  var inputName = document.getElementById('deleteInputName').value.trim();
+  var projectName = document.getElementById('deleteProjectName').textContent;
+  document.getElementById('btnConfirmDelete').disabled = (inputName !== projectName);
 }
 function closeDeleteProjectModal() {
   document.getElementById('deleteProjectModal').style.display = 'none';
+  document.getElementById('deleteInputName').value = '';
 }
 function executeDeleteProject() {
   var id = document.getElementById('deleteProjectId').value;
   var name = document.getElementById('deleteProjectName').textContent;
+  var inputName = document.getElementById('deleteInputName').value.trim();
+  if (inputName !== name) { alert('项目名称不匹配，无法删除'); return; }
   var pl = JSON.parse(localStorage.getItem('project_list') || '[]');
   var item = pl.find(function(p) { return p.id === id; });
   pl = pl.filter(function(p) { return p.id !== id; });
@@ -427,7 +438,8 @@ function toggleSidebar(){var s=document.querySelector(".sidebar");s.classList.to
   <div style="background:#fff;border-radius:8px;width:480px;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
     <div style="padding:16px 20px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:15px;">确认删除项目</div>
     <div style="padding:20px;">
-      <div style="margin-bottom:14px;font-size:13px;">确定要删除项目「<strong id="deleteProjectName"></strong>」吗？此操作不可撤销。</div>
+      <div style="margin-bottom:14px;font-size:13px;">确定要删除项目「<strong id="deleteProjectName"></strong>」吗？此操作<strong>不可撤销</strong>，请手动输入项目名称确认：</div>
+      <input type="text" id="deleteInputName" placeholder="请输入项目名称以确认删除" style="width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);margin-bottom:14px;outline:none;" oninput="checkDeleteInput()">
       <div style="background:#fff1f0;border:1px solid #ffccc7;border-radius:4px;padding:12px;font-size:12px;">
         <strong>以下内容将被一并删除：</strong><br>
         &emsp;→ 该项目下的全部数据集<br>
@@ -439,7 +451,7 @@ function toggleSidebar(){var s=document.querySelector(".sidebar");s.classList.to
     </div>
     <div style="padding:12px 20px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:8px;">
       <button class="btn btn-default btn-sm" onclick="closeDeleteProjectModal()">取消</button>
-      <button class="btn btn-danger btn-sm" onclick="executeDeleteProject()">确认删除</button>
+      <button class="btn btn-danger btn-sm" onclick="executeDeleteProject()" id="btnConfirmDelete" disabled>确认删除</button>
     </div>
   </div>
 </div>

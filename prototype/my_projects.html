@@ -231,6 +231,29 @@
   </div>
 </div>
 
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="deleteProjectModal" style="display:none;" onclick="if(event.target==this)closeDeleteProjectModal()">
+  <div class="modal" style="width:480px;">
+    <div class="modal-header">确认删除项目</div>
+    <div class="modal-body">
+      <input type="hidden" id="deleteProjectId">
+      <div style="margin-bottom:12px;font-size:13px;">确定要删除项目「<strong id="deleteProjectName"></strong>」吗？此操作<strong>不可撤销</strong>，请手动输入项目名称确认：</div>
+      <input type="text" id="deleteInputName" placeholder="请输入项目名称以确认删除" style="width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);margin-bottom:12px;outline:none;" oninput="checkDeleteInput()">
+      <div style="background:#fff1f0;border:1px solid #ffccc7;border-radius:4px;padding:12px;font-size:12px;">
+        <strong>以下内容将被一并删除：</strong><br>
+        &emsp;→ 该项目下的全部数据集<br>
+        &emsp;→ 全部标注数据<br>
+        &emsp;→ 全部训练记录和模型文件<br>
+        &emsp;→ 全部评估记录<br>
+        &emsp;→ 全部部署记录和部署包
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default btn-sm" onclick="closeDeleteProjectModal()">取消</button>
+      <button class="btn btn-danger btn-sm" onclick="executeDeletePersonalProject()" id="btnConfirmDelete" disabled>确认删除</button>
+    </div>
+  </div>
+</div>
 <script>
 var PERSONAL_KEY = 'personal_projects';
 
@@ -433,14 +456,36 @@ function enterProject(id) {
 }
 
 function deletePersonalProject(id, name) {
-  if (!confirm('确定删除个人项目「' + name + '」吗？此操作不可撤销。')) return;
+  document.getElementById('deleteProjectId').value = id;
+  document.getElementById('deleteProjectName').textContent = name;
+  document.getElementById('deleteInputName').value = '';
+  document.getElementById('btnConfirmDelete').disabled = true;
+  document.getElementById('deleteProjectModal').style.display = 'flex';
+  setTimeout(function() { document.getElementById('deleteInputName').focus(); }, 100);
+}
+
+function checkDeleteInput() {
+  var inputName = document.getElementById('deleteInputName').value.trim();
+  var projectName = document.getElementById('deleteProjectName').textContent;
+  document.getElementById('btnConfirmDelete').disabled = (inputName !== projectName);
+}
+
+function closeDeleteProjectModal() {
+  document.getElementById('deleteProjectModal').style.display = 'none';
+}
+
+function executeDeletePersonalProject() {
+  var id = document.getElementById('deleteProjectId').value;
+  var name = document.getElementById('deleteProjectName').textContent;
+  var inputName = document.getElementById('deleteInputName').value.trim();
+  if (inputName !== name) { showToast('项目名称不匹配，无法删除'); return; }
   var personal = getPersonalProjects();
   personal = personal.filter(function(p) { return p.id !== id; });
   savePersonalProjects(personal);
-  // Also remove from team if shared
   var team = JSON.parse(localStorage.getItem('project_list') || '[]');
   team = team.filter(function(p) { return p.id !== id; });
   localStorage.setItem('project_list', JSON.stringify(team));
+  closeDeleteProjectModal();
   renderProjects();
   showToast('项目「' + name + '」已删除');
 }
