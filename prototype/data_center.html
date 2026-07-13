@@ -513,124 +513,33 @@
       </div>
     </div>
 
-    <!-- ===== Step 4: Dataset Management ===== -->
+        <!-- ===== Step 4: Dataset Management ===== -->
     <div class="card" id="step4">
       <div class="card-header">
         数据集管理
-        <span class="text-secondary" style="font-weight:400;font-size:12px;">项目「保安服检测」下的所有数据子文件夹</span>
+        <span class="text-secondary" style="font-weight:400;font-size:12px;"></span>
       </div>
       <div class="card-body">
-        <!-- ========== Data Source 1: 已完成 ========== -->
-        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:flex;align-items:center;gap:8px;" class="pipeline-header">
-          <span class="pipeline-name" data-id="src1" title="双击可修改名称">上传批次_20260628</span>
-          <span class="tag tag-success" style="font-size:10px;">已完成</span>
-        </div>
-        <div class="dataset-grid" style="margin-bottom:24px;">
-          <div class="dataset-card" onclick="openDataset('raw_videos')">
-            <div class="ds-icon raw">▶</div>
-            <div class="ds-name">files/</div>
-            <div class="ds-count">4 个文件</div>
-            <div class="ds-date">2026-06-28 上传</div>
-            <div class="ds-badge done">原始数据</div>
+        <!-- Toolbar -->
+        <div class="flex-between" style="margin-bottom:12px;">
+          <div class="flex gap-8">
+            <input type="text" id="dsSearch" placeholder="搜索数据集名称..." oninput="onDsSearch()" style="padding:5px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:12px;font-family:var(--font);width:200px;">
+            <button class="btn btn-default btn-sm" id="btnDsSort" onclick="toggleDsSort()">时间 ↓</button>
           </div>
-          <div class="dataset-card" onclick="openDataset('extracted')">
-            <div class="ds-icon raw">▣</div>
-            <div class="ds-name">extracted_frames/</div>
-            <div class="ds-count">1,248 张</div>
-            <div class="ds-date">2026-06-29 生成</div>
-            <div class="ds-badge done">已处理</div>
-          </div>
-          <div class="dataset-card" onclick="openDataset('deduplicated')">
-            <div class="ds-icon dedup">▦</div>
-            <div class="ds-name">deduplicated/</div>
-            <div class="ds-count">1,102 张</div>
-            <div class="ds-date">2026-06-30 生成</div>
-            <div class="ds-badge done">已标注</div>
-          </div>
-          <div class="dataset-card" onclick="openDataset('labeled')">
-            <div class="ds-icon labeled">▣</div>
-            <div class="ds-name">labeled/</div>
-            <div class="ds-count">1,102 张</div>
-            <div class="ds-date">2026-07-02 标注完成</div>
-            <div class="ds-badge done">已标注</div>
-          </div>
-          <div class="dataset-card" onclick="openDataset('train')">
-            <div class="ds-icon train">⊞</div>
-            <div class="ds-name">train/</div>
-            <div class="ds-count">771 张 + 标签</div>
-            <div class="ds-date">2026-07-03 生成</div>
-            <div class="ds-badge done">训练集</div>
-          </div>
-          <div class="dataset-card" onclick="openDataset('val')">
-            <div class="ds-icon val">◇</div>
-            <div class="ds-name">val/</div>
-            <div class="ds-count">331 张 + 标签</div>
-            <div class="ds-date">2026-07-03 生成</div>
-            <div class="ds-badge done">验证集</div>
-          </div>
+          <span class="text-secondary" style="font-size:11px;" id="dsCountLabel">共 14 个数据集</span>
         </div>
 
-        <!-- ========== Data Source 2: 标注中 ========== -->
-        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:flex;align-items:center;gap:8px;" class="pipeline-header">
-          <span class="pipeline-name" data-id="src2" title="双击可修改名称">上传批次_20260701</span>
-          <span class="tag tag-processing" style="font-size:10px;" id="pipeline2Tag">标注中 47/200</span>
-        </div>
-        <div class="dataset-grid" style="margin-bottom:24px;">
-          <div class="dataset-card" onclick="openDataset('raw_videos_02')">
-            <div class="ds-icon raw">▶</div>
-            <div class="ds-name">files/</div>
-            <div class="ds-count">3 个文件</div>
-            <div class="ds-date">2026-07-01 上传</div>
-            <div class="ds-badge done">原始数据</div>
-          </div>
-          <div class="dataset-card" onclick="openDataset('extracted_02')">
-            <div class="ds-icon raw">▣</div>
-            <div class="ds-name">extracted_frames/</div>
-            <div class="ds-count">920 张</div>
-            <div class="ds-date">2026-07-01 生成</div>
-            <div class="ds-badge done">已处理</div>
-          </div>
-          <div class="dataset-card" onclick="openDataset('deduplicated_02')">
-            <div class="ds-icon dedup">▦</div>
-            <div class="ds-name">deduplicated/</div>
-            <div class="ds-count">856 张</div>
-            <div class="ds-date">2026-07-02 生成</div>
-            <div class="ds-badge processing" id="dedupBadge02">标注中 47/200</div>
-          </div>
+        <!-- Dataset cards (grouped by batch) -->
+        <div id="dsGroupContainer">
         </div>
 
-        <!-- ========== Data Source 3: 未标注 ========== -->
-        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:flex;align-items:center;gap:8px;" class="pipeline-header">
-          <span class="pipeline-name" data-id="src3" title="双击可修改名称">上传批次_20260702</span>
-          <span class="tag tag-default" style="font-size:10px;" id="pipeline3Tag">未标注</span>
+        <!-- Pagination -->
+        <div class="flex gap-8 mt-12" style="justify-content:center;align-items:center;" id="dsPagination">
         </div>
-        <div class="dataset-grid">
-          <div class="dataset-card" onclick="openDataset('raw_videos_03')">
-            <div class="ds-icon raw">▶</div>
-            <div class="ds-name">files/</div>
-            <div class="ds-count">6 个文件</div>
-            <div class="ds-date">2026-07-02 上传</div>
-            <div class="ds-badge done">原始数据</div>
-          </div>
-          <div class="dataset-card" onclick="openDataset('extracted_03')">
-            <div class="ds-icon raw">▣</div>
-            <div class="ds-name">extracted_frames/</div>
-            <div class="ds-count">1,650 张</div>
-            <div class="ds-date">2026-07-03 生成</div>
-            <div class="ds-badge done">已处理</div>
-          </div>
-          <div class="dataset-card" onclick="openDataset('deduplicated_03')">
-            <div class="ds-icon dedup">▦</div>
-            <div class="ds-name">deduplicated/</div>
-            <div class="ds-count">1,517 张</div>
-            <div class="ds-date">2026-07-03 生成</div>
-            <div class="ds-badge done" id="dedupBadge03">已去重</div>
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex gap-8 mt-16">
-          <button class="btn btn-default" onclick="refreshDatasets()">刷新列表</button>
+        
+        <!-- Refresh -->
+        <div class="flex gap-8 mt-8">
+          <button class="btn btn-default btn-sm" onclick="refreshDatasets()">刷新列表</button>
         </div>
       </div>
     </div>
@@ -1336,9 +1245,130 @@ function typeToCardId(type) {
   return null;
 }
 
+// ==================== STEP 4: DATASET MANAGEMENT ====================
+var DS_PAGE_SIZE = 4;
+var dsPage = 0;
+var dsSortAsc = false;
+var dsFiltered = [];
+
+// Each batch has all its sub-datasets grouped together
+var DATASETS = [
+  { batch:'上传批次_20260628', batchDate:'2026-06-28', status:'已完成', statusClass:'tag-success', children: [
+    { key:'raw_videos', name:'files/', count:'4 个文件', dateText:'2026-06-28 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+    { key:'extracted', name:'extracted_frames/', count:'1,248 张', dateText:'2026-06-29 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+    { key:'deduplicated', name:'deduplicated/', count:'1,102 张', dateText:'2026-06-30 生成', icon:'dedup', iconGlyph:'▦', badge:'已标注', badgeClass:'done' },
+    { key:'labeled', name:'labeled/', count:'1,102 张', dateText:'2026-07-02 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
+    { key:'train', name:'train/', count:'771 张 + 标签', dateText:'2026-07-03 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
+    { key:'val', name:'val/', count:'331 张 + 标签', dateText:'2026-07-03 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
+  ]},
+  { batch:'上传批次_20260701', batchDate:'2026-07-01', status:'标注中', statusClass:'tag-processing', children: [
+    { key:'raw_videos_02', name:'files/', count:'3 个文件', dateText:'2026-07-01 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+    { key:'extracted_02', name:'extracted_frames/', count:'920 张', dateText:'2026-07-01 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+    { key:'deduplicated_02', name:'deduplicated/', count:'856 张', dateText:'2026-07-02 生成', icon:'dedup', iconGlyph:'▦', badge:'标注中 47/200', badgeClass:'processing', badgeId:'dedupBadge02' },
+  ]},
+  { batch:'上传批次_20260702', batchDate:'2026-07-02', status:'未标注', statusClass:'tag-default', children: [
+    { key:'raw_videos_03', name:'files/', count:'6 个文件', dateText:'2026-07-02 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+    { key:'extracted_03', name:'extracted_frames/', count:'1,650 张', dateText:'2026-07-03 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+    { key:'deduplicated_03', name:'deduplicated/', count:'1,517 张', dateText:'2026-07-03 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done', badgeId:'dedupBadge03' },
+  ]}
+];
+
+function onDsSearch() {
+  dsPage = 0;
+  applyDsFilters();
+}
+
+function toggleDsSort() {
+  dsSortAsc = !dsSortAsc;
+  document.getElementById('btnDsSort').textContent = dsSortAsc ? '时间 ↑' : '时间 ↓';
+  dsPage = 0;
+  applyDsFilters();
+}
+
+function applyDsFilters() {
+  var query = document.getElementById('dsSearch').value.trim().toLowerCase();
+
+  dsFiltered = DATASETS.slice();
+
+  // Search filter: match batch name or any child name
+  if (query) {
+    dsFiltered = dsFiltered.filter(function(d) {
+      if (d.batch.toLowerCase().indexOf(query) >= 0) return true;
+      return d.children.some(function(c) { return c.name.toLowerCase().indexOf(query) >= 0; });
+    });
+  }
+
+  // Sort by batchDate
+  dsFiltered.sort(function(a, b) {
+    if (dsSortAsc) return a.batchDate.localeCompare(b.batchDate);
+    return b.batchDate.localeCompare(a.batchDate);
+  });
+
+  renderDsGrid();
+}
+
+function renderDsGrid() {
+  var totalPages = Math.ceil(dsFiltered.length / DS_PAGE_SIZE);
+  if (dsPage >= totalPages) dsPage = Math.max(0, totalPages - 1);
+  var start = dsPage * DS_PAGE_SIZE;
+  var pageItems = dsFiltered.slice(start, start + DS_PAGE_SIZE);
+
+  var container = document.getElementById('dsGroupContainer');
+  var totalCards = 0;
+  dsFiltered.forEach(function(b) { totalCards += b.children.length; });
+  document.getElementById('dsCountLabel').textContent = '共 ' + dsFiltered.length + ' 个批次 / ' + totalCards + ' 个数据集';
+
+  var html = '';
+  for (var i = 0; i < pageItems.length; i++) {
+    var b = pageItems[i];
+    html += '<div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:flex;align-items:center;gap:8px;">' +
+      '<span class="pipeline-name" data-id="' + b.batch + '" title="双击可修改名称">' + b.batch + '</span>' +
+      '<span class="tag ' + b.statusClass + '" style="font-size:10px;">' + b.status + '</span>' +
+    '</div>';
+
+    html += '<div class="dataset-grid" style="margin-bottom:24px;">';
+    for (var j = 0; j < b.children.length; j++) {
+      var d = b.children[j];
+      html += '<div class="dataset-card" onclick="openDataset(\'' + d.key + '\')">' +
+        '<div class="ds-icon ' + d.icon + '">' + d.iconGlyph + '</div>' +
+        '<div class="ds-name">' + d.name + '</div>' +
+        '<div class="ds-count">' + d.count + '</div>' +
+        '<div class="ds-date">' + d.dateText + '</div>' +
+        '<div class="ds-badge ' + d.badgeClass + '"' + (d.badgeId ? ' id="' + d.badgeId + '"' : '') + '>' + d.badge + '</div>' +
+      '</div>';
+    }
+    html += '</div>';
+  }
+
+  if (pageItems.length === 0) {
+    html = '<div style="text-align:center;padding:40px;color:var(--text-muted);">没有匹配的数据集</div>';
+  }
+
+  container.innerHTML = html;
+
+  // Pagination
+  var pagHtml = '';
+  if (totalPages > 1) {
+    pagHtml = '<button class="btn btn-default btn-sm" onclick="changeDsPage(-1)" id="btnDsPrev"' + (dsPage <= 0 ? ' disabled' : '') + '>上一页</button>' +
+      '<span class="text-secondary" style="font-size:12px;margin:0 12px;">' + (dsPage + 1) + ' / ' + totalPages + '</span>' +
+      '<button class="btn btn-default btn-sm" onclick="changeDsPage(1)" id="btnDsNext"' + (dsPage >= totalPages - 1 ? ' disabled' : '') + '>下一页</button>';
+  }
+  document.getElementById('dsPagination').innerHTML = pagHtml;
+}
+
+function changeDsPage(delta) {
+  dsPage += delta;
+  renderDsGrid();
+}
+
 function refreshDatasets() {
   showToast('数据集列表已刷新');
+  applyDsFilters();
 }
+
+(function() {
+  setTimeout(function() { applyDsFilters(); }, 100);
+})();
 
 // ==================== DATASET SPLIT ====================
 let splitDone = false;
