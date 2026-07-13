@@ -185,7 +185,6 @@
 
     <div class="project-grid" id="projectGrid">
       <div class="empty-state" id="emptyState" style="display:none;">
-        <div class="empty-icon">📂</div>
         <div>还没有个人项目</div>
         <div style="font-size:12px;margin-top:4px;">点击上方「+ 新建项目」创建你的第一个项目</div>
       </div>
@@ -283,9 +282,15 @@ function renderProjects() {
 
   if (projects.length === 0) {
     empty.style.display = 'block';
+    grid.style.display = 'flex';
+    grid.style.alignItems = 'center';
+    grid.style.justifyContent = 'center';
     return;
   }
   empty.style.display = 'none';
+  grid.style.display = 'grid';
+  grid.style.alignItems = '';
+  grid.style.justifyContent = '';
 
   projects.forEach(function(p) {
     var isShared = p._shared || false;
