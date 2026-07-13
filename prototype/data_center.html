@@ -52,6 +52,7 @@
   .header .breadcrumb { font-size: 12px; color: var(--text-secondary); }
   .header .breadcrumb span { color: var(--text); font-weight: 500; }
   .header .breadcrumb .sep { margin: 0 6px; color: var(--text-muted); }
+  .header .breadcrumb a:hover { color: var(--primary) !important; }
   .header-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
   /* User Menu */
   .user-menu { position: relative; cursor: pointer; display: flex; align-items: center; gap: 8px; }
@@ -317,7 +318,7 @@
   <!-- Header -->
   <header class="header">
     <div class="breadcrumb">
-      算法训练平台 <span class="sep">›</span> <span>数据中心</span>
+      <a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>数据中心</span>
     </div>
     <div class="header-actions">
       <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">

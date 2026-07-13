@@ -35,6 +35,7 @@
   .header .breadcrumb { font-size: 12px; color: var(--text-secondary); }
   .header .breadcrumb span { color: var(--text); font-weight: 500; }
   .header .breadcrumb .sep { margin: 0 6px; color: var(--text-muted); }
+  .header .breadcrumb a:hover { color: var(--primary) !important; }
   .header-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
   .user-menu { position: relative; cursor: pointer; display: flex; align-items: center; gap: 8px; }
   .user-dropdown { position: absolute; top: 38px; right: 0; background: #fff; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 130px; z-index: 999; display: none; }
@@ -169,7 +170,7 @@
 
 <div class="main">
   <header class="header">
-    <div class="breadcrumb">算法训练平台 <span class="sep">›</span> <span>模型试用</span></div>
+    <div class="breadcrumb"><a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>模型试用</span></div>
     <div class="header-actions">
       <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
         <span style="font-size:12px;" id="headerUserName">用户</span>

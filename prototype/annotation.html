@@ -122,6 +122,7 @@
   .header .breadcrumb { font-size: 12px; color: var(--text-secondary); }
   .header .breadcrumb span { color: var(--text); font-weight: 500; }
   .header .breadcrumb .sep { margin: 0 6px; color: var(--text-muted); }
+  .header .breadcrumb a:hover { color: var(--primary) !important; }
   .header-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
   .user-menu { position: relative; cursor: pointer; display: flex; align-items: center; gap: 8px; }
   .user-dropdown { position: absolute; top: 38px; right: 0; background: #fff; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 130px; z-index: 999; display: none; }
@@ -520,7 +521,7 @@
   <!-- Header -->
   <header class="header">
     <div class="breadcrumb" id="breadcrumb">
-      算法训练平台 <span class="sep">›</span> <span>数据标注</span>
+      <a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>数据标注</span>
     </div>
     <div class="header-actions">
       <button class="btn btn-default btn-sm" id="btnBackToOverview" style="display:none;" onclick="backToOverview()">← 返回数据标注总览</button>
@@ -1329,7 +1330,7 @@ function updateBreadcrumb(mode, dsKey) {
   const projNames = { security: '保安服检测', fire: '烟火检测', helmet: '安全帽检测' };
   const projName = projNames[project] || '项目';
   if (mode === 'overview') {
-    bc.innerHTML = '算法训练平台 <span class="sep">›</span> <span>数据标注</span> <span class="sep">›</span> <span>数据标注总览</span>';
+    bc.innerHTML = '<a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>数据标注</span> <span class="sep">›</span> <span>数据标注总览</span>';
   } else {
     let dsName = '';
     if (dsKey) {
@@ -1337,7 +1338,7 @@ function updateBreadcrumb(mode, dsKey) {
       const found = dss.find(d => d.key === dsKey);
       if (found) dsName = found.name.split(' ')[0];
     }
-    bc.innerHTML = '算法训练平台 <span class="sep">›</span> <span>数据标注</span> <span class="sep">›</span> <span>' + projName + ' — ' + (dsName || '标注任务') + '</span>';
+    bc.innerHTML = '<a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>数据标注</span> <span class="sep">›</span> <span>' + projName + ' — ' + (dsName || '标注任务') + '</span>';
   }
 }
 
