@@ -131,7 +131,7 @@
 <body>
 
 <!-- ==================== Sidebar ==================== -->
-<aside class="sidebar collapsed">
+<aside class="sidebar">
   <div class="sidebar-logo">
     <div class="logo-icon">AI</div>
     <div class="sidebar-expand-btn" onclick="toggleSidebar()" title="展开侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
@@ -155,6 +155,7 @@
     
   </nav>
 </aside>
+<script>(function(){var s=document.querySelector(".sidebar");if(s&&localStorage.getItem("sidebar_collapsed")==="true"){s.classList.add("collapsed")}}())</script>
 
 <!-- ==================== Main Area ==================== -->
 <div class="main">
