@@ -240,7 +240,7 @@
   .stat-card .stat-label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
 
   /* Table wrapper */
-  .overview-table-wrap { flex: 1; overflow: auto; }
+  .overview-table-wrap { flex: 1; overflow: auto; max-height: calc(100vh - 280px); }
   .overview-table { width: 100%; border-collapse: collapse; font-size: 12px; }
   .overview-table th {
     background: #fafafa; padding: 10px 12px; text-align: left;
@@ -596,8 +596,6 @@
         </div>
       </div>
 
-      <!-- Pagination -->
-      <div class="overview-pagination" id="overviewPagination"></div>
     </div>
 
     <!-- ==================== WORKSPACE VIEW ==================== -->
@@ -857,8 +855,6 @@ let overviewState = {
   currentDsInfo: null,
   images: [],
   filteredImages: [],
-  currentPage: 1,
-  pageSize: 20,
   editingNotesId: null,
   sortOrder: 'asc',   // 'asc' | 'desc' | 'none'
 };
@@ -895,7 +891,6 @@ function onDatasetChange() {
     return;
   }
   overviewState.currentDatasetKey = key;
-  overviewState.currentPage = 1;
   document.getElementById('overviewStatusFilter').value = 'all';
 
   const project = getCurrentProject();
@@ -911,7 +906,6 @@ function onDatasetChange() {
 
   updateOverviewStats();
   renderOverviewTable();
-  renderPagination();
 }
 
 // ── Filter ──
@@ -926,9 +920,7 @@ function onSearchChange() {
     return true;
   });
   overviewState.filteredImages = applySort(filtered);
-  overviewState.currentPage = 1;
   renderOverviewTable();
-  renderPagination();
 }
 
 // ── Sort by processed date ──
@@ -973,17 +965,12 @@ function updateOverviewStats() {
 
 // ── Render table ──
 function renderOverviewTable() {
-  const container = document.getElementById('overviewTableContainer');
-  const images = overviewState.filteredImages;
-  const page = overviewState.currentPage;
-  const ps = overviewState.pageSize;
-  const start = (page - 1) * ps;
-  const pageImages = images.slice(start, start + ps);
+  var container = document.getElementById('overviewTableContainer');
+  var images = overviewState.filteredImages;
 
   if (images.length === 0) {
-    const hasDataset = !!overviewState.currentDsInfo;
+    var hasDataset = !!overviewState.currentDsInfo;
     container.innerHTML = '<div class="ov-empty"><div class="empty-icon">' + (hasDataset ? '🔍' : '📋') + '</div><div>' + (hasDataset ? '没有匹配的图片' : '请选择一个数据集查看标注情况') + '</div></div>';
-    document.getElementById('overviewPagination').innerHTML = '';
     return;
   }
 
@@ -1000,7 +987,7 @@ function renderOverviewTable() {
     '<th style="width:80px;">操作</th>' +
     '</tr></thead><tbody>';
 
-  pageImages.forEach((img, i) => {
+  images.forEach(function(img, i) {
     // Status: 已标注(人工 or 自动+已审查), 未审查(自动+未审核), 未标注
     let statusTag = '';
     if (img.isAnnotated) {
@@ -1021,7 +1008,7 @@ function renderOverviewTable() {
     } else {
       methodTag = '<span class="tag tag-default">—</span>';
     }
-    const globalIdx = start + i + 1;
+    var globalIdx = i + 1;
 
     html += '<tr>' +
       '<td><input type="checkbox" class="row-checkbox" data-imgid="' + img.id + '" onchange="updateSelectedCount()" style="accent-color:var(--primary);"></td>' +
@@ -1041,42 +1028,11 @@ function renderOverviewTable() {
 
   html += '</tbody></table>';
   container.innerHTML = html;
-  // Reset selection state after re-render
   var ca = document.getElementById('checkAll');
   if (ca) ca.checked = false;
   document.getElementById('selectedCount').textContent = '0';
   document.getElementById('btnBatchDelete').disabled = true;
 }
-
-// ── Pagination ──
-function renderPagination() {
-  const total = overviewState.filteredImages.length;
-  const ps = overviewState.pageSize;
-  const totalPages = Math.ceil(total / ps);
-  const page = overviewState.currentPage;
-  const el = document.getElementById('overviewPagination');
-
-  if (totalPages <= 1) { el.innerHTML = ''; return; }
-
-  let html = '<button class="page-btn" ' + (page <= 1 ? 'disabled' : '') + ' onclick="goToPage(' + (page - 1) + ')">◀</button>';
-
-  // Show max 7 page buttons
-  let startP = Math.max(1, page - 3);
-  let endP = Math.min(totalPages, page + 3);
-  if (endP - startP < 6) {
-    if (startP === 1) endP = Math.min(totalPages, startP + 6);
-    else startP = Math.max(1, endP - 6);
-  }
-
-  for (let p = startP; p <= endP; p++) {
-    html += '<button class="page-btn' + (p === page ? ' active' : '') + '" onclick="goToPage(' + p + ')">' + p + '</button>';
-  }
-
-  html += '<button class="page-btn" ' + (page >= totalPages ? 'disabled' : '') + ' onclick="goToPage(' + (page + 1) + ')">▶</button>';
-  html += '<span class="page-info">共 ' + total + ' 条</span>';
-  el.innerHTML = html;
-}
-
 // ── Batch delete ──
 function updateSelectedCount() {
   var checked = document.querySelectorAll('#overviewTableContainer .row-checkbox:checked');
@@ -1125,12 +1081,6 @@ function executeBatchDelete() {
   updateOverviewStats();
   onSearchChange();
   showToast('已删除 ' + idsToDelete.length + ' 张图片');
-}
-
-function goToPage(p) {
-  overviewState.currentPage = p;
-  renderOverviewTable();
-  renderPagination();
 }
 
 // ── Notes editing ──
@@ -1196,7 +1146,6 @@ function showOverviewEmpty() {
   document.getElementById('statUnreviewed').textContent = '0';
   document.getElementById('statUnannotated').textContent = '0';
   document.getElementById('overviewTableContainer').innerHTML = '<div class="ov-empty"><div class="empty-icon">📋</div><div>请选择一个数据集查看标注情况</div></div>';
-  document.getElementById('overviewPagination').innerHTML = '';
   overviewState.currentDsInfo = null;
   overviewState.images = [];
   overviewState.filteredImages = [];

@@ -49,7 +49,7 @@
   /* ===== Main ===== */
   .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   .header { height: var(--header-height); background: var(--header-bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); z-index: 10; }
-  .header .breadcrumb { font-size: 12px; color: var(--text-secondary); }
+  .header .breadcrumb { font-size: 10px; color: var(--text-muted); }
   .header .breadcrumb span { color: var(--text); font-weight: 500; }
   .header .breadcrumb .sep { margin: 0 6px; color: var(--text-muted); }
   .header .breadcrumb a:hover { color: var(--primary) !important; }
@@ -71,19 +71,6 @@
   .page-header .project-selector { display: flex; align-items: center; gap: 8px; font-size: 13px; }
   .page-header select { padding: 5px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; font-family: var(--font); min-width: 180px; }
 
-  /* ===== Step Indicator ===== */
-  .steps { display: flex; align-items: center; gap: 0; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--card-shadow); padding: 0; overflow: hidden; }
-  .step { flex: 1; padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: relative; cursor: pointer; transition: var(--transition); }
-  .step:hover { background: #fafafa; }
-  .step::after { content: ''; position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 12px solid var(--border); z-index: 1; }
-  .step:last-child::after { display: none; }
-  .step-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
-  .step-num.done { background: var(--success); color: #fff; }
-  .step-num.active { background: var(--primary); color: #fff; }
-  .step-num.wait { background: #f0f0f0; color: var(--text-muted); }
-  .step-info .step-title { font-weight: 600; font-size: 13px; }
-  .step-info .step-desc { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
-  .step.active-step { background: var(--primary-light); }
 
   /* ===== Cards ===== */
   .card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--card-shadow); }
@@ -352,33 +339,14 @@
       <h2>数据中心</h2>
     </div>
 
-    <!-- Step Indicator -->
-    <div class="steps">
-      <div class="step active-step" onclick="scrollToSection('step1')">
-        <div class="step-num active">1</div>
-        <div class="step-info"><div class="step-title">文件上传</div><div class="step-desc">上传视频 / 图片 / 文件夹</div></div>
-      </div>
-      <div class="step" onclick="scrollToSection('step2')" id="step2Indicator">
-        <div class="step-num wait">2</div>
-        <div class="step-info"><div class="step-title">视频转图片</div><div class="step-desc">仅视频需抽帧</div></div>
-      </div>
-      <div class="step" onclick="scrollToSection('step3')">
-        <div class="step-num wait">3</div>
-        <div class="step-info"><div class="step-title">图片去重</div><div class="step-desc">相似度检测与去重</div></div>
-      </div>
-      <div class="step" onclick="scrollToSection('step4')">
-        <div class="step-num wait">4</div>
-        <div class="step-info"><div class="step-title">数据集管理</div><div class="step-desc">查看与管理处理结果</div></div>
-      </div>
-    </div>
-
     <!-- ===== Step 1: Video Upload ===== -->
     <div class="card" id="step1">
       <div class="card-header">文件上传 <span class="text-secondary" style="font-weight:400;font-size:12px;">支持视频（MP4、AVI、MOV）、图片（JPG、PNG）、文件夹拖拽，单文件最大 2GB</span></div>
       <div class="card-body">
         <div style="display:flex;gap:20px;align-items:flex-start;">
           <!-- Upload Zone (compact square) -->
-          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+          <div style="display:flex;gap:20px;align-items:flex-start;">
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
             <div class="upload-icon">+</div>
             <div class="upload-text">点击或拖拽上传</div>
             <div class="upload-hint">视频 / 图片 / 文件夹</div>
@@ -611,7 +579,7 @@
             <span id="customModelFileName" style="font-size:11px;color:var(--text-muted);">+ 上传 .pt 模型文件</span>
           </div>
           <input type="file" id="customModelFileInput" accept=".pt" style="display:none;" onchange="handleCustomModelUpload(this.files)">
-          <input type="text" id="customModelVersion" placeholder="版本号" style="width:70px;padding:4px 6px;border:1px solid #d9d9d9;border-radius:4px;font-size:11px;font-family:var(--font);display:none;">
+          <input type="text" id="customModelVersion" placeholder="模型名" style="width:70px;padding:4px 6px;border:1px solid #d9d9d9;border-radius:4px;font-size:11px;font-family:var(--font);display:none;">
           <button class="btn btn-primary btn-sm" id="btnAddCustomModel" onclick="addUploadedModel()" style="display:none;">添加</button>
         </div>
       </div>
@@ -791,10 +759,8 @@ function detectFileTypes() {
   // 含视频 → 自动展开步骤2，仅图片 → 跳过步骤2
   if (hasVideos) {
     document.getElementById('step2').style.display = 'block';
-    updateStep(2, 'active');
   } else {
     document.getElementById('step2').style.display = 'none';
-    updateStep(2, 'done');
   }
 }
 
@@ -819,7 +785,6 @@ function handleFiles(files) {
   }
   detectFileTypes();
   renderFileList();
-  updateStep(1, 'done');
 }
 
 function renderFileList() {
@@ -861,7 +826,6 @@ function removeFile(i) {
   uploadedFiles.splice(i, 1);
   detectFileTypes();
   renderFileList();
-  if (uploadedFiles.length === 0) updateStep(1, 'active');
 }
 
 function clearAllFiles() {
@@ -870,10 +834,7 @@ function clearAllFiles() {
   hasImages = false;
   step2Skipped = false;
   renderFileList();
-  updateStep(1, 'active');
   document.getElementById('step2').style.display = 'none';
-  updateStep(2, 'wait');
-  updateStep(3, 'wait');
 }
 
 function formatSize(bytes) {
@@ -891,13 +852,10 @@ function processFiles() {
     // Show step 2 for video extraction
     document.getElementById('step2').style.display = 'block';
     document.getElementById('step2').scrollIntoView({ behavior: 'smooth' });
-    updateStep(2, 'active');
     step2Skipped = false;
   } else {
     // No videos → skip step 2, go directly to dedup
     document.getElementById('step2').style.display = 'none';
-    updateStep(2, 'done');
-    updateStep(3, 'active');
     document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
     step2Skipped = true;
     extractDone = true;
@@ -948,7 +906,6 @@ function executeExtract() {
       btn.disabled = false;
       btn.textContent = '重新执行';
       extractDone = true;
-      updateStep(2, 'done');
       showExtractResult();
     } else {
       fill.style.width = Math.round(pct) + '%';
@@ -1023,7 +980,6 @@ function executeDedup() {
       btn.disabled = false;
       btn.textContent = '重新执行';
       dedupDone = true;
-      updateStep(3, 'done');
       showDedupResult();
     } else {
       fill.style.width = Math.round(pct) + '%';
@@ -1040,7 +996,6 @@ function skipDedup() {
   if (!confirm('确定跳过图片去重吗？\n\n源数据集 ' + srcName.trim() + ' 将直接作为去重后的数据集使用，进入后续标注和训练流程。')) return;
 
   dedupDone = true;
-  updateStep(3, 'done');
   document.getElementById('btnDedup').disabled = true;
   document.getElementById('btnSkipDedup').disabled = true;
   showToast('已跳过图片去重，' + (imgCount || '') + ' 张图片将直接进入数据集管理');
@@ -1451,7 +1406,6 @@ function executeSplit() {
 
     closeSplitModal();
     splitDone = true;
-    updateStep(4, 'done');
     showToast('已完成：YOLO 导出 + 数据集划分 → 训练集 ' + train + ' 张，验证集 ' + val + ' 张');
   }, 800);
 }
@@ -1732,13 +1686,6 @@ function discardAutoAnno(suffix) {
   showToast('预标注结果已丢弃');
 }
 
-// ==================== STEP INDICATOR ====================
-function updateStep(n, status) {
-  const steps = document.querySelectorAll('.step');
-  const num = steps[n-1].querySelector('.step-num');
-  num.className = 'step-num ' + status;
-}
-
 // ==================== PIPELINE NAME EDIT ====================
 document.addEventListener('dblclick', function(e) {
   var nameEl = e.target.closest('.pipeline-name');
@@ -1764,10 +1711,6 @@ document.addEventListener('dblclick', function(e) {
   input.addEventListener('blur', finish);
   input.addEventListener('keydown', function(ev) { if (ev.key === 'Enter') finish(); });
 });
-
-function scrollToSection(id) {
-  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-}
 
 // ==================== AUTH + PROJECT ====================
 function getUser() { try { return JSON.parse(localStorage.getItem('current_user')); } catch(e) { return null; } }
