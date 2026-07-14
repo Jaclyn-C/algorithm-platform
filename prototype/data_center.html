@@ -203,6 +203,7 @@
             <div style="font-weight:600;font-size:13px;margin-bottom:8px;">已选择的文件（<span id="fileCount">0</span> 个）</div>
             <div class="file-list" id="fileList"></div>
             <div class="flex gap-8 mt-12">
+              <button class="btn btn-primary btn-sm" onclick="confirmUpload()">确定</button>
               <button class="btn btn-default btn-sm" onclick="document.getElementById('fileInput').click()">继续添加</button>
               <button class="btn btn-default btn-sm" onclick="clearAllFiles()">清空全部</button>
             </div>
@@ -211,136 +212,7 @@
       </div>
     </div>
 
-    <!-- ===== Step 2: Video to Frames (only for videos) ===== -->
-    <div class="card" id="step2" style="display:none;">
-      <div class="card-header">视频转图片 — 参数配置 <span class="text-secondary" style="font-weight:400;font-size:12px;">仅上传的视频文件需要抽帧</span></div>
-      <div class="card-body">
-        <div class="form-row">
-          <div class="form-group">
-            <label>抽帧方式</label>
-            <select id="extractMode" class="form-control" onchange="toggleExtractMode()">
-              <option value="interval">按帧间隔</option>
-              <option value="time">按时间间隔</option>
-            </select>
-            <span class="input-hint">选择抽帧策略</span>
-          </div>
-          <div class="form-group" id="groupFrames">
-            <label>帧间隔</label>
-            <input type="number" id="frameInterval" class="form-control" value="30" min="1">
-            <span class="input-hint">每 30 帧抽取 1 帧</span>
-          </div>
-          <div class="form-group">
-            <label>图片质量</label>
-            <select id="imgQuality" class="form-control" style="width:130px;">
-              <option value="95">高质量 (95)</option>
-              <option value="85" selected>标准 (85)</option>
-              <option value="70">低质量 (70)</option>
-            </select>
-            <span class="input-hint">输出 JPEG 质量</span>
-          </div>
-          <div class="form-group">
-            <label>输出子目录</label>
-            <input type="text" class="form-control" value="extracted_frames/" style="width:200px;" readonly>
-            <span class="input-hint">自动按视频名创建子文件夹</span>
-          </div>
-          <div class="form-group form-btn-group" style="margin-left:auto;">
-            <button class="btn btn-primary btn-lg" onclick="executeExtract()" id="btnExtract">执行抽帧</button>
-          </div>
-        </div>
-
-        <!-- Extraction Progress (hidden initially) -->
-        <div id="extractProgress" style="display:none;" class="mt-16">
-          <div class="flex-between">
-            <span style="font-size:13px;font-weight:500;">抽帧进度</span>
-            <span class="text-secondary" style="font-size:12px;" id="extractStats">处理中...</span>
-          </div>
-          <div class="progress-bar"><div class="fill" id="extractFill" style="width:0%"></div></div>
-          <div class="progress-text" id="extractDetail">已处理: 0/3 个视频, 已提取: 0 帧</div>
-        </div>
-
-        <!-- Extraction Result -->
-        <div id="extractResult" style="display:none;" class="mt-16">
-          <div style="font-weight:600;font-size:13px;margin-bottom:8px;">
-            抽帧结果预览
-            <span style="font-weight:400;font-size:11px;color:var(--text-muted);" id="extractPageInfo">第 1 页，共 4 页</span>
-          </div>
-          <div class="img-grid" id="extractImgGrid"></div>
-          <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:10px;" id="extractPagination">
-            <button class="btn btn-default btn-sm" onclick="changeExtractPage(-1)">上一页</button>
-            <span class="text-secondary" style="font-size:12px;margin:0 12px;" id="extractPageNum">1 / 4</span>
-            <button class="btn btn-default btn-sm" onclick="changeExtractPage(1)">下一页</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== Step 3: Image Dedup ===== -->
-    <div class="card" id="step3">
-      <div class="card-header">图片去重<span class="text-secondary" style="font-weight:400;font-size:12px;"> 检测相似图片并去重，可跳过此步骤直接进入数据集管理</span></div>
-      <div class="card-body">
-        <div class="form-row">
-          <div class="form-group">
-            <label>源数据集</label>
-            <select id="dedupSource" class="form-control" style="width:200px;">
-              <option value="">— 选择待去重的数据集 —</option>
-              <option value="extracted">上传批次_20260628 extracted_frames/ (1,248 张)</option>
-            </select>
-            <span class="input-hint">选择需要去重的数据集</span>
-          </div>
-          <div class="form-group">
-            <label>相似度阈值</label>
-            <div style="display:flex;align-items:center;gap:8px;height:34px;">
-              <input type="range" id="simThreshold" min="1" max="10" value="8" style="width:140px;" oninput="document.getElementById('simVal').textContent = (this.value/10).toFixed(1)">
-              <span id="simVal" style="font-weight:600;min-width:28px;">0.8</span>
-            </div>
-            <span class="input-hint">数值越高，匹配越严，去重越少（推荐 0.7-0.9）</span>
-          </div>
-          <div class="form-group form-btn-group" style="margin-left:auto;display:flex;gap:8px;align-items:center;">
-            <button class="btn btn-default btn-lg" onclick="skipDedup()" id="btnSkipDedup">跳过去重</button>
-            <button class="btn btn-primary btn-lg" onclick="executeDedup()" id="btnDedup">执行去重</button>
-          </div>
-        </div>
-
-        <!-- Dedup Progress -->
-        <div id="dedupProgress" style="display:none;" class="mt-16">
-          <div class="flex-between">
-            <span style="font-size:13px;font-weight:500;">去重进度</span>
-            <span class="text-secondary" style="font-size:12px;" id="dedupStats">处理中...</span>
-          </div>
-          <div class="progress-bar"><div class="fill" id="dedupFill" style="width:0%"></div></div>
-          <div class="progress-text" id="dedupDetail">已比对: 0/1,248 张</div>
-        </div>
-
-        <!-- Dedup Result -->
-        <div id="dedupResult" style="display:none;" class="mt-16">
-          <div style="font-weight:600;font-size:13px;margin-bottom:8px;">去重结果</div>
-          <table class="table">
-            <thead>
-              <tr><th>指标</th><th>数值</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>原始图片数</td><td id="dedupOrig">0</td></tr>
-              <tr><td>去重后图片数</td><td id="dedupAfter">0</td></tr>
-              <tr><td>移除重复图片</td><td id="dedupRemoved">0</td></tr>
-              <tr><td>去重率</td><td id="dedupRate">0%</td></tr>
-            </tbody>
-          </table>
-          <div class="mt-12">
-            <div class="flex-between" style="margin-bottom:8px;">
-              <span style="font-weight:600;font-size:13px;">被移除的相似图片组 <span style="font-weight:400;font-size:11px;color:var(--text-muted);" id="dedupPageInfo">第 1 页，共 3 页</span></span>
-            </div>
-            <div class="img-grid mt-8" id="dedupImgGrid" style="max-height:180px;"></div>
-            <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:10px;" id="dedupPagination">
-              <button class="btn btn-default btn-sm" onclick="changeDedupPage(-1)">上一页</button>
-              <span class="text-secondary" style="font-size:12px;margin:0 12px;" id="dedupPageNum">1 / 3</span>
-              <button class="btn btn-default btn-sm" onclick="changeDedupPage(1)">下一页</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-        <!-- ===== Step 4: Dataset Management ===== -->
+    <!-- ===== Step 2: Dataset Management ===== -->
     <div class="card" id="step4">
       <div class="card-header">
         数据集管理
@@ -559,6 +431,131 @@
   </div>
 </div>
 
+<!-- ==================== Extract Frames Modal ==================== -->
+<div class="modal-overlay" id="extractModal" style="display:none;" onclick="if(event.target==this)closeExtractModal()">
+  <div class="modal" style="width:580px;">
+    <div class="modal-header">
+      视频转图片 — <span id="extractModalTarget">files/</span>
+      <button class="modal-close" onclick="closeExtractModal()">✕</button>
+    </div>
+    <div style="padding:20px;">
+      <div class="form-row">
+        <div class="form-group">
+          <label>抽帧方式</label>
+          <select id="extractMode" class="form-control" onchange="toggleExtractMode()">
+            <option value="interval">按帧间隔</option>
+            <option value="time">按时间间隔</option>
+          </select>
+        </div>
+        <div class="form-group" id="groupFrames">
+          <label>帧间隔</label>
+          <input type="number" id="frameInterval" class="form-control" value="30" min="1">
+        </div>
+        <div class="form-group">
+          <label>图片质量</label>
+          <select id="imgQuality" class="form-control" style="width:140px;">
+            <option value="95">高质量 (95)</option>
+            <option value="85" selected>标准 (85)</option>
+            <option value="70">低质量 (70)</option>
+          </select>
+        </div>
+        <div class="form-group form-btn-group">
+          <button class="btn btn-primary btn-lg" onclick="executeExtract()" id="btnExtract">执行抽帧</button>
+        </div>
+      </div>
+
+      <div id="extractProgress" style="display:none;" class="mt-16">
+        <div class="flex-between">
+          <span style="font-size:13px;font-weight:500;">抽帧进度</span>
+          <span class="text-secondary" style="font-size:12px;" id="extractStats">处理中...</span>
+        </div>
+        <div class="progress-bar"><div class="fill" id="extractFill" style="width:0%"></div></div>
+        <div class="progress-text" id="extractDetail">已处理: 0/3 个视频, 已提取: 0 帧</div>
+      </div>
+
+      <div id="extractResult" style="display:none;" class="mt-16">
+        <div style="font-weight:600;font-size:13px;margin-bottom:8px;">
+          抽帧结果预览
+          <span style="font-weight:400;font-size:11px;color:var(--text-muted);" id="extractPageInfo">第 1 页，共 4 页</span>
+        </div>
+        <div class="img-grid" id="extractImgGrid"></div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:10px;" id="extractPagination">
+          <button class="btn btn-default btn-sm" onclick="changeExtractPage(-1)">上一页</button>
+          <span class="text-secondary" style="font-size:12px;margin:0 12px;" id="extractPageNum">1 / 4</span>
+          <button class="btn btn-default btn-sm" onclick="changeExtractPage(1)">下一页</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeExtractModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Dedup Modal ==================== -->
+<div class="modal-overlay" id="dedupModal" style="display:none;" onclick="if(event.target==this)closeDedupModal()">
+  <div class="modal" style="width:580px;">
+    <div class="modal-header">
+      图片去重 — <span id="dedupModalTarget">extracted_frames/</span>
+      <button class="modal-close" onclick="closeDedupModal()">✕</button>
+    </div>
+    <div style="padding:20px;">
+      <div class="form-row">
+        <div class="form-group">
+          <label>相似度阈值</label>
+          <div style="display:flex;align-items:center;gap:8px;height:34px;">
+            <input type="range" id="simThreshold" min="1" max="10" value="8" style="width:140px;" oninput="document.getElementById('simVal').textContent = (this.value/10).toFixed(1)">
+            <span id="simVal" style="font-weight:600;min-width:28px;">0.8</span>
+          </div>
+          <span class="input-hint">数值越高，匹配越严，去重越少（推荐 0.7-0.9）</span>
+        </div>
+        <div class="form-group form-btn-group" style="display:flex;gap:8px;align-items:center;">
+          <button class="btn btn-default btn-lg" onclick="skipDedup()">跳过去重</button>
+          <button class="btn btn-primary btn-lg" onclick="executeDedup()" id="btnDedup">执行去重</button>
+        </div>
+      </div>
+
+      <div id="dedupProgress" style="display:none;" class="mt-16">
+        <div class="flex-between">
+          <span style="font-size:13px;font-weight:500;">去重进度</span>
+          <span class="text-secondary" style="font-size:12px;" id="dedupStats">处理中...</span>
+        </div>
+        <div class="progress-bar"><div class="fill" id="dedupFill" style="width:0%"></div></div>
+        <div class="progress-text" id="dedupDetail">已比对: 0/1,248 张</div>
+      </div>
+
+      <div id="dedupResult" style="display:none;" class="mt-16">
+        <div style="font-weight:600;font-size:13px;margin-bottom:8px;">去重结果</div>
+        <table class="table">
+          <thead>
+            <tr><th>指标</th><th>数值</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>原始图片数</td><td id="dedupOrig">0</td></tr>
+            <tr><td>去重后图片数</td><td id="dedupAfter">0</td></tr>
+            <tr><td>移除重复图片</td><td id="dedupRemoved">0</td></tr>
+            <tr><td>去重率</td><td id="dedupRate">0%</td></tr>
+          </tbody>
+        </table>
+        <div class="mt-12">
+          <div class="flex-between" style="margin-bottom:8px;">
+            <span style="font-weight:600;font-size:13px;">被移除的相似图片组 <span style="font-weight:400;font-size:11px;color:var(--text-muted);" id="dedupPageInfo">第 1 页，共 3 页</span></span>
+          </div>
+          <div class="img-grid mt-8" id="dedupImgGrid" style="max-height:180px;"></div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:10px;" id="dedupPagination">
+            <button class="btn btn-default btn-sm" onclick="changeDedupPage(-1)">上一页</button>
+            <span class="text-secondary" style="font-size:12px;margin:0 12px;" id="dedupPageNum">1 / 3</span>
+            <button class="btn btn-default btn-sm" onclick="changeDedupPage(1)">下一页</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeDedupModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -568,9 +565,6 @@
 let uploadedFiles = [];         // All uploaded files
 let hasVideos = false;         // Whether any uploaded file is a video
 let hasImages = false;         // Whether any uploaded file is an image
-let extractDone = false;
-let dedupDone = false;
-let step2Skipped = false;
 
 // ==================== FILE UPLOAD ====================
 const uploadZone = document.getElementById('uploadZone');
@@ -602,12 +596,6 @@ function isImageFile(f) {
 function detectFileTypes() {
   hasVideos = uploadedFiles.some(f => isVideoFile(f));
   hasImages = uploadedFiles.some(f => isImageFile(f));
-  // 含视频 → 自动展开步骤2，仅图片 → 跳过步骤2
-  if (hasVideos) {
-    document.getElementById('step2').style.display = 'block';
-  } else {
-    document.getElementById('step2').style.display = 'none';
-  }
 }
 
 function getFileTypeLabel(f) {
@@ -678,9 +666,7 @@ function clearAllFiles() {
   uploadedFiles = [];
   hasVideos = false;
   hasImages = false;
-  step2Skipped = false;
   renderFileList();
-  document.getElementById('step2').style.display = 'none';
 }
 
 function formatSize(bytes) {
@@ -688,28 +674,64 @@ function formatSize(bytes) {
   return (bytes/1048576).toFixed(1) + ' MB';
 }
 
-// ==================== SMART ROUTING (decides whether to skip step 2) ====================
-function processFiles() {
+// ==================== CONFIRM UPLOAD ====================
+function confirmUpload() {
   if (uploadedFiles.length === 0) { showToast('请先上传文件'); return; }
+  var vCount = uploadedFiles.filter(f => isVideoFile(f)).length;
+  var iCount = uploadedFiles.filter(f => isImageFile(f)).length;
+  var totalCount = vCount + iCount;
 
-  detectFileTypes();
+  var now = new Date();
+  var dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+  var batchName = '上传批次_' + dateStr;
+  var timeStr = now.toISOString().slice(0, 10) + ' ' + now.toTimeString().slice(0, 5);
+  var suffix = '_' + Date.now();
 
-  if (hasVideos) {
-    // Show step 2 for video extraction
-    document.getElementById('step2').style.display = 'block';
-    document.getElementById('step2').scrollIntoView({ behavior: 'smooth' });
-    step2Skipped = false;
-  } else {
-    // No videos → skip step 2, go directly to dedup
-    document.getElementById('step2').style.display = 'none';
-    document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
-    step2Skipped = true;
-    extractDone = true;
-    showToast('图片无需抽帧，直接进入去重步骤');
-  }
+  // Create new batch with files/ entry
+  var newBatch = {
+    batch: batchName,
+    batchDate: now.toISOString().slice(0, 10),
+    status: '未标注',
+    statusClass: 'tag-default',
+    children: [
+      { key: 'raw_videos' + suffix, name: 'files/', count: totalCount + ' 个文件', dateText: timeStr + ' 上传', icon: 'raw', iconGlyph: '▶', badge: '原始数据', badgeClass: 'done' }
+    ]
+  };
+
+  // Prepend to DATASETS
+  DATASETS.unshift(newBatch);
+
+  // Clear files
+  uploadedFiles = [];
+  hasVideos = false;
+  hasImages = false;
+  renderFileList();
+
+  // Refresh dataset grid
+  applyDsFilters();
+  showToast('文件已确认，已添加到数据集管理');
 }
 
-// ==================== STEP 2: EXTRACT FRAMES ====================
+// ==================== EXTRACT FRAMES ====================
+// Helper: add a child dataset to the batch that contains sourceKey
+function addDatasetToBatch(sourceKey, name, count, dateText, icon, iconGlyph, badge, badgeClass) {
+  for (var i = 0; i < DATASETS.length; i++) {
+    var hasSource = DATASETS[i].children.some(function(c) { return c.key === sourceKey; });
+    if (hasSource) {
+      var suffix = sourceKey.indexOf('_') >= 0 ? sourceKey.substring(sourceKey.lastIndexOf('_')) : '';
+      var newKey = (name === 'files/' ? 'raw_videos' : name === 'extracted_frames/' ? 'extracted' : name === 'deduplicated/' ? 'deduplicated' : name.replace('/', '')) + suffix;
+      // Check if already exists
+      if (!DATASETS[i].children.some(function(c) { return c.key === newKey; })) {
+        DATASETS[i].children.push({
+          key: newKey, name: name, count: count, dateText: dateText,
+          icon: icon, iconGlyph: iconGlyph, badge: badge, badgeClass: badgeClass
+        });
+      }
+      break;
+    }
+  }
+  applyDsFilters();
+}
 function toggleExtractMode() {
   const mode = document.getElementById('extractMode').value;
   const group = document.getElementById('groupFrames');
@@ -735,6 +757,7 @@ function executeExtract() {
   const result = document.getElementById('extractResult');
   const btn = document.getElementById('btnExtract');
 
+  result.style.display = 'none';
   progress.style.display = 'block';
   btn.disabled = true;
   btn.textContent = '抽帧中...';
@@ -751,7 +774,9 @@ function executeExtract() {
       detail.textContent = '已处理: 3/3 个视频, 已提取: 1,248 帧';
       btn.disabled = false;
       btn.textContent = '重新执行';
-      extractDone = true;
+      // Add extracted_frames/ dataset to the same batch
+      var now = new Date();
+      addDatasetToBatch(currentExtractKey, 'extracted_frames/', '1,248 张', now.toISOString().slice(0,10) + ' 生成', 'raw', '▣', '已处理', 'done');
       showExtractResult();
     } else {
       fill.style.width = Math.round(pct) + '%';
@@ -800,7 +825,7 @@ function renderExtractGrid() {
   document.getElementById('extractPageNum').textContent = (extractPage + 1) + ' / ' + totalPages;
 }
 
-// ==================== STEP 3: DEDUP ====================
+// ==================== DEDUP ====================
 function executeDedup() {
   const progress = document.getElementById('dedupProgress');
   const fill = document.getElementById('dedupFill');
@@ -809,10 +834,10 @@ function executeDedup() {
   const result = document.getElementById('dedupResult');
   const btn = document.getElementById('btnDedup');
 
+  result.style.display = 'none';
   progress.style.display = 'block';
   btn.disabled = true;
   btn.textContent = '去重中...';
-  document.getElementById('btnSkipDedup').disabled = true;
 
   let pct = 0;
   const interval = setInterval(() => {
@@ -825,7 +850,9 @@ function executeDedup() {
       detail.textContent = '已比对: 1,248/1,248 张, 发现 146 组相似图片';
       btn.disabled = false;
       btn.textContent = '重新执行';
-      dedupDone = true;
+      // Add deduplicated/ dataset to the same batch
+      var now = new Date();
+      addDatasetToBatch(currentDedupKey, 'deduplicated/', '1,102 张', now.toISOString().slice(0,10) + ' 生成', 'dedup', '▦', '已去重', 'done');
       showDedupResult();
     } else {
       fill.style.width = Math.round(pct) + '%';
@@ -835,17 +862,11 @@ function executeDedup() {
 }
 
 function skipDedup() {
-  var src = document.getElementById('dedupSource').value;
-  var srcName = document.getElementById('dedupSource').selectedOptions[0].text || 'extracted_frames/';
-  var match = srcName.match(/\(([\d,]+)\s*张\)/);
-  var imgCount = match ? parseInt(match[1].replace(',', '')) : 0;
-  if (!confirm('确定跳过图片去重吗？\n\n源数据集 ' + srcName.trim() + ' 将直接作为去重后的数据集使用，进入后续标注和训练流程。')) return;
-
-  dedupDone = true;
-  document.getElementById('btnDedup').disabled = true;
-  document.getElementById('btnSkipDedup').disabled = true;
-  showToast('已跳过图片去重，' + (imgCount || '') + ' 张图片将直接进入数据集管理');
-  document.getElementById('step4').scrollIntoView({ behavior: 'smooth' });
+  if (!confirm('确定跳过图片去重吗？\n\nextracted_frames/ 中的图片将直接作为去重后的数据集使用。')) return;
+  var now = new Date();
+  addDatasetToBatch(currentDedupKey, 'deduplicated/', '1,102 张', now.toISOString().slice(0,10) + ' 生成', 'dedup', '▦', '已去重', 'done');
+  closeDedupModal();
+  showToast('已跳过图片去重，图片将直接进入数据集管理');
 }
 
 let dedupPage = 0;
@@ -889,7 +910,55 @@ function renderDedupGrid() {
   document.getElementById('dedupPageNum').textContent = (dedupPage + 1) + ' / ' + totalPages;
 }
 
-// ==================== STEP 4: DATASET MANAGEMENT ====================
+// ==================== EXTRACT / DEDUP MODAL OPENERS ====================
+let currentExtractKey = '';
+let currentDedupKey = '';
+
+function openExtractModal(key) {
+  currentExtractKey = key;
+  // Find batch name for display
+  var batchName = '';
+  for (var i = 0; i < DATASETS.length; i++) {
+    if (DATASETS[i].children.some(function(c) { return c.key === key; })) {
+      batchName = DATASETS[i].batch;
+      break;
+    }
+  }
+  document.getElementById('extractModalTarget').textContent = batchName + ' files/';
+  document.getElementById('extractProgress').style.display = 'none';
+  document.getElementById('extractResult').style.display = 'none';
+  document.getElementById('btnExtract').disabled = false;
+  document.getElementById('btnExtract').textContent = '执行抽帧';
+  document.getElementById('extractModal').style.display = 'flex';
+}
+
+function closeExtractModal() {
+  document.getElementById('extractModal').style.display = 'none';
+}
+
+function openDedupModal(key) {
+  currentDedupKey = key;
+  // Find batch name for display
+  var batchName = '';
+  for (var i = 0; i < DATASETS.length; i++) {
+    if (DATASETS[i].children.some(function(c) { return c.key === key; })) {
+      batchName = DATASETS[i].batch;
+      break;
+    }
+  }
+  document.getElementById('dedupModalTarget').textContent = batchName + ' extracted_frames/';
+  document.getElementById('dedupProgress').style.display = 'none';
+  document.getElementById('dedupResult').style.display = 'none';
+  document.getElementById('btnDedup').disabled = false;
+  document.getElementById('btnDedup').textContent = '执行去重';
+  document.getElementById('dedupModal').style.display = 'flex';
+}
+
+function closeDedupModal() {
+  document.getElementById('dedupModal').style.display = 'none';
+}
+
+// ==================== DATASET MANAGEMENT ====================
 function openDataset(type) {
   const modal = document.getElementById('datasetModal');
   const title = document.getElementById('datasetModalTitle');
@@ -914,69 +983,76 @@ function openDataset(type) {
     deduplicated_03: { title: '上传批次_20260702 deduplicated/ — 去重后图片', count: '1,517 张图片 · 已去重 9.5% · 未标注', imgs: 24 },
   };
 
-  const d = info[type];
-  if (!d) return;
+  var d = info[type];
+  if (!d) {
+    // Fallback: look up the dataset from DATASETS array
+    for (var bi = 0; bi < DATASETS.length; bi++) {
+      var child = DATASETS[bi].children.find(function(c) { return c.key === type; });
+      if (child) {
+        d = {
+          title: DATASETS[bi].batch + ' ' + child.name + ' — ' + (child.name === 'files/' ? '原始文件' : ''),
+          count: child.count,
+          imgs: child.name === 'files/' ? 0 : 12
+        };
+        break;
+      }
+    }
+    if (!d) return;
+  }
   title.textContent = d.title;
   stats.textContent = d.count;
   modal.style.display = 'flex';
 
   // Action buttons based on dataset type
   const actions = document.getElementById('datasetModalActions');
-  if (type === 'deduplicated') {
-    // 数据源 1 — 已完成（标注过一次，仍可再次自动标注）
+
+  if (type.indexOf('raw_videos') === 0) {
     actions.innerHTML = `
+      <button class="btn btn-primary btn-sm" onclick="closeDatasetModal();openExtractModal('${type}')">抽帧</button>
       <button class="btn btn-default btn-sm">导出 ZIP</button>
-      <button class="btn btn-primary" onclick="goToAnnotation('deduplicated')">查看 / 修改标注</button>
-      <button class="btn btn-default" onclick="closeDatasetModal();openAutoAnnoModal('01')">自动标注</button>
-      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '01')">删除</button>`;
-  } else if (type === 'deduplicated_02') {
-    const status02 = getPipelineStatus('02');
-    if (status02 === 'review') {
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
+  } else if (type.indexOf('extracted') === 0) {
+    actions.innerHTML = `
+      <button class="btn btn-primary btn-sm" onclick="closeDatasetModal();openDedupModal('${type}')">去重</button>
+      <button class="btn btn-default btn-sm">导出 ZIP</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
+  } else if (type.indexOf('deduplicated') === 0) {
+    var pipeSuffix = type.replace('deduplicated', '') || '_01';
+    var isReview = getPipelineStatus(pipeSuffix) === 'review';
+    var isInProgress = getPipelineStatus(pipeSuffix) === 'in_progress';
+    if (isReview) {
       actions.innerHTML = `
         <button class="btn btn-default btn-sm">导出 ZIP</button>
-        <button class="btn btn-primary" onclick="goToAnnotation('deduplicated_02')">审核修正标注</button>
-        <button class="btn btn-default" onclick="closeDatasetModal();openAutoAnnoModal('02')">自动标注</button>
-        <button class="btn btn-default btn-sm" onclick="discardAutoAnno('02')">丢弃预标注</button>
-        <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '02')">删除</button>`;
+        <button class="btn btn-primary" onclick="goToAnnotation('${type}')">审核修正标注</button>
+        <button class="btn btn-default btn-sm" onclick="closeDatasetModal();openAutoAnnoModal('${pipeSuffix}')">重新自动标注</button>
+        <button class="btn btn-default btn-sm" onclick="discardAutoAnno('${pipeSuffix}')">丢弃预标注</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
+    } else if (isInProgress) {
+      actions.innerHTML = `
+        <button class="btn btn-default btn-sm">导出 ZIP</button>
+        <button class="btn btn-primary" onclick="goToAnnotation('${type}')">继续标注</button>
+        <button class="btn btn-default btn-sm" onclick="closeDatasetModal();openAutoAnnoModal('${pipeSuffix}')">重新自动标注</button>
+        <button class="btn btn-default btn-sm" onclick="discardAutoAnno('${pipeSuffix}')">丢弃预标注</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
     } else {
       actions.innerHTML = `
         <button class="btn btn-default btn-sm">导出 ZIP</button>
-        <button class="btn btn-primary" onclick="goToAnnotation('deduplicated_02')">继续标注（47/200）</button>
-        <button class="btn btn-default" onclick="closeDatasetModal();openAutoAnnoModal('02')">自动标注</button>
-        <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '02')">删除</button>`;
+        <button class="btn btn-primary" onclick="goToAnnotation('${type}')">创建标注任务</button>
+        <button class="btn btn-default btn-sm" onclick="closeDatasetModal();openAutoAnnoModal('${pipeSuffix}')">自动标注</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
     }
-  } else if (type === 'deduplicated_03') {
-    const status03 = getPipelineStatus('03');
-    if (status03 === 'review') {
-      actions.innerHTML = `
-        <button class="btn btn-default btn-sm">导出 ZIP</button>
-        <button class="btn btn-primary" onclick="goToAnnotation('deduplicated_03')">审核修正标注</button>
-        <button class="btn btn-default btn-sm" onclick="discardAutoAnno('03')">丢弃预标注</button>
-        <button class="btn btn-default" onclick="closeDatasetModal();openAutoAnnoModal('03')">自动标注</button>
-        <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '03')">删除</button>`;
-    } else {
-      actions.innerHTML = `
-        <button class="btn btn-default btn-sm">导出 ZIP</button>
-        <button class="btn btn-primary" onclick="goToAnnotation('deduplicated_03')">创建标注任务</button>
-        <button class="btn btn-default" onclick="closeDatasetModal();openAutoAnnoModal('03')">自动标注</button>
-        <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('deduplicated', '03')">删除</button>`;
-    }
-  } else if (type === 'labeled') {
+  } else if (type.indexOf('labeled') === 0) {
     actions.innerHTML = `
       <button class="btn btn-primary" onclick="closeDatasetModal();openSplitModal();">导出 YOLO 并划分</button>
-      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('labeled', '01')">删除</button>`;
-  } else if (type === 'train' || type === 'val') {
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
+  } else if (type.indexOf('train') === 0 || type.indexOf('val') === 0) {
     actions.innerHTML = `
       <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
   } else {
-    var isPipeline2 = type.endsWith('_02');
-    var isPipeline3 = type.endsWith('_03');
-    var delType = type;
     actions.innerHTML = `
       <button class="btn btn-default btn-sm">导出 ZIP</button>
-      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}', '${isPipeline2 ? '02' : isPipeline3 ? '03' : '01'}')">删除</button>`;
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
   }
-
   if (d.imgs > 0) {
     grid.innerHTML = Array.from({ length: d.imgs }, (_, i) => `
       <div class="img-thumb">
@@ -995,46 +1071,60 @@ function closeDatasetModal() {
 
 // ==================== CASCADE DELETE ====================
 var pendingDeleteType = '';
-var pendingDeletePipeline = '';
 
-// Cascade chain: files → extracted_frames → deduplicated → labeled → train + val
-var cascadeMap = {
-  raw_videos:     ['extracted','deduplicated','labeled','train','val'],
-  raw_videos_02:  ['extracted_02','deduplicated_02'],
-  raw_videos_03:  ['extracted_03','deduplicated_03'],
-  extracted:      ['deduplicated','labeled','train','val'],
-  extracted_02:   ['deduplicated_02'],
-  extracted_03:   ['deduplicated_03'],
-  deduplicated:   ['labeled','train','val'],
-  deduplicated_02: [],
-  deduplicated_03: [],
-  labeled:        ['train','val'],
-  train:          ['val'],
-  val:            ['train'],
-};
+// Downstream chain: files → extracted_frames → deduplicated → labeled → train → val
+var DOWNSTREAM_ORDER = ['raw_videos', 'extracted', 'deduplicated', 'labeled', 'train', 'val'];
 
-var cascadeNames = {
-  raw_videos:'files/', raw_videos_02:'files/', raw_videos_03:'files/',
-  extracted:'extracted_frames/', extracted_02:'extracted_frames/', extracted_03:'extracted_frames/',
-  deduplicated:'deduplicated/', deduplicated_02:'deduplicated/', deduplicated_03:'deduplicated/',
-  labeled:'labeled/', train:'train/', val:'val/',
-};
+function getBaseType(type) {
+  if (type.indexOf('raw_videos') === 0) return 'raw_videos';
+  if (type.indexOf('extracted') === 0) return 'extracted';
+  if (type.indexOf('deduplicated') === 0) return 'deduplicated';
+  if (type.indexOf('labeled') === 0) return 'labeled';
+  if (type.indexOf('train') === 0) return 'train';
+  if (type.indexOf('val') === 0) return 'val';
+  return type;
+}
 
-function confirmDeleteDataset(type, pipeline) {
+function getDisplayName(type) {
+  var map = { raw_videos: 'files/', extracted: 'extracted_frames/', deduplicated: 'deduplicated/', labeled: 'labeled/', train: 'train/', val: 'val/' };
+  return map[getBaseType(type)] || type;
+}
+
+function findBatchAndDownstream(type) {
+  var baseType = getBaseType(type);
+  var startIdx = DOWNSTREAM_ORDER.indexOf(baseType);
+  if (startIdx < 0) return { batch: null, downstreamKeys: [] };
+
+  // Find which batch contains this key
+  for (var i = 0; i < DATASETS.length; i++) {
+    var found = DATASETS[i].children.find(function(c) { return c.key === type; });
+    if (found) {
+      // Collect all downstream keys in the same batch (by matching base type prefix + same suffix)
+      var downstreamKeys = [];
+      for (var d = startIdx + 1; d < DOWNSTREAM_ORDER.length; d++) {
+        var downstreamChild = DATASETS[i].children.find(function(c) { return getBaseType(c.key) === DOWNSTREAM_ORDER[d]; });
+        if (downstreamChild) downstreamKeys.push(downstreamChild.key);
+      }
+      return { batch: DATASETS[i], batchIndex: i, downstreamKeys: downstreamKeys };
+    }
+  }
+  return { batch: null, downstreamKeys: [] };
+}
+
+function confirmDeleteDataset(type) {
   pendingDeleteType = type;
-  pendingDeletePipeline = pipeline || '01';
 
-  var name = cascadeNames[type] || type;
-  var cascades = cascadeMap[type] || [];
-  var cascadeNamesList = cascades.map(function(t) { return cascadeNames[t] || t; });
+  var name = getDisplayName(type);
+  var result = findBatchAndDownstream(type);
+  var downstreamKeys = result.downstreamKeys;
 
   document.getElementById('deleteWarning').innerHTML =
     '确定要删除 <strong>' + name + '</strong> 吗？此操作不可撤销。';
 
-  if (cascadeNamesList.length > 0) {
+  if (downstreamKeys.length > 0) {
     document.getElementById('deleteCascadeList').innerHTML =
       '<strong>以下数据集将被一并删除：</strong><br>' +
-      cascades.map(function(t, i) { return '&emsp;→ ' + cascadeNames[t]; }).join('<br>');
+      downstreamKeys.map(function(k) { return '&emsp;→ ' + getDisplayName(k); }).join('<br>');
     document.getElementById('deleteCascadeList').style.display = 'block';
   } else {
     document.getElementById('deleteCascadeList').style.display = 'none';
@@ -1052,33 +1142,25 @@ function executeDelete() {
   closeDeleteModal();
 
   var type = pendingDeleteType;
-  var cascades = cascadeMap[type] || [];
+  var result = findBatchAndDownstream(type);
+  var downstreamKeys = result.downstreamKeys;
+  var allToDelete = [type].concat(downstreamKeys);
 
-  // Hide all cards in the cascade chain, plus the target itself
-  var allToHide = [type].concat(cascades);
-  allToHide.forEach(function(t) {
-    var cardId = typeToCardId(t);
-    var card = document.getElementById(cardId);
-    if (card) card.style.display = 'none';
-  });
-
-  showToast('已删除 ' + (cascadeNames[type] || type) + (cascades.length > 0 ? ' 及下游 ' + cascades.length + ' 个数据集' : ''));
+  // Remove from DATASETS
+  if (result.batch) {
+    result.batch.children = result.batch.children.filter(function(c) {
+      return allToDelete.indexOf(c.key) === -1;
+    });
+    // If batch has no more children, remove the batch
+    if (result.batch.children.length === 0) {
+      DATASETS.splice(result.batchIndex, 1);
+    }
+  }
+  applyDsFilters();
+  showToast('已删除 ' + getDisplayName(type) + (downstreamKeys.length > 0 ? ' 及下游 ' + downstreamKeys.length + ' 个数据集' : ''));
 }
 
-function typeToCardId(type) {
-  // Map dataset type to the DOM card ID
-  if (type === 'deduplicated') return null; // pipeline 1 dedup has no ID currently
-  if (type === 'deduplicated_02') return 'dedupCard02';
-  if (type === 'deduplicated_03') return 'dedupCard03';
-  if (type === 'labeled') return 'labeledCard';
-  if (type === 'train') return 'labeledCard'; // labeled group
-  if (type === 'val') return null;
-  // For pipeline 2/3 extracted cards
-  if (type === 'extracted_02' || type === 'extracted_03' || type === 'raw_videos_02' || type === 'raw_videos_03') return null;
-  return null;
-}
-
-// ==================== STEP 4: DATASET MANAGEMENT ====================
+// ==================== DATASET MANAGEMENT (rendering) ====================
 var DS_PAGE_SIZE = 4;
 var dsPage = 0;
 var dsSortAsc = false;
@@ -1291,8 +1373,20 @@ var annoCustomCats = [];
 function openAutoAnnoModal(suffix) {
   autoAnnoPipeline = suffix;
   annoCustomCats = [];
-  var nameMap = { '01': '上传批次_20260628 deduplicated/ (1,102 张)', '02': '上传批次_20260701 deduplicated/ (856 张)', '03': '上传批次_20260702 deduplicated/ (1,517 张)' };
-  document.getElementById('autoAnnoTarget').textContent = nameMap[suffix] || '';
+  var nameMap = { '_01': '上传批次_20260628 deduplicated/ (1,102 张)', '_02': '上传批次_20260701 deduplicated/ (856 张)', '_03': '上传批次_20260702 deduplicated/ (1,517 张)' };
+  var targetName = nameMap[suffix];
+  if (!targetName) {
+    // Dynamic dataset: find in DATASETS
+    var dedupKey = 'deduplicated' + suffix;
+    for (var i = 0; i < DATASETS.length; i++) {
+      var child = DATASETS[i].children.find(function(c) { return c.key === dedupKey; });
+      if (child) {
+        targetName = DATASETS[i].batch + ' ' + child.name + ' (' + child.count + ')';
+        break;
+      }
+    }
+  }
+  document.getElementById('autoAnnoTarget').textContent = targetName || 'deduplicated/';
   // 默认只选中第一个模型
   var cbs = document.querySelectorAll('input[name="autoModel"]');
   var labels = document.querySelectorAll('.model-option');
