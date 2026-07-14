@@ -43,12 +43,12 @@ document.addEventListener('click', function(e) {
   }
 });
 
-/* ----- Sidebar collapse (fix: single init + single toggle) ----- */
+/* ----- Sidebar collapse (starts collapsed in HTML, JS expands if needed) ----- */
 (function initSidebarCollapse() {
   try {
-    if (localStorage.getItem('sidebar_collapsed') === 'true') {
+    if (localStorage.getItem('sidebar_collapsed') !== 'true') {
       var s = document.querySelector('.sidebar');
-      if (s) s.classList.add('collapsed');
+      if (s) s.classList.remove('collapsed');
     }
   } catch(e) {}
 })();

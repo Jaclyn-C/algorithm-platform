@@ -38,7 +38,7 @@
 </head>
 <body>
 
-<aside class="sidebar">
+<aside class="sidebar collapsed">
   <div class="sidebar-logo">
     <div class="logo-icon">AI</div>
     <div class="sidebar-expand-btn" onclick="toggleSidebar()" title="展开侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
@@ -154,21 +154,18 @@ var PRESET_INFO = {
     stage: '迭代中', stageClass: 'tag-iterating',
     pipe: ['done','done','done','done','done','active'],
     stats: '<span>模型：<strong>best.pt v1.3.0</strong></span><span>mAP@50：<strong style="color:var(--success);">0.872</strong></span><span>数据集：<strong>1,102 张</strong></span>',
-    dateExtra: ' · 摄像头A',
   },
   fire: {
     icon: '🔥', color: '#fa8c16,#f5222d',
     stage: '标注中', stageClass: 'tag-processing',
     pipe: ['done','active','wait','wait','wait','wait'],
     stats: '<span>标注进度：<strong style="color:var(--primary);">47/200</strong></span><span>数据集：<strong>856 张</strong></span>',
-    dateExtra: ' · 摄像头B',
   },
   helmet: {
     icon: '🪖', color: '#722ed1,#eb2f96',
     stage: '数据准备', stageClass: 'tag-warning',
     pipe: ['done','wait','wait','wait','wait','wait'],
     stats: '<span>数据集：<strong>1,517 张</strong></span><span>标注：<strong>未开始</strong></span>',
-    dateExtra: ' · 摄像头C',
   },
 };
 
