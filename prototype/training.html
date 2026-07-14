@@ -42,6 +42,22 @@
   .collapse-content { display: none; }
   .collapse-content.open { display: block; }
 
+  /* ===== Augmentation Panel ===== */
+  .aug-section { background: #fafafa; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .aug-section-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .aug-master-toggle { display: flex; align-items: center; gap: 6px; }
+  .aug-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; }
+  .aug-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #fff; border: 1px solid var(--border); border-radius: 4px; transition: var(--transition); }
+  .aug-item:hover { border-color: var(--primary); }
+  .aug-item.disabled { opacity: 0.45; pointer-events: none; }
+  .aug-item .aug-label { font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+  .aug-item .aug-label .aug-code { font-size: 10px; color: var(--text-muted); font-family: "SF Mono", Menlo, Consolas, monospace; }
+  .aug-item .aug-desc { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+  .aug-item .aug-control { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .aug-item .aug-val { font-size: 11px; font-weight: 600; color: var(--primary); min-width: 36px; text-align: right; }
+  .aug-item input[type="range"] { width: 80px; accent-color: var(--primary); }
+  .aug-item input[type="range"]:disabled { opacity: 0.3; }
+
   .table th { position: sticky; top: 0; }
 
   .monitor-panel { display: none; }
@@ -253,8 +269,79 @@
                 <div class="form-group">
                   <div class="form-inline"><label>混合精度训练 (amp)</label><label class="toggle"><input type="checkbox" id="amp" checked><span class="slider"></span></label></div>
                 </div>
-                <div class="form-group">
-                  <div class="form-inline"><label>数据增强</label><label class="toggle"><input type="checkbox" id="augment" checked><span class="slider"></span></label></div>
+              </div>
+
+              <!-- Data Augmentation -->
+              <div class="aug-section" style="margin-top:6px;">
+                <div class="aug-section-title">
+                  数据增强
+                  <label class="toggle" style="vertical-align:middle;" onclick="event.stopPropagation()">
+                    <input type="checkbox" id="augMaster" checked onchange="toggleAugPanel()">
+                    <span class="slider"></span>
+                  </label>
+                  <span style="font-size:10px;color:var(--text-muted);font-weight:400;">关闭后以下所有增强均不生效</span>
+                </div>
+                <div class="aug-grid" id="augGrid">
+                  <div class="aug-item">
+                    <div>
+                      <div class="aug-label">色调 <span class="aug-code">hsv_h</span></div>
+                      <div class="aug-desc">HSV-Hue 通道增强幅度</div>
+                    </div>
+                    <div class="aug-control">
+                      <input type="range" id="aug_hsv_h" min="0" max="10" value="1" step="0.5" oninput="document.getElementById('val_hsv_h').textContent=(this.value/100).toFixed(3)">
+                      <span class="aug-val" id="val_hsv_h">0.015</span>
+                    </div>
+                  </div>
+                  <div class="aug-item">
+                    <div>
+                      <div class="aug-label">饱和度 <span class="aug-code">hsv_s</span></div>
+                      <div class="aug-desc">HSV-Saturation 通道增强幅度</div>
+                    </div>
+                    <div class="aug-control">
+                      <input type="range" id="aug_hsv_s" min="0" max="100" value="70" step="1" oninput="document.getElementById('val_hsv_s').textContent=(this.value/100).toFixed(2)">
+                      <span class="aug-val" id="val_hsv_s">0.70</span>
+                    </div>
+                  </div>
+                  <div class="aug-item">
+                    <div>
+                      <div class="aug-label">亮度 <span class="aug-code">hsv_v</span></div>
+                      <div class="aug-desc">HSV-Value 通道增强幅度</div>
+                    </div>
+                    <div class="aug-control">
+                      <input type="range" id="aug_hsv_v" min="0" max="100" value="40" step="1" oninput="document.getElementById('val_hsv_v').textContent=(this.value/100).toFixed(2)">
+                      <span class="aug-val" id="val_hsv_v">0.40</span>
+                    </div>
+                  </div>
+                  <div class="aug-item">
+                    <div>
+                      <div class="aug-label">随机旋转 <span class="aug-code">degrees</span></div>
+                      <div class="aug-desc">随机旋转角度范围（°）</div>
+                    </div>
+                    <div class="aug-control">
+                      <input type="range" id="aug_degrees" min="0" max="180" value="10" step="1" oninput="document.getElementById('val_degrees').textContent=this.value+'.0'">
+                      <span class="aug-val" id="val_degrees">10.0</span>
+                    </div>
+                  </div>
+                  <div class="aug-item">
+                    <div>
+                      <div class="aug-label">水平翻转 <span class="aug-code">fliplr</span></div>
+                      <div class="aug-desc">随机水平翻转概率</div>
+                    </div>
+                    <div class="aug-control">
+                      <input type="range" id="aug_fliplr" min="0" max="100" value="50" step="5" oninput="document.getElementById('val_fliplr').textContent=(this.value/100).toFixed(2)">
+                      <span class="aug-val" id="val_fliplr">0.50</span>
+                    </div>
+                  </div>
+                  <div class="aug-item">
+                    <div>
+                      <div class="aug-label">Mosaic 增强 <span class="aug-code">mosaic</span></div>
+                      <div class="aug-desc">4 张图拼接为 1 张训练</div>
+                    </div>
+                    <div class="aug-control">
+                      <input type="range" id="aug_mosaic" min="0" max="100" value="100" step="5" oninput="document.getElementById('val_mosaic').textContent=(this.value/100).toFixed(2)">
+                      <span class="aug-val" id="val_mosaic">1.00</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -391,6 +478,16 @@ const historyResults = [
 ];
 
 
+// ==================== AUGMENTATION ====================
+function toggleAugPanel() {
+  var master = document.getElementById('augMaster').checked;
+  var items = document.querySelectorAll('#augGrid .aug-item');
+  items.forEach(function(item) {
+    if (master) { item.classList.remove('disabled'); }
+    else { item.classList.add('disabled'); }
+  });
+}
+
 // ==================== COLLAPSIBLE ====================
 function toggleAdvanced() {
   const content = document.getElementById('collapseContent');
@@ -458,7 +555,13 @@ function startTraining() {
   const weightDecay = document.getElementById('weightDecay').value;
   const workers = document.getElementById('workers').value;
   const amp = document.getElementById('amp').checked;
-  const augment = document.getElementById('augment').checked;
+  const augEnabled = document.getElementById('augMaster').checked;
+  const aug_hsv_h = parseFloat(document.getElementById('aug_hsv_h').value) / 100;
+  const aug_hsv_s = parseFloat(document.getElementById('aug_hsv_s').value) / 100;
+  const aug_hsv_v = parseFloat(document.getElementById('aug_hsv_v').value) / 100;
+  const aug_degrees = parseInt(document.getElementById('aug_degrees').value);
+  const aug_fliplr = parseFloat(document.getElementById('aug_fliplr').value) / 100;
+  const aug_mosaic = parseFloat(document.getElementById('aug_mosaic').value) / 100;
   const pretrained = document.getElementById('pretrainedModel').value;
   const deviceStr = device === 'cpu' ? 'CPU' : 'cuda:' + device;
 
@@ -523,7 +626,11 @@ function startTraining() {
   // Resume / AMP / Augment / Workers
   appendLog('resume:  False', 'cfg');
   appendLog('amp:  ' + String(amp), 'cfg');
-  appendLog('augment:  ' + String(augment), 'cfg');
+  appendLog('augment:  ' + String(augEnabled), 'cfg');
+  if (augEnabled) {
+    appendLog('  hsv_h: ' + aug_hsv_h.toFixed(3) + '  hsv_s: ' + aug_hsv_s.toFixed(2) + '  hsv_v: ' + aug_hsv_v.toFixed(2), 'cfg');
+    appendLog('  degrees: ' + aug_degrees + '  fliplr: ' + aug_fliplr.toFixed(2) + '  mosaic: ' + aug_mosaic.toFixed(2), 'cfg');
+  }
   appendLog('workers:  ' + workers, 'cfg');
   appendLog('save_period:  -1', 'cfg');
   appendLog('', 'blank');
