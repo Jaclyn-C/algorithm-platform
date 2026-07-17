@@ -28,6 +28,12 @@
   .team-edit-btn { font-size: 12px; color: var(--text-muted); cursor: pointer; padding: 2px 4px; border-radius: 3px; opacity: 0; transition: opacity var(--transition); flex-shrink: 0; }
   .team-item:hover .team-edit-btn { opacity: 1; }
   .team-edit-btn:hover { background: #e6f7ff; color: var(--primary); }
+
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+  .form-group select { padding: 8px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; font-family: var(--font); background: #fff; }
+  .form-group select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+  .form-hint { font-size: 10px; color: var(--text-muted); }
 </style>
 </head>
 <body>
@@ -96,32 +102,33 @@
 
 <!-- Edit Member Modal -->
 <div class="modal-overlay" id="editMemberModal" style="display:none;" onclick="if(event.target==this)closeEditMemberModal()">
-  <div class="modal" style="width:400px;">
-    <div class="modal-header">编辑成员 — <span id="editMemberName"></span></div>
-    <div class="modal-body">
-      <div style="margin-bottom:12px;" id="editMemberRoleRow">
-        <label style="display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px;">团队角色</label>
-        <select id="editMemberRole" style="width:100%;padding:7px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);">
+  <div class="modal" style="width:420px;">
+    <div class="modal-header">
+      编辑成员 — <span id="editMemberName"></span>
+      <button class="modal-close" onclick="closeEditMemberModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px 28px;">
+      <div class="form-group" style="margin-bottom:14px;" id="editMemberRoleRow">
+        <label>团队角色</label>
+        <select id="editMemberRole">
           <option value="admin">管理员</option>
           <option value="member">成员</option>
         </select>
-        <span style="font-size:10px;color:var(--text-muted);">管理员可添加成员和管理团队</span>
+        <span class="form-hint">管理员可添加成员和管理团队</span>
       </div>
-      <div style="margin-bottom:12px;" id="editMemberPermRow">
-        <label style="display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px;">项目权限</label>
-        <select id="editMemberPerm" style="width:100%;padding:7px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);">
+      <div class="form-group" style="margin-bottom:14px;" id="editMemberPermRow">
+        <label>项目权限</label>
+        <select id="editMemberPerm">
           <option value="write">可编辑</option>
           <option value="read">仅查看</option>
         </select>
-        <span style="font-size:10px;color:var(--text-muted);">可编辑：可操作项目数据；仅查看：只能查看</span>
+        <span class="form-hint">可编辑：可操作项目数据；仅查看：只能查看</span>
       </div>
-      <div style="border-top:1px solid var(--border);padding-top:12px;" id="editMemberTransferRow">
-        <button class="btn btn-default btn-sm" onclick="transferOwnership()" style="width:100%;">转移创建者身份</button>
-        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;text-align:center;">将创建者身份转移给该成员，你将降为管理员</div>
+      <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;gap:10px;" id="editMemberTransferRow">
+        <button class="btn btn-default btn-sm" onclick="transferOwnership()" style="flex:1;" id="editMemberTransferBtn">转移创建者身份</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteEditMember()" style="flex:1;" id="editMemberRemoveBtn">从团队移除</button>
       </div>
-      <div style="margin-top:12px;" id="editMemberRemoveRow">
-        <button class="btn btn-danger btn-sm" onclick="deleteEditMember()" style="width:100%;">从团队移除该成员</button>
-      </div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:6px;text-align:center;" id="editMemberTransferHint">将创建者身份转移给该成员，你将降为管理员</div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-default btn-sm" onclick="closeEditMemberModal()">取消</button>
@@ -349,21 +356,29 @@ function showEditMemberModal(username) {
   document.getElementById('editMemberRole').value = m.role || 'member';
   document.getElementById('editMemberPerm').value = m.permission || 'read';
 
-  // 创建者编辑任何人：显示全部选项
-  // 管理员编辑成员：只显示权限和移除，不显示角色和转移
-  if (isOwner) {
-    document.getElementById('editMemberRoleRow').style.display = 'block';
-    document.getElementById('editMemberPermRow').style.display = 'block';
-    document.getElementById('editMemberTransferRow').style.display = 'block';
-    document.getElementById('editMemberRemoveRow').style.display = 'block';
-    document.getElementById('btnSaveEditMember').style.display = 'inline-flex';
-  } else {
+  // Clear any inline display overrides from previous calls
+  var el = document.getElementById('editMemberRoleRow');
+  el.style.removeProperty('display');
+  el = document.getElementById('editMemberPermRow');
+  el.style.removeProperty('display');
+  el = document.getElementById('editMemberTransferBtn');
+  el.style.removeProperty('display');
+  el = document.getElementById('editMemberRemoveBtn');
+  el.style.removeProperty('display');
+  el = document.getElementById('editMemberTransferHint');
+  el.style.removeProperty('display');
+  el = document.getElementById('btnSaveEditMember');
+  el.style.removeProperty('display');
+  el = document.getElementById('editMemberTransferRow');
+  el.style.removeProperty('display');
+
+  // Hide elements based on role
+  if (!isOwner) {
     document.getElementById('editMemberRoleRow').style.display = 'none';
-    document.getElementById('editMemberPermRow').style.display = 'block';
-    document.getElementById('editMemberTransferRow').style.display = 'none';
-    document.getElementById('editMemberRemoveRow').style.display = 'block';
-    document.getElementById('btnSaveEditMember').style.display = 'inline-flex';
+    document.getElementById('editMemberTransferBtn').style.display = 'none';
+    document.getElementById('editMemberTransferHint').style.display = 'none';
   }
+
   document.getElementById('editMemberModal').style.display = 'flex';
 }
 
@@ -443,6 +458,7 @@ function initPlatformUsers() {
       { username: '赵六', password: '123456', email: 'zhaoliu@example.com', role: 'annotator', name: '赵六', avatar: '赵', createdAt: '2026-07-01' },
       { username: '孙七', password: '123456', email: 'sunqi@example.com', role: 'engineer', name: '孙七', avatar: '孙', createdAt: '2026-07-05' },
       { username: '周八', password: '123456', email: 'zhouba@example.com', role: 'annotator', name: '周八', avatar: '周', createdAt: '2026-07-10' },
+      { username: '钱九', password: '123456', email: 'qianjiu@example.com', role: 'customer', name: '钱九', avatar: '钱', createdAt: '2026-07-15' },
     ];
     localStorage.setItem('platform_users', JSON.stringify(defaults));
   }

@@ -65,6 +65,7 @@
         <option value="engineer">算法工程师</option>
         <option value="annotator">标注人员</option>
         <option value="admin">管理员</option>
+        <option value="customer">客户</option>
       </select>
     </div>
     <div class="error" id="regError"></div>
@@ -90,6 +91,7 @@ function getDefaultUsers() {
     { username: '赵六', password: '123456', email: 'zhaoliu@example.com', role: 'annotator', name: '赵六', avatar: '赵', createdAt: '2026-07-01' },
     { username: '孙七', password: '123456', email: 'sunqi@example.com', role: 'engineer', name: '孙七', avatar: '孙', createdAt: '2026-07-05' },
     { username: '周八', password: '123456', email: 'zhouba@example.com', role: 'annotator', name: '周八', avatar: '周', createdAt: '2026-07-10' },
+    { username: '钱九', password: '123456', email: 'qianjiu@example.com', role: 'customer', name: '钱九', avatar: '钱', createdAt: '2026-07-15' },
   ];
   localStorage.setItem(USERS_KEY, JSON.stringify(defaults));
   return defaults;

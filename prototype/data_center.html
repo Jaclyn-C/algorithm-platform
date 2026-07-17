@@ -538,17 +538,6 @@
             <tr><td>去重率</td><td id="dedupRate">0%</td></tr>
           </tbody>
         </table>
-        <div class="mt-12">
-          <div class="flex-between" style="margin-bottom:8px;">
-            <span style="font-weight:600;font-size:13px;">被移除的相似图片组 <span style="font-weight:400;font-size:11px;color:var(--text-muted);" id="dedupPageInfo">第 1 页，共 3 页</span></span>
-          </div>
-          <div class="img-grid mt-8" id="dedupImgGrid" style="max-height:180px;"></div>
-          <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:10px;" id="dedupPagination">
-            <button class="btn btn-default btn-sm" onclick="changeDedupPage(-1)">上一页</button>
-            <span class="text-secondary" style="font-size:12px;margin:0 12px;" id="dedupPageNum">1 / 3</span>
-            <button class="btn btn-default btn-sm" onclick="changeDedupPage(1)">下一页</button>
-          </div>
-        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -870,45 +859,12 @@ function skipDedup() {
   showToast('已跳过图片去重，图片将直接进入数据集管理');
 }
 
-let dedupPage = 0;
-const DEDUP_PAGE_SIZE = 6;
-const DEDUP_TOTAL_GROUPS = 18;
-
 function showDedupResult() {
   document.getElementById('dedupResult').style.display = 'block';
   document.getElementById('dedupOrig').textContent = '1,248';
   document.getElementById('dedupAfter').textContent = '1,102';
   document.getElementById('dedupRemoved').textContent = '146';
   document.getElementById('dedupRate').textContent = '11.7%';
-  dedupPage = 0;
-  renderDedupGrid();
-}
-
-function changeDedupPage(delta) {
-  var totalPages = Math.ceil(DEDUP_TOTAL_GROUPS / DEDUP_PAGE_SIZE);
-  dedupPage = Math.max(0, Math.min(totalPages - 1, dedupPage + delta));
-  renderDedupGrid();
-}
-
-function renderDedupGrid() {
-  var totalPages = Math.ceil(DEDUP_TOTAL_GROUPS / DEDUP_PAGE_SIZE);
-  var start = dedupPage * DEDUP_PAGE_SIZE;
-  var end = Math.min(start + DEDUP_PAGE_SIZE, DEDUP_TOTAL_GROUPS);
-  var count = end - start;
-
-  var grid = document.getElementById('dedupImgGrid');
-  var html = '';
-  for (var i = 0; i < count; i++) {
-    var gi = start + i + 1;
-    html += '<div class="img-thumb" style="position:relative;">' +
-      '<div style="width:100%;height:100%;background:hsl(0,0%,' + (70+(start+i)*2) + '%);display:flex;align-items:center;justify-content:center;font-size:9px;color:#999;">图片组 #' + gi + '</div>' +
-      '<div class="img-overlay">与另一张 ' + (85 + (start+i)*2) + '% 相似</div>' +
-    '</div>';
-  }
-  grid.innerHTML = html;
-
-  document.getElementById('dedupPageInfo').textContent = '第 ' + (dedupPage + 1) + ' 页，共 ' + totalPages + ' 页';
-  document.getElementById('dedupPageNum').textContent = (dedupPage + 1) + ' / ' + totalPages;
 }
 
 // ==================== EXTRACT / DEDUP MODAL OPENERS ====================

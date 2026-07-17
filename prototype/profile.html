@@ -18,6 +18,7 @@
   .role-engineer { background: #e6f7ff; color: #1890ff; }
   .role-annotator { background: #fff7e6; color: #fa8c16; }
   .role-admin { background: #f6ffed; color: #52c41a; }
+  .role-customer { background: #f9f0ff; color: #722ed1; }
 
   .profile-main { flex: 1; }
   .profile-main h3 { font-size: 15px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
@@ -154,7 +155,7 @@ function loadProfile() {
   document.getElementById('profileName').textContent = user.name;
   document.getElementById('profileDate').textContent = user.createdAt || '—';
 
-  var roleNames = { engineer: '算法工程师', annotator: '标注人员', admin: '管理员' };
+  var roleNames = { engineer: '算法工程师', annotator: '标注人员', admin: '管理员', customer: '客户' };
   var roleName = roleNames[user.role] || user.role;
   document.getElementById('profileRole').textContent = roleName;
   document.getElementById('profileRole').className = 'role-tag role-' + user.role;
