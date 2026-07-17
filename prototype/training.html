@@ -508,6 +508,26 @@
 </div>
 
 <!-- Toast -->
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmModal" style="display:none;" onclick="if(event.target===this)closeConfirmModal()">
+  <div class="modal" style="width:420px;">
+    <div class="modal-header">
+      <span id="confirmModalTitle">确认操作</span>
+      <button class="modal-close" onclick="closeConfirmModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:28px 32px;">
+      <div style="display:flex;align-items:flex-start;gap:14px;">
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;" id="confirmModalMsg"></div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;" id="confirmModalHint"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default btn-sm" onclick="closeConfirmModal()">取消</button>
+      <button class="btn btn-danger btn-sm" onclick="executeConfirm()">确认</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="common.js"></script>
@@ -582,6 +602,24 @@ document.addEventListener('click', function(e) {
     document.querySelectorAll('.multi-select.open').forEach(function(el) { el.classList.remove('open'); });
   }
 });
+
+// ==================== CONFIRM MODAL ====================
+var _pendingConfirm = null;
+function showConfirmModal(title, msg, hint, callback) {
+  document.getElementById('confirmModalTitle').textContent = title;
+  document.getElementById('confirmModalMsg').textContent = msg;
+  document.getElementById('confirmModalHint').textContent = hint || '';
+  document.getElementById('confirmModal').style.display = 'flex';
+  _pendingConfirm = callback;
+}
+function closeConfirmModal() {
+  document.getElementById('confirmModal').style.display = 'none';
+  _pendingConfirm = null;
+}
+function executeConfirm() {
+  if (_pendingConfirm) { _pendingConfirm(); _pendingConfirm = null; }
+  document.getElementById('confirmModal').style.display = 'none';
+}
 
 // ==================== COLLAPSIBLE ====================
 function toggleAdvanced() {
@@ -828,7 +866,15 @@ function pauseTraining() {
 }
 
 function stopTraining() {
-  if (!confirm('确定要终止训练吗？')) return;
+  showConfirmModal(
+    '终止训练',
+    '确定要终止当前训练吗？',
+    '终止后模型将保存为 last.pt，可后续恢复继续训练。',
+    doStopTraining
+  );
+}
+
+function doStopTraining() {
   clearInterval(trainInterval);
   isTraining = false;
   const finalMap50 = mapData.mAP50.length > 0 ? Math.max(...mapData.mAP50).toFixed(3) : '-';
@@ -1107,9 +1153,13 @@ function viewLatestResult() {
 }
 
 function deleteHistoryRow(btn) {
-  if (!confirm('确定删除该训练记录吗？对应的模型文件也将一并删除。')) return;
   var row = btn.closest('tr');
-  if (row) row.remove();
+  showConfirmModal(
+    '删除训练记录',
+    '确定删除该训练记录吗？',
+    '对应的模型文件也将一并删除，此操作不可撤销。',
+    function() { if (row) row.remove(); }
+  );
 }
 
 function drawModalCharts() {
