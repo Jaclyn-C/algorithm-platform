@@ -450,6 +450,32 @@ function getTeams() {
   try { return JSON.parse(localStorage.getItem('platform_teams')) || []; } catch(e) { return []; }
 }
 
+function initTeams() {
+  var teams = getTeams();
+  var needsSave = false;
+  teams.forEach(function(t) {
+    if (!t.owner) { t.owner = 'admin'; needsSave = true; }
+    if (!t.members || t.members.length === 0) { needsSave = true; }
+  });
+  if (teams.length === 0 || needsSave) {
+    teams = [
+      { id: 'team_anbao', name: '安保检测组', createdAt: '2026-05-01', owner: 'admin', members: [
+        { username: 'admin', role: 'owner', permission: 'write', joinedAt: '2026-05-01' },
+        { username: '张三', role: 'admin', permission: 'write', joinedAt: '2026-06-10' },
+      ]},
+      { id: 'team_xiaofang', name: '消防安全组', createdAt: '2026-06-01', owner: '张三', members: [
+        { username: '张三', role: 'owner', permission: 'write', joinedAt: '2026-06-01' },
+        { username: 'admin', role: 'member', permission: 'read', joinedAt: '2026-06-15' },
+      ]},
+      { id: 'team_default', name: '默认团队', createdAt: '2026-04-01', owner: 'admin', members: [
+        { username: 'admin', role: 'owner', permission: 'write', joinedAt: '2026-04-01' },
+        { username: '张三', role: 'member', permission: 'write', joinedAt: '2026-04-10' },
+      ]},
+    ];
+    localStorage.setItem('platform_teams', JSON.stringify(teams));
+  }
+}
+
 // ── Edit project modal ──
 function openEditProjectModal(id) {
   var personal = getPersonalProjects();
@@ -650,6 +676,7 @@ function initDefaultData() {
   if (!user) { location.href = 'login.html'; return; }
   document.getElementById('headerUserName').textContent = user.name;
   document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
+  initTeams();
   initDefaultData();
   localStorage.removeItem('current_project');
   renderProjects();
