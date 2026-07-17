@@ -203,7 +203,16 @@
           <div id="fileListContainer" style="display:none;flex:1;min-width:0;">
             <div style="font-weight:600;font-size:13px;margin-bottom:8px;">已选择的文件（<span id="fileCount">0</span> 个）</div>
             <div class="file-list" id="fileList"></div>
-            <div class="flex gap-8 mt-12">
+            <div class="flex gap-8 mt-12" style="align-items:center;flex-wrap:wrap;">
+              <span style="font-size:12px;color:var(--text-secondary);">上传为：</span>
+              <select id="uploadType" style="padding:5px 8px;border:1px solid #d9d9d9;border-radius:4px;font-size:12px;font-family:var(--font);">
+                <option value="raw_videos">files/（原始文件）</option>
+                <option value="extracted">extracted_frames/（抽帧图片）</option>
+                <option value="deduplicated">deduplicated/（去重后图片）</option>
+                <option value="labeled">labeled/（已标注数据）</option>
+                <option value="train">train/（训练集）</option>
+                <option value="val">val/（验证集）</option>
+              </select>
               <button class="btn btn-primary btn-sm" onclick="confirmUpload()">确定</button>
               <button class="btn btn-default btn-sm" onclick="document.getElementById('fileInput').click()">继续添加</button>
               <button class="btn btn-default btn-sm" onclick="clearAllFiles()">清空全部</button>
@@ -370,7 +379,7 @@
         <div class="form-group">
           <label>划分方式</label>
           <select id="splitMethod" class="form-control" style="width:160px;" onchange="toggleSplitMethod()">
-            <option value="random">随机划分</option>
+            <option value="random">顺序划分</option>
             <option value="stratified">按类别分层划分</option>
           </select>
           <span class="input-hint" id="splitMethodHint">图片随机分配到训练/验证集</span>
@@ -677,14 +686,28 @@ function confirmUpload() {
   var timeStr = now.toISOString().slice(0, 10) + ' ' + now.toTimeString().slice(0, 5);
   var suffix = '_' + Date.now();
 
-  // Create new batch with files/ entry
+  var uploadType = document.getElementById('uploadType').value;
+  // Type config: baseKey, name, icon, iconGlyph, badge
+  var TYPE_CONFIG = {
+    raw_videos:   { name: 'files/',              icon: 'raw',   iconGlyph: '▶', badge: '原始数据', badgeClass: 'done' },
+    extracted:    { name: 'extracted_frames/',    icon: 'raw',   iconGlyph: '▣', badge: '待处理',   badgeClass: 'done' },
+    deduplicated: { name: 'deduplicated/',        icon: 'dedup', iconGlyph: '▦', badge: '未标注',   badgeClass: 'done' },
+    labeled:      { name: 'labeled/',             icon: 'labeled', iconGlyph: '▣', badge: '待标注', badgeClass: 'done' },
+    train:        { name: 'train/',               icon: 'train', iconGlyph: '⊞', badge: '训练集',   badgeClass: 'done' },
+    val:          { name: 'val/',                 icon: 'val',   iconGlyph: '◇', badge: '验证集',   badgeClass: 'done' },
+  };
+
+  var cfg = TYPE_CONFIG[uploadType];
+  var key = uploadType + suffix;
+
+  // Create new batch with selected type entry
   var newBatch = {
     batch: batchName,
     batchDate: now.toISOString().slice(0, 10),
     status: '未标注',
     statusClass: 'tag-default',
     children: [
-      { key: 'raw_videos' + suffix, name: 'files/', count: totalCount + ' 个文件', dateText: timeStr + ' 上传', icon: 'raw', iconGlyph: '▶', badge: '原始数据', badgeClass: 'done' }
+      { key: key, name: cfg.name, count: totalCount + ' 个文件', dateText: timeStr + ' 上传', icon: cfg.icon, iconGlyph: cfg.iconGlyph, badge: cfg.badge, badgeClass: cfg.badgeClass }
     ]
   };
 
@@ -699,7 +722,7 @@ function confirmUpload() {
 
   // Refresh dataset grid
   applyDsFilters();
-  showToast('文件已确认，已添加到数据集管理');
+  showToast('已添加为 ' + cfg.name + '，已添加到数据集管理');
 }
 
 // ==================== EXTRACT FRAMES ====================
@@ -1000,7 +1023,7 @@ function openDataset(type) {
     }
   } else if (type.indexOf('labeled') === 0) {
     actions.innerHTML = `
-      <button class="btn btn-primary" onclick="closeDatasetModal();openSplitModal();">导出 YOLO 并划分</button>
+      <button class="btn btn-primary" onclick="closeDatasetModal();openSplitModalForKey('${type}')">导出 YOLO 并划分</button>
       <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
   } else if (type.indexOf('train') === 0 || type.indexOf('val') === 0) {
     actions.innerHTML = `
@@ -1243,15 +1266,16 @@ function refreshDatasets() {
 })();
 
 // ==================== DATASET SPLIT ====================
-let splitDone = false;
-
-function openSplitModal() {
-  document.getElementById('splitModal').style.display = 'flex';
-  updateSplitPreview();
-}
+let currentSplitKey = '';
 
 function closeSplitModal() {
   document.getElementById('splitModal').style.display = 'none';
+}
+
+function openSplitModalForKey(key) {
+  currentSplitKey = key;
+  document.getElementById('splitModal').style.display = 'flex';
+  updateSplitPreview();
 }
 
 function toggleSplitMethod() {
@@ -1275,22 +1299,17 @@ function executeSplit() {
   const total = 1102;
   const train = Math.round(total * ratio / 10);
   const val = total - train;
-  const now = new Date().toISOString().slice(0, 10);
+  var now = new Date().toISOString().slice(0, 10);
 
-  // Step 1: export YOLO format from labeled/
   showToast('正在导出 YOLO 格式...');
 
   setTimeout(() => {
-    // Step 2: split into train/val
-    document.getElementById('trainCard').style.display = 'block';
-    document.getElementById('trainCount').textContent = train + ' 张图片 + 标签';
-    document.getElementById('trainDate').textContent = now + ' 生成';
-    document.getElementById('valCard').style.display = 'block';
-    document.getElementById('valCount').textContent = val + ' 张图片 + 标签';
-    document.getElementById('valDate').textContent = now + ' 生成';
-
+    // Create train/val datasets in the same batch as the labeled key
+    if (currentSplitKey) {
+      addDatasetToBatch(currentSplitKey, 'train/', train + ' 张 + 标签', now + ' 生成', 'train', '⊞', '训练集', 'done');
+      addDatasetToBatch(currentSplitKey, 'val/', val + ' 张 + 标签', now + ' 生成', 'val', '◇', '验证集', 'done');
+    }
     closeSplitModal();
-    splitDone = true;
     showToast('已完成：YOLO 导出 + 数据集划分 → 训练集 ' + train + ' 张，验证集 ' + val + ' 张');
   }, 800);
 }
