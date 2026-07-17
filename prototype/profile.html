@@ -41,14 +41,14 @@
   
   <nav class="sidebar-nav">
     <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
-      <a class="sidebar-item" href="my_projects.html" data-icon="📁">个人项目</a>
-      <a class="sidebar-item" href="projects.html" data-icon="👥">团队项目</a>
+      <a class="sidebar-item" href="my_projects.html" data-icon="📁">个人算法</a>
+      <a class="sidebar-item" href="projects.html" data-icon="👥">团队算法</a>
       <a class="sidebar-item" href="models.html" data-icon="📊">模型总览</a>
       <a class="sidebar-item" href="models_use.html" data-icon="🔍">模型使用</a>
       <a class="sidebar-item" href="training_queue.html" data-icon="📋">训练队列</a>
     </div>
     <div class="sidebar-group" id="sidebarProjectGroup" style="display:none;">
-      <div class="sidebar-group-title">当前项目</div>
+      <div class="sidebar-group-title">当前算法</div>
       <div style="padding:0 20px;">
         <select id="sidebarProject" onchange="switchProject(this.value)" style="width:100%;padding:6px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#fff;font-size:13px;font-family:var(--font);">
           <option value="security" style="color:#262626;">保安服检测</option>
@@ -165,7 +165,7 @@ function loadProfile() {
   document.getElementById('editEmail').value = user.email || '';
   document.getElementById('editRole').value = roleName;
 
-  // 个人中心始终不显示项目侧边栏
+  // 个人中心始终不显示算法侧边栏
   document.getElementById('sidebarProjectGroup').style.display = 'none';
   document.getElementById('sidebarSubPages').style.display = 'none';
 }

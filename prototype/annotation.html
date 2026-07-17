@@ -301,7 +301,7 @@
   <nav class="sidebar-nav">
     <div class="sidebar-group" id="sidebarTopHome"><a class="sidebar-item" id="sidebarHomeLink" href="my_projects.html" data-icon="🏠">首页</a></div>
     <div class="sidebar-group" id="sidebarProjectGroup" style="display:none;">
-      <div class="sidebar-group-title" style="font-size:13px;color:#fff;font-weight:600;text-transform:none;opacity:1;" id="sidebarProjectName">当前项目：—</div>
+      <div class="sidebar-group-title" style="font-size:13px;color:#fff;font-weight:600;text-transform:none;opacity:1;" id="sidebarProjectName">当前算法：—</div>
     </div>
     <div class="sidebar-group" id="sidebarSubPages" style="display:none;">
       <a class="sidebar-item" href="data_center.html" data-icon="📦">数据中心</a>
@@ -395,7 +395,7 @@
         </div>
       </div>
       <div class="info-card">
-        <span style="color:var(--text-secondary);">项目</span>
+        <span style="color:var(--text-secondary);">算法</span>
         <strong>保安服检测</strong>
       </div>
       <div class="info-card">
@@ -1968,7 +1968,7 @@ function getCurrentProject() { return localStorage.getItem('current_project') ||
   var project = getCurrentProject();
   if (!project) { location.href = 'projects.html'; return; }
   document.getElementById("sidebarProjectGroup").style.display = "block"; document.getElementById("sidebarSubPages").style.display = "block"; document.getElementById("sidebarHomeLink").href = (project.indexOf("my_") === 0) ? "my_projects.html" : "projects.html";
-  document.getElementById('sidebarProjectName').textContent = '当前项目：' + getProjectName(project);
+  document.getElementById('sidebarProjectName').textContent = '当前算法：' + getProjectName(project);
 
   // Decide which view to show
   var hash = window.location.hash;

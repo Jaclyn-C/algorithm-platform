@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>算法训练平台 — 个人项目</title>
+<title>算法训练平台 — 个人算法</title>
 <link rel="stylesheet" href="common.css">
 <style>
   .content { padding: 20px 24px; }
@@ -57,8 +57,8 @@
   
   <nav class="sidebar-nav">
     <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
-      <a class="sidebar-item active" href="#" data-icon="📁">个人项目</a>
-      <a class="sidebar-item" href="projects.html" data-icon="👥">团队项目</a>
+      <a class="sidebar-item active" href="#" data-icon="📁">个人算法</a>
+      <a class="sidebar-item" href="projects.html" data-icon="👥">团队算法</a>
       <a class="sidebar-item" href="models.html" data-icon="📊">模型总览</a>
       <a class="sidebar-item" href="models_use.html" data-icon="🔍">模型使用</a>
       <a class="sidebar-item" href="training_queue.html" data-icon="📋">训练队列</a>
@@ -73,7 +73,7 @@
 
 <div class="main">
   <header class="header">
-    <div class="breadcrumb"><a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;" data-icon="🏠">首页</a> <span class="sep">›</span> <span>个人项目</span></div>
+    <div class="breadcrumb"><a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;" data-icon="🏠">首页</a> <span class="sep">›</span> <span>个人算法</span></div>
     <div class="header-actions">
       <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
         <span style="font-size:12px;" id="headerUserName">用户</span>
@@ -88,14 +88,14 @@
 
   <div class="content">
     <div class="page-header">
-      <h2>个人项目</h2>
-      <button class="btn btn-primary" onclick="showNewProjectModal()">+ 新建项目</button>
+      <h2>个人算法</h2>
+      <button class="btn btn-primary" onclick="showNewProjectModal()">+ 新建算法</button>
     </div>
 
     <div class="project-grid" id="projectGrid">
       <div class="empty-state" id="emptyState" style="display:none;">
-        <div>还没有个人项目</div>
-        <div style="font-size:12px;margin-top:4px;">点击上方「+ 新建项目」创建你的第一个项目</div>
+        <div>还没有个人算法</div>
+        <div style="font-size:12px;margin-top:4px;">点击上方「+ 新建算法」创建你的第一个算法</div>
       </div>
     </div>
   </div>
@@ -105,13 +105,13 @@
 <div class="modal-overlay" id="newProjectModal" style="display:none;" onclick="if(event.target==this)closeNewProjectModal()">
   <div class="modal" style="width:400px;">
     <div class="modal-header">
-      新建个人项目
+      新建个人算法
       <button class="modal-close" onclick="closeNewProjectModal()">✕</button>
     </div>
     <div class="modal-body" style="padding:20px 28px;">
       <div class="form-group">
-        <label>项目名称</label>
-        <input type="text" id="newProjectName" placeholder="请输入项目名称" style="width:100%;" onkeydown="if(event.key==='Enter')createProject()">
+        <label>算法名称</label>
+        <input type="text" id="newProjectName" placeholder="请输入算法名称" style="width:100%;" onkeydown="if(event.key==='Enter')createProject()">
       </div>
     </div>
     <div class="modal-footer">
@@ -127,13 +127,13 @@
 <div class="modal-overlay" id="editProjectModal" style="display:none;" onclick="if(event.target==this)closeEditProjectModal()">
   <div class="modal" style="width:440px;">
     <div class="modal-header">
-      编辑项目
+      编辑算法
       <button class="modal-close" onclick="closeEditProjectModal()">✕</button>
     </div>
     <div class="modal-body" style="padding:20px 28px;">
       <input type="hidden" id="editProjectId">
       <div class="form-group" style="margin-bottom:12px;">
-        <label>项目名称</label>
+        <label>算法名称</label>
         <input type="text" id="editProjectName" style="width:100%;padding:7px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);">
       </div>
       <div class="form-group" style="margin-bottom:12px;">
@@ -161,16 +161,16 @@
 <div class="modal-overlay" id="deleteProjectModal" style="display:none;" onclick="if(event.target==this)closeDeleteProjectModal()">
   <div class="modal" style="width:480px;">
     <div class="modal-header">
-      确认删除项目
+      确认删除算法
       <button class="modal-close" onclick="closeDeleteProjectModal()">✕</button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="deleteProjectId">
-      <div style="margin-bottom:12px;font-size:13px;">确定要删除项目「<strong id="deleteProjectName"></strong>」吗？此操作<strong>不可撤销</strong>，请手动输入项目名称确认：</div>
-      <input type="text" id="deleteInputName" placeholder="请输入项目名称以确认删除" style="width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);margin-bottom:12px;outline:none;" oninput="checkDeleteInput()">
+      <div style="margin-bottom:12px;font-size:13px;">确定要删除算法「<strong id="deleteProjectName"></strong>」吗？此操作<strong>不可撤销</strong>，请手动输入算法名称确认：</div>
+      <input type="text" id="deleteInputName" placeholder="请输入算法名称以确认删除" style="width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);margin-bottom:12px;outline:none;" oninput="checkDeleteInput()">
       <div style="background:#fff1f0;border:1px solid #ffccc7;border-radius:4px;padding:12px;font-size:12px;">
         <strong>以下内容将被一并删除：</strong><br>
-        &emsp;→ 该项目下的全部数据集<br>
+        &emsp;→ 该算法下的全部数据集<br>
         &emsp;→ 全部标注数据<br>
         &emsp;→ 全部训练记录和模型文件<br>
         &emsp;→ 全部评估记录<br>
@@ -387,7 +387,7 @@ function renderProjects() {
     var statsHtml = computeProjectStats(p.name);
     var buttonsHtml =
       '<div style="display:flex;gap:6px;justify-content:space-between;">' +
-        '<button class="btn btn-default btn-sm" onclick="event.stopPropagation();enterProject(\'' + p.id + '\')">进入项目</button>' +
+        '<button class="btn btn-default btn-sm" onclick="event.stopPropagation();enterProject(\'' + p.id + '\')">进入算法</button>' +
         '<span>' +
           '<button class="btn btn-default btn-sm" onclick="event.stopPropagation();openEditProjectModal(\'' + p.id + '\')">编辑</button>' +
           '<button class="btn btn-danger btn-sm" style="margin-left:6px;" onclick="event.stopPropagation();deletePersonalProject(\'' + p.id + '\',\'' + p.name + '\')">删除</button>' +
@@ -488,7 +488,7 @@ function saveEditProject() {
   var id = document.getElementById('editProjectId').value;
   var name = document.getElementById('editProjectName').value.trim();
   var teamId = document.getElementById('editProjectTeam').value;
-  if (!name) { showToast('请输入项目名称'); return; }
+  if (!name) { showToast('请输入算法名称'); return; }
 
   var personal = getPersonalProjects();
   var project = personal.find(function(p) { return p.id === id; });
@@ -530,7 +530,7 @@ function closeNewProjectModal() {
 
 function createProject() {
   var name = document.getElementById('newProjectName').value.trim();
-  if (!name) { showToast('请输入项目名称'); return; }
+  if (!name) { showToast('请输入算法名称'); return; }
   var projects = getPersonalProjects();
   var id = 'my_' + Date.now();
   projects.push({ id: id, name: name, createdAt: new Date().toISOString().slice(0,10) });
@@ -567,7 +567,7 @@ function executeDeletePersonalProject() {
   var id = document.getElementById('deleteProjectId').value;
   var name = document.getElementById('deleteProjectName').textContent;
   var inputName = document.getElementById('deleteInputName').value.trim();
-  if (inputName !== name) { showToast('项目名称不匹配，无法删除'); return; }
+  if (inputName !== name) { showToast('算法名称不匹配，无法删除'); return; }
   var personal = getPersonalProjects();
   personal = personal.filter(function(p) { return p.id !== id; });
   savePersonalProjects(personal);

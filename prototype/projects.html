@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>算法训练平台 — 团队项目</title>
+<title>算法训练平台 — 团队算法</title>
 <link rel="stylesheet" href="common.css">
 <style>
   .content { padding: 20px 24px; }
@@ -48,14 +48,14 @@
   
   <nav class="sidebar-nav">
     <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
-      <a class="sidebar-item" href="my_projects.html" data-icon="📁">个人项目</a>
-      <a class="sidebar-item active" href="#" data-icon="👥">团队项目</a>
+      <a class="sidebar-item" href="my_projects.html" data-icon="📁">个人算法</a>
+      <a class="sidebar-item active" href="#" data-icon="👥">团队算法</a>
       <a class="sidebar-item" href="models.html" data-icon="📊">模型总览</a>
       <a class="sidebar-item" href="models_use.html" data-icon="🔍">模型使用</a>
       <a class="sidebar-item" href="training_queue.html" data-icon="📋">训练队列</a>
     </div>
     <div class="sidebar-group" id="sidebarProjectGroup" style="display:none;">
-      <div class="sidebar-group-title">当前项目</div>
+      <div class="sidebar-group-title">当前算法</div>
       <div style="padding:0 20px;">
         <div style="padding:8px 20px;font-size:13px;color:#fff;font-weight:600;" id="sidebarProjectName">—</div>
       </div>
@@ -78,7 +78,7 @@
 
 <div class="main">
   <header class="header">
-    <div class="breadcrumb"><a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;" data-icon="🏠">首页</a> <span class="sep">›</span> <span>团队项目</span></div>
+    <div class="breadcrumb"><a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;" data-icon="🏠">首页</a> <span class="sep">›</span> <span>团队算法</span></div>
     <div class="header-actions">
       <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
         <span style="font-size:12px;" id="headerUserName">用户</span>
@@ -93,7 +93,7 @@
 
   <div class="content">
     <div class="page-header">
-      <h2>团队项目</h2>
+      <h2>团队算法</h2>
       <div style="display:flex;gap:8px;align-items:center;">
         <select id="teamFilter" onchange="onTeamFilter()" style="padding:6px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);min-width:180px;">
           <option value="all">全部团队</option>
@@ -405,7 +405,7 @@ function renderAllProjects() {
       '<div class="pipeline">' + pipelineHtml + '</div>' +
       '<div class="p-stats">' + statsHtml + '</div>' +
       '<div style="display:flex;gap:6px;justify-content:space-between;" onclick="event.stopPropagation();">' +
-        '<button class="btn btn-default btn-sm" onclick="enterProject(\'' + p.id + '\')">进入项目</button>' +
+        '<button class="btn btn-default btn-sm" onclick="enterProject(\'' + p.id + '\')">进入算法</button>' +
         (canDeleteProject(p) ? '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject(\'' + p.id + '\',\'' + p.name + '\')">删除</button>' : '') +
       '</div>';
     grid.appendChild(card);
@@ -513,7 +513,7 @@ function executeDeleteProject() {
   var id = document.getElementById('deleteProjectId').value;
   var name = document.getElementById('deleteProjectName').textContent;
   var inputName = document.getElementById('deleteInputName').value.trim();
-  if (inputName !== name) { showToast('项目名称不匹配，无法删除'); return; }
+  if (inputName !== name) { showToast('算法名称不匹配，无法删除'); return; }
   var pl = JSON.parse(localStorage.getItem('project_list') || '[]');
   var item = pl.find(function(p) { return p.id === id; });
   pl = pl.filter(function(p) { return p.id !== id; });
@@ -525,22 +525,22 @@ function executeDeleteProject() {
   }
   closeDeleteProjectModal();
   renderAllProjects();
-  showToast('项目「' + name + '」已删除');
+  showToast('算法「' + name + '」已删除');
 }
 </script>
 <div class="modal-overlay" id="deleteProjectModal" style="display:none;" onclick="if(event.target==this)closeDeleteProjectModal()">
   <div class="modal" style="width:480px;">
     <div class="modal-header">
-      确认删除项目
+      确认删除算法
       <button class="modal-close" onclick="closeDeleteProjectModal()">✕</button>
     </div>
     <div class="modal-body">
       <input type="hidden" id="deleteProjectId">
-      <div style="margin-bottom:14px;font-size:13px;">确定要删除项目「<strong id="deleteProjectName"></strong>」吗？此操作<strong>不可撤销</strong>，请手动输入项目名称确认：</div>
-      <input type="text" id="deleteInputName" placeholder="请输入项目名称以确认删除" style="width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);margin-bottom:14px;outline:none;" oninput="checkDeleteInput()">
+      <div style="margin-bottom:14px;font-size:13px;">确定要删除算法「<strong id="deleteProjectName"></strong>」吗？此操作<strong>不可撤销</strong>，请手动输入算法名称确认：</div>
+      <input type="text" id="deleteInputName" placeholder="请输入算法名称以确认删除" style="width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);margin-bottom:14px;outline:none;" oninput="checkDeleteInput()">
       <div style="background:#fff1f0;border:1px solid #ffccc7;border-radius:4px;padding:12px;font-size:12px;">
         <strong>以下内容将被一并删除：</strong><br>
-        &emsp;→ 该项目下的全部数据集<br>
+        &emsp;→ 该算法下的全部数据集<br>
         &emsp;→ 全部标注数据<br>
         &emsp;→ 全部训练记录和模型文件<br>
         &emsp;→ 全部评估记录<br>

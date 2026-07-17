@@ -48,8 +48,8 @@
   
   <nav class="sidebar-nav">
     <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
-      <a class="sidebar-item" href="my_projects.html" data-icon="📁">个人项目</a>
-      <a class="sidebar-item" href="projects.html" data-icon="👥">团队项目</a>
+      <a class="sidebar-item" href="my_projects.html" data-icon="📁">个人算法</a>
+      <a class="sidebar-item" href="projects.html" data-icon="👥">团队算法</a>
       <a class="sidebar-item" href="models.html" data-icon="📊">模型总览</a>
       <a class="sidebar-item" href="models_use.html" data-icon="🔍">模型使用</a>
       <a class="sidebar-item" href="training_queue.html" data-icon="📋">训练队列</a>
@@ -117,12 +117,12 @@
         <span class="form-hint">管理员可添加成员和管理团队</span>
       </div>
       <div class="form-group" style="margin-bottom:14px;" id="editMemberPermRow">
-        <label>项目权限</label>
+        <label>算法权限</label>
         <select id="editMemberPerm">
           <option value="write">可编辑</option>
           <option value="read">仅查看</option>
         </select>
-        <span class="form-hint">可编辑：可操作项目数据；仅查看：只能查看</span>
+        <span class="form-hint">可编辑：可操作算法数据；仅查看：只能查看</span>
       </div>
       <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;gap:10px;" id="editMemberTransferRow">
         <button class="btn btn-default btn-sm" onclick="transferOwnership()" style="flex:1;" id="editMemberTransferBtn">转移创建者身份</button>
@@ -155,7 +155,7 @@
           <option value="member">成员</option>
           <option value="admin">管理员</option>
         </select>
-        <span class="form-hint">成员可查看项目数据；管理员可添加成员和管理团队</span>
+        <span class="form-hint">成员可查看算法数据；管理员可添加成员和管理团队</span>
       </div>
     </div>
     <div class="modal-footer">

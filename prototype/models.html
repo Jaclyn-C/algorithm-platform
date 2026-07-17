@@ -48,8 +48,8 @@
   
   <nav class="sidebar-nav">
     <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
-      <a class="sidebar-item" href="my_projects.html" data-icon="📁">个人项目</a>
-      <a class="sidebar-item" href="projects.html" data-icon="👥">团队项目</a>
+      <a class="sidebar-item" href="my_projects.html" data-icon="📁">个人算法</a>
+      <a class="sidebar-item" href="projects.html" data-icon="👥">团队算法</a>
       <a class="sidebar-item active" href="#" data-icon="📊">模型总览</a>
       <a class="sidebar-item" href="models_use.html" data-icon="🔍">模型使用</a>
       <a class="sidebar-item" href="training_queue.html" data-icon="📋">训练队列</a>
@@ -82,7 +82,7 @@
       <h2>模型总览</h2>
       <div style="display:flex;gap:8px;align-items:center;">
         <select id="projectFilter" onchange="onProjectFilter()" style="padding:6px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);min-width:160px;">
-          <option value="all">全部项目</option>
+          <option value="all">全部算法</option>
         </select>
         <button class="btn btn-primary btn-sm" onclick="openImportModal()">+ 导入模型</button>
         <button class="btn btn-danger btn-sm" id="btnBatchDelete" onclick="openBatchDeleteModal()" disabled>批量删除 (<span id="selectedCount">0</span>)</button>      </div>
@@ -92,7 +92,7 @@
     <div class="stats-row">
       <div class="stat-card"><div class="stat-value" style="color:var(--text);" id="statTotal">0</div><div class="stat-label">模型总数</div></div>
       <div class="stat-card"><div class="stat-value" style="color:var(--success);" id="statInUse">0</div><div class="stat-label">使用中</div></div>
-      <div class="stat-card"><div class="stat-value" style="color:var(--primary);" id="statProjects">0</div><div class="stat-label">涉及项目</div></div>
+      <div class="stat-card"><div class="stat-value" style="color:var(--primary);" id="statProjects">0</div><div class="stat-label">涉及算法</div></div>
     </div>
 
     <!-- Table -->
@@ -103,7 +103,7 @@
             <tr>
               <th style="width:36px;"><input type="checkbox" id="checkAll" onchange="toggleSelectAll(this)" style="accent-color:var(--primary);"></th>
               <th style="width:50px;">#</th>
-              <th>项目名称</th>
+              <th>算法名称</th>
               <th style="width:130px;">训练时间</th>
               <th>模型名</th>
               <th style="width:90px;">版本号</th>
@@ -138,8 +138,8 @@
         <input type="file" id="importFileInput" accept=".pt" style="display:none;" onchange="handleImportFile(this.files)">
       </div>
       <div class="form-group">
-        <label>项目名称</label>
-        <input type="text" id="importProject" placeholder="请输入项目名称" list="projectSuggest">
+        <label>算法名称</label>
+        <input type="text" id="importProject" placeholder="请输入算法名称" list="projectSuggest">
         <datalist id="projectSuggest"></datalist>
       </div>
       <div class="form-group">
@@ -219,7 +219,7 @@ function populateProjectFilter() {
   var projects = {};
   ALL_MODELS.forEach(function(m) { projects[m.project] = true; });
   var sel = document.getElementById('projectFilter');
-  // Keep only the "全部项目" option, remove the rest
+  // Keep only the "全部算法" option, remove the rest
   while (sel.options.length > 1) { sel.remove(1); }
   var keys = Object.keys(projects);
   keys.forEach(function(p) {
@@ -421,7 +421,7 @@ function handleImportFile(files) {
 function executeImport() {
   if (!importFileName) { showToast('请上传 .pt 模型文件'); return; }
   var project = document.getElementById('importProject').value.trim();
-  if (!project) { showToast('请输入项目名称'); return; }
+  if (!project) { showToast('请输入算法名称'); return; }
   var version = document.getElementById('importVersion').value.trim();
   if (!version) { showToast('请输入模型名'); return; }
 

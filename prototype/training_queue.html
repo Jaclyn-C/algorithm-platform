@@ -82,8 +82,8 @@
   
   <nav class="sidebar-nav">
     <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
-      <a class="sidebar-item" href="my_projects.html" data-icon="📁">个人项目</a>
-      <a class="sidebar-item" href="projects.html" data-icon="👥">团队项目</a>
+      <a class="sidebar-item" href="my_projects.html" data-icon="📁">个人算法</a>
+      <a class="sidebar-item" href="projects.html" data-icon="👥">团队算法</a>
       <a class="sidebar-item" href="models.html" data-icon="📊">模型总览</a>
       <a class="sidebar-item" href="models_use.html" data-icon="🔍">模型使用</a>
       <a class="sidebar-item active" href="#" data-icon="📋">训练队列</a>
@@ -235,7 +235,7 @@ function renderQueue() {
     var nameDisplay = t.name || (t.project + "-" + t.model.replace(".pt",""));
     rows += "<tr><td><span class=task-name>"+nameDisplay+"<span>"+t.project+" · "+t.model+" "+t.version+"</span></span></td><td style=font-size:11px;color:var(--text-muted)>"+t.config+"</td><td><span class=\"badge "+b[1]+"\"><span class=\"blip "+b[2]+"\"></span>"+b[0]+pos+"</span></td><td style=width:160px>"+pct+"</td><td style=font-size:11px;color:var(--text-secondary)>"+meta+"</td><td style=white-space:nowrap>"+acts+"</td></tr>";
   }
-  table.innerHTML = "<table><thead><tr><th>项目 / 模型</th><th>配置</th><th>状态</th><th style=width:160px>进度</th><th>信息</th><th style=width:140px>操作</th></tr></thead><tbody>"+rows+"</tbody></table>";
+  table.innerHTML = "<table><thead><tr><th>算法 / 模型</th><th>配置</th><th>状态</th><th style=width:160px>进度</th><th>信息</th><th style=width:140px>操作</th></tr></thead><tbody>"+rows+"</tbody></table>";
 }
 
 // ── Event delegation on queue table ──

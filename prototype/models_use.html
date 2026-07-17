@@ -62,8 +62,8 @@
   
   <nav class="sidebar-nav">
     <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
-      <a class="sidebar-item" href="my_projects.html" data-icon="📁">个人项目</a>
-      <a class="sidebar-item" href="projects.html" data-icon="👥">团队项目</a>
+      <a class="sidebar-item" href="my_projects.html" data-icon="📁">个人算法</a>
+      <a class="sidebar-item" href="projects.html" data-icon="👥">团队算法</a>
       <a class="sidebar-item" href="models.html" data-icon="📊">模型总览</a>
       <a class="sidebar-item active" href="#" data-icon="🔍">模型使用</a>
       <a class="sidebar-item" href="training_queue.html" data-icon="📋">训练队列</a>
@@ -103,17 +103,17 @@
         <div class="card-header">使用配置</div>
         <div class="card-body">
           <div class="form-group">
-            <label>选择项目</label>
+            <label>选择算法</label>
             <select id="useProject" onchange="onProjectChange()">
-              <option value="">— 选择项目 —</option>
+              <option value="">— 选择算法 —</option>
             </select>
-            <span class="hint">跨项目选择任意模型进行推理</span>
+            <span class="hint">跨算法选择任意模型进行推理</span>
           </div>
 
           <div class="form-group">
             <label>选择模型</label>
             <select id="useModel" onchange="onModelChange()" disabled>
-              <option value="">— 先选择项目 —</option>
+              <option value="">— 先选择算法 —</option>
             </select>
             <span class="hint">选择用于推理的模型</span>
           </div>
@@ -149,7 +149,7 @@
         <div class="card-body" id="resultArea" style="display:flex;flex-direction:column;">
           <div class="empty-state" id="emptyState">
             <div style="font-size:14px;margin-bottom:4px;">尚未开始使用</div>
-            <div style="font-size:12px;">选择项目和模型、上传测试文件后点击「开始使用」</div>
+            <div style="font-size:12px;">选择算法和模型、上传测试文件后点击「开始使用」</div>
           </div>
 
           <div id="resultContent" style="display:none;flex-direction:column;flex:1;min-height:0;">
@@ -236,7 +236,7 @@ function onModelChange() {
 
   info.innerHTML =
     '<div style="font-weight:600;margin-bottom:4px;">' + m.model + ' ' + m.version + '</div>' +
-    '<div>项目：' + m.project + ' · 基座：' + m.pretrained + ' · 大小：' + m.size + '</div>' +
+    '<div>算法：' + m.project + ' · 基座：' + m.pretrained + ' · 大小：' + m.size + '</div>' +
     '<div>mAP@50：<strong style="color:var(--success);">' + m.mAP50 + '</strong> · 训练时间：' + m.time + '</div>';
   info.classList.add('show');
 }
@@ -274,7 +274,7 @@ function removeFile(i) {
 function startUse() {
   var project = document.getElementById('useProject').value;
   var idx = document.getElementById('useModel').value;
-  if (!project) { showToast('请选择项目'); return; }
+  if (!project) { showToast('请选择算法'); return; }
   if (idx === '') { showToast('请选择模型'); return; }
   if (uploadedFiles.length === 0) { showToast('请上传测试文件'); return; }
   if (useRunning) return;
@@ -291,7 +291,7 @@ function startUse() {
   setTimeout(function() {
     var totalDetections = uploadedFiles.length * (3 + Math.floor(Math.random() * 6));
     document.getElementById('summaryBox').innerHTML =
-      '<div><span class="text-muted">项目</span> ' + project + '</div>' +
+      '<div><span class="text-muted">算法</span> ' + project + '</div>' +
       '<div><span class="text-muted">模型</span> ' + selected.model + ' ' + selected.version + '</div>' +
       '<div><span class="text-muted">检测文件</span> ' + uploadedFiles.length + ' 个</div>' +
       '<div><span class="text-muted">检测目标</span> ' + totalDetections + ' 个</div>' +
