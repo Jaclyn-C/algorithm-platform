@@ -1179,13 +1179,13 @@ function loadDatasets() {
   try {
     var saved = JSON.parse(localStorage.getItem(DS_KEY));
     if (saved && saved.length > 0) {
-      // Migrate: if old data has no project field, reset to defaults
-      if (!saved[0].project) {
-        DATASETS = JSON.parse(JSON.stringify(DEFAULT_DATASETS));
-        saveDatasets();
-        return;
-      }
+      // Migrate old data without project field
+      var needsSave = false;
+      saved.forEach(function(b) {
+        if (!b.project) { b.project = '保安服检测'; needsSave = true; }
+      });
       DATASETS = saved;
+      if (needsSave) saveDatasets();
       return;
     }
   } catch(e) {}
