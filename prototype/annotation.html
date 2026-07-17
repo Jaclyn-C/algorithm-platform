@@ -506,7 +506,10 @@
 <!-- Add Label Modal -->
 <div class="modal-overlay" id="addLabelModal" style="display:none;" onclick="if(event.target==this)closeAddLabelModal()">
   <div class="modal" style="width:360px;">
-    <div class="modal-header">新建标签</div>
+    <div class="modal-header">
+      新建标签
+      <button class="modal-close" onclick="closeAddLabelModal()">✕</button>
+    </div>
     <div class="modal-body">
       <div style="margin-bottom:14px;">
         <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--text-secondary);">标签名称</label>
@@ -529,7 +532,10 @@
 <!-- Batch Delete Confirm Modal -->
 <div class="modal-overlay" id="batchDeleteModal" style="display:none;" onclick="if(event.target==this)closeBatchDeleteModal()">
   <div class="modal" style="width:440px;">
-    <div class="modal-header">确认批量删除</div>
+    <div class="modal-header">
+      确认批量删除
+      <button class="modal-close" onclick="closeBatchDeleteModal()">✕</button>
+    </div>
     <div class="modal-body">
       <div style="margin-bottom:12px;font-size:13px;">
         确定要删除选中的 <strong id="batchDeleteCount">0</strong> 张图片吗？

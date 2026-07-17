@@ -61,11 +61,6 @@
 
   .empty-state { padding: 64px 20px; }
 
-  .detail-modal { background: #fff; border-radius: 8px; width: 760px; max-height: 85vh; overflow: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-  .detail-modal-header { padding: 14px 20px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: space-between; }
-  .detail-modal-close { width: 28px; height: 28px; border: none; background: transparent; cursor: pointer; font-size: 16px; color: var(--text-secondary); border-radius: 4px; display: flex; align-items: center; justify-content: center; }
-  .detail-modal-close:hover { background: #f5f5f5; }
-  .detail-modal-body { padding: 20px; }
   .detail-meta { display: flex; gap: 32px; font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
   .detail-meta strong { color: var(--text); }
   .detail-epoch { font-size: 18px; font-weight: 700; color: var(--primary); padding: 8px 14px; background: var(--primary-light); border-radius: var(--radius); margin-bottom: 16px; display: inline-block; }
@@ -132,17 +127,17 @@
 </div>
 
 <div class="modal-overlay" id="detailModal" style="display:none;" onclick="if(event.target===this)closeDetailModal()">
-  <div class="detail-modal">
-    <div class="detail-modal-header">
+  <div class="modal" style="width:760px;max-height:85vh;overflow:auto;">
+    <div class="modal-header">
       <span id="detailTitle">训练详情</span>
       <div style="display:flex;align-items:center;gap:6px;">
         <button class="btn btn-outline" id="btnDetailPause" onclick="pauseFromDetail()" style="display:none;">暂停</button>
         <button class="btn btn-outline" id="btnDetailResume" onclick="resumeFromDetail()" style="display:none;">继续</button>
         <button class="btn btn-danger" id="btnDetailStop" onclick="stopFromDetail()" style="display:none;">终止</button>
-        <button class="detail-modal-close" onclick="closeDetailModal()">✕</button>
+        <button class="modal-close" onclick="closeDetailModal()">✕</button>
       </div>
     </div>
-    <div class="detail-modal-body">
+    <div style="padding:20px;">
       <div class="detail-meta" id="detailMeta"></div>
       <div class="detail-epoch" id="detailEpoch"></div>
       <div class="detail-charts">

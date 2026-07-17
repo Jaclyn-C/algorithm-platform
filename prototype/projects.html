@@ -513,7 +513,7 @@ function executeDeleteProject() {
   var id = document.getElementById('deleteProjectId').value;
   var name = document.getElementById('deleteProjectName').textContent;
   var inputName = document.getElementById('deleteInputName').value.trim();
-  if (inputName !== name) { alert('项目名称不匹配，无法删除'); return; }
+  if (inputName !== name) { showToast('项目名称不匹配，无法删除'); return; }
   var pl = JSON.parse(localStorage.getItem('project_list') || '[]');
   var item = pl.find(function(p) { return p.id === id; });
   pl = pl.filter(function(p) { return p.id !== id; });
@@ -525,13 +525,17 @@ function executeDeleteProject() {
   }
   closeDeleteProjectModal();
   renderAllProjects();
-  alert('项目「' + name + '」已删除。其下的全部数据集、标注数据、训练记录、评估记录、部署记录将一并删除。');
+  showToast('项目「' + name + '」已删除');
 }
 </script>
-<div id="deleteProjectModal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1100;display:none;align-items:center;justify-content:center;" onclick="if(event.target==this)closeDeleteProjectModal()">
-  <div style="background:#fff;border-radius:8px;width:480px;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-    <div style="padding:16px 20px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:15px;">确认删除项目</div>
-    <div style="padding:20px;">
+<div class="modal-overlay" id="deleteProjectModal" style="display:none;" onclick="if(event.target==this)closeDeleteProjectModal()">
+  <div class="modal" style="width:480px;">
+    <div class="modal-header">
+      确认删除项目
+      <button class="modal-close" onclick="closeDeleteProjectModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="deleteProjectId">
       <div style="margin-bottom:14px;font-size:13px;">确定要删除项目「<strong id="deleteProjectName"></strong>」吗？此操作<strong>不可撤销</strong>，请手动输入项目名称确认：</div>
       <input type="text" id="deleteInputName" placeholder="请输入项目名称以确认删除" style="width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);margin-bottom:14px;outline:none;" oninput="checkDeleteInput()">
       <div style="background:#fff1f0;border:1px solid #ffccc7;border-radius:4px;padding:12px;font-size:12px;">
@@ -543,12 +547,11 @@ function executeDeleteProject() {
         &emsp;→ 全部部署记录和部署包
       </div>
     </div>
-    <div style="padding:12px 20px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:8px;">
+    <div class="modal-footer">
       <button class="btn btn-default btn-sm" onclick="closeDeleteProjectModal()">取消</button>
       <button class="btn btn-danger btn-sm" onclick="executeDeleteProject()" id="btnConfirmDelete" disabled>确认删除</button>
     </div>
   </div>
 </div>
-<input type="hidden" id="deleteProjectId">
 </body>
 </html>

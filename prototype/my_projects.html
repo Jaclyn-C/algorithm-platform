@@ -103,11 +103,16 @@
 
 <!-- New Project Modal -->
 <div class="modal-overlay" id="newProjectModal" style="display:none;" onclick="if(event.target==this)closeNewProjectModal()">
-  <div class="modal">
-    <div class="modal-header">新建个人项目</div>
-    <div class="modal-body">
-      <label style="display:block;font-size:12px;color:var(--text-secondary);margin-bottom:4px;">项目名称</label>
-      <input type="text" id="newProjectName" placeholder="请输入项目名称" style="width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:4px;font-size:14px;outline:none;" onkeydown="if(event.key==='Enter')createProject()">
+  <div class="modal" style="width:400px;">
+    <div class="modal-header">
+      新建个人项目
+      <button class="modal-close" onclick="closeNewProjectModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px 28px;">
+      <div class="form-group">
+        <label>项目名称</label>
+        <input type="text" id="newProjectName" placeholder="请输入项目名称" style="width:100%;" onkeydown="if(event.key==='Enter')createProject()">
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-default btn-sm" onclick="closeNewProjectModal()">取消</button>
@@ -121,8 +126,11 @@
 <!-- Edit Project Modal -->
 <div class="modal-overlay" id="editProjectModal" style="display:none;" onclick="if(event.target==this)closeEditProjectModal()">
   <div class="modal" style="width:440px;">
-    <div class="modal-header">编辑项目</div>
-    <div class="modal-body">
+    <div class="modal-header">
+      编辑项目
+      <button class="modal-close" onclick="closeEditProjectModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px 28px;">
       <input type="hidden" id="editProjectId">
       <div class="form-group" style="margin-bottom:12px;">
         <label>项目名称</label>
@@ -152,7 +160,10 @@
 <!-- Delete Confirm Modal -->
 <div class="modal-overlay" id="deleteProjectModal" style="display:none;" onclick="if(event.target==this)closeDeleteProjectModal()">
   <div class="modal" style="width:480px;">
-    <div class="modal-header">确认删除项目</div>
+    <div class="modal-header">
+      确认删除项目
+      <button class="modal-close" onclick="closeDeleteProjectModal()">✕</button>
+    </div>
     <div class="modal-body">
       <input type="hidden" id="deleteProjectId">
       <div style="margin-bottom:12px;font-size:13px;">确定要删除项目「<strong id="deleteProjectName"></strong>」吗？此操作<strong>不可撤销</strong>，请手动输入项目名称确认：</div>
