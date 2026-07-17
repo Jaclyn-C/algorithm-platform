@@ -45,6 +45,37 @@ document.addEventListener('click', function(e) {
 
 /* ----- Sidebar collapse (handled by inline script in each page) ----- */
 
+/* ----- Task Type ----- */
+function getCurrentTaskType() {
+  return localStorage.getItem('current_task_type') || 'detection';
+}
+function onTaskTypeChange(sel) {
+  localStorage.setItem('current_task_type', sel.value);
+}
+
+/* ----- Park / Campus ----- */
+function onParkChange(sel) {
+  localStorage.setItem('current_park', sel.value);
+}
+setTimeout(function initHeaderSelectors() {
+  var tsel = document.getElementById('headerTaskType');
+  if (tsel) {
+    var current = localStorage.getItem('current_task_type') || 'detection';
+    tsel.value = current;
+    if (!localStorage.getItem('current_task_type')) {
+      localStorage.setItem('current_task_type', 'detection');
+    }
+  }
+  var psel = document.getElementById('headerPark');
+  if (psel) {
+    var park = localStorage.getItem('current_park') || 'ganzhou';
+    psel.value = park;
+    if (!localStorage.getItem('current_park')) {
+      localStorage.setItem('current_park', 'ganzhou');
+    }
+  }
+}, 0);
+
 function toggleSidebar() {
   var s = document.querySelector('.sidebar');
   if (!s) return;

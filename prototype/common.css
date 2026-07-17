@@ -118,6 +118,18 @@ body {
 .header .breadcrumb a:hover  { color: var(--primary) !important; }
 .header-actions              { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 
+/* Task Type Selector (in header) */
+.task-type-select { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); }
+.task-type-select select { padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 11px; font-family: var(--font); background: #fff; color: var(--text); cursor: pointer; }
+.task-type-select select:focus { border-color: var(--primary); outline: none; }
+.task-type-select .ts-label { white-space: nowrap; }
+
+/* Park Selector (in header) */
+.park-select { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); }
+.park-select select { padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 11px; font-family: var(--font); background: #fff; color: var(--text); cursor: pointer; }
+.park-select select:focus { border-color: var(--primary); outline: none; }
+.park-select .ps-label { white-space: nowrap; }
+
 /* User Menu */
 .user-menu        { position: relative; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 .user-dropdown    { position: absolute; top: 38px; right: 0; background: #fff; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 130px; z-index: 999; display: none; }
