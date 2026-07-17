@@ -192,6 +192,28 @@
   </div>
 </div>
 
+<!-- Confirm Modal (reusable) -->
+<div class="modal-overlay" id="confirmModal" style="display:none;" onclick="if(event.target===this)closeConfirmModal()">
+  <div class="modal" style="width:420px;">
+    <div class="modal-header">
+      <span id="confirmModalTitle">确认操作</span>
+      <button class="modal-close" onclick="closeConfirmModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:28px 32px;">
+      <div style="display:flex;align-items:flex-start;gap:14px;">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;" id="confirmModalMsg"></div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;" id="confirmModalHint"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default btn-sm" onclick="closeConfirmModal()">取消</button>
+      <button class="btn btn-danger btn-sm" onclick="executeConfirm()">确认</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="common.js"></script>
@@ -372,6 +394,24 @@ function addMember() {
   showToast(found.username + ' 已加入团队');
 }
 
+// ── Confirm Modal (reusable) ──
+var _pendingConfirm = null;
+function showConfirmModal(title, msg, hint, btnText, callback) {
+  document.getElementById('confirmModalTitle').textContent = title;
+  document.getElementById('confirmModalMsg').textContent = msg;
+  document.getElementById('confirmModalHint').textContent = hint || '';
+  document.getElementById('confirmModal').style.display = 'flex';
+  _pendingConfirm = callback;
+}
+function closeConfirmModal() {
+  document.getElementById('confirmModal').style.display = 'none';
+  _pendingConfirm = null;
+}
+function executeConfirm() {
+  if (_pendingConfirm) { _pendingConfirm(); _pendingConfirm = null; }
+  document.getElementById('confirmModal').style.display = 'none';
+}
+
 // ── Edit member ──
 var editingMemberName = '';
 
@@ -414,7 +454,16 @@ function showEditMemberModal(username) {
 }
 
 function transferOwnership() {
-  if (!confirm('确定将创建者身份转移给 ' + editingMemberName + ' 吗？\n\n转移后你将成为管理员，' + editingMemberName + ' 成为新的创建者。此操作不可撤销。')) return;
+  showConfirmModal(
+    '转移创建者身份',
+    '确定转移给 ' + editingMemberName + ' 吗？',
+    '转移后你将成为管理员，' + editingMemberName + ' 成为新的创建者。此操作不可撤销。',
+    '确认转移',
+    doTransferOwnership
+  );
+}
+
+function doTransferOwnership() {
   var teams = getTeams();
   var team = teams.find(function(t) { return t.id === currentTeamId; });
   if (!team) return;
@@ -465,7 +514,16 @@ function saveEditMember() {
 }
 
 function deleteEditMember() {
-  if (!confirm('确定将 ' + editingMemberName + ' 从团队中移除吗？')) return;
+  showConfirmModal(
+    '移除团队成员',
+    '确定将 ' + editingMemberName + ' 从团队中移除吗？',
+    '移除后该成员将失去此团队的所有访问权限。',
+    '确认移除',
+    doDeleteEditMember
+  );
+}
+
+function doDeleteEditMember() {
   var teams = getTeams();
   var team = teams.find(function(t) { return t.id === currentTeamId; });
   if (!team) return;
