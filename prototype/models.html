@@ -180,7 +180,29 @@
 <script src="common.js"></script>
 <script>
 // ── Model registry (all models across all projects) ──
-const ALL_MODELS = [
+var MODELS_KEY = 'platform_models';
+function loadModels() {
+  try { var saved = JSON.parse(localStorage.getItem(MODELS_KEY)); if (saved && saved.length > 0) return saved; } catch(e) {}
+  return null;
+}
+function saveDefaultModels() {
+  if (!localStorage.getItem(MODELS_KEY)) {
+    // These are the ALL_MODELS array defaults — save them on first access
+    var defaults = [
+      { id: 1, project: '保安服检测', time: '2026-07-02 15:30', model: 'best.pt', version: 'v1.3.0', epochs: 800, mAP50: '0.872', mAP5095: '0.651', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+      { id: 2, project: '保安服检测', time: '2026-06-28 09:15', model: 'best.pt', version: 'v1.2.0', epochs: 500, mAP50: '0.851', mAP5095: '0.624', inUse: false, pretrained: 'yolo11m.pt', size: '12.7 MB', notes: '检测精度略有下降', stage: '已完成' },
+      { id: 3, project: '保安服检测', time: '2026-06-20 14:00', model: 'last.pt', version: 'v1.1.0', epochs: 500, mAP50: '0.813', mAP5095: '0.587', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
+      { id: 4, project: '烟火检测', time: '2026-07-05 10:20', model: 'best.pt', version: 'v2.0.0', epochs: 1000, mAP50: '0.918', mAP5095: '0.734', inUse: false, pretrained: 'yolo11m.pt', size: '12.9 MB', notes: '误报率偏高，需调整阈值', stage: '训练中' },
+      { id: 5, project: '烟火检测', time: '2026-06-30 16:45', model: 'best.pt', version: 'v1.0.0', epochs: 600, mAP50: '0.886', mAP5095: '0.691', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+      { id: 6, project: '安全帽检测', time: '2026-07-08 11:00', model: 'best.pt', version: 'v1.0.0', epochs: 800, mAP50: '0.835', mAP5095: '0.612', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+      { id: 7, project: '安全帽检测', time: '2026-06-20 14:00', model: 'best.pt', version: 'v0.5.0', epochs: 500, mAP50: '0.784', mAP5095: '0.543', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
+    ];
+    localStorage.setItem(MODELS_KEY, JSON.stringify(defaults));
+  }
+}
+function saveModels() { try { localStorage.setItem(MODELS_KEY, JSON.stringify(ALL_MODELS)); } catch(e) {} }
+
+const ALL_MODELS = loadModels() || [
   { id: 1, project: '保安服检测', time: '2026-07-02 15:30', model: 'best.pt', version: 'v1.3.0', epochs: 800, mAP50: '0.872', mAP5095: '0.651', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
   { id: 2, project: '保安服检测', time: '2026-06-28 09:15', model: 'best.pt', version: 'v1.2.0', epochs: 500, mAP50: '0.851', mAP5095: '0.624', inUse: false, pretrained: 'yolo11m.pt', size: '12.7 MB', notes: '检测精度略有下降', stage: '已完成' },
   { id: 3, project: '保安服检测', time: '2026-06-20 14:00', model: 'last.pt', version: 'v1.1.0', epochs: 500, mAP50: '0.813', mAP5095: '0.587', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
@@ -309,6 +331,8 @@ function executeBatchDelete() {
   document.getElementById('selectedCount').textContent = '0';
   document.getElementById('btnBatchDelete').disabled = true;
 
+  saveModels();
+
   closeBatchDeleteModal();
   populateProjectFilter();
   onProjectFilter();
@@ -420,6 +444,7 @@ function executeImport() {
   };
 
   ALL_MODELS.unshift(newModel);
+  saveModels();
   closeImportModal();
   var currentFilter = document.getElementById('projectFilter').value;
   populateProjectFilter();
@@ -447,6 +472,7 @@ function showToast(msg) {
   document.getElementById('headerUserName').textContent = user.name;
   document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
   filteredModels = ALL_MODELS.slice();
+  saveModels();
   populateProjectFilter();
   renderModelTable();
 })();

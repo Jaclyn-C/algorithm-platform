@@ -702,6 +702,7 @@ function confirmUpload() {
 
   // Create new batch with selected type entry
   var newBatch = {
+    project: getProjectName(localStorage.getItem('current_project') || ''),
     batch: batchName,
     batchDate: now.toISOString().slice(0, 10),
     status: '未标注',
@@ -721,6 +722,7 @@ function confirmUpload() {
   renderFileList();
 
   // Refresh dataset grid
+  saveDatasets();
   applyDsFilters();
   showToast('已添加为 ' + cfg.name + '，已添加到数据集管理');
 }
@@ -743,6 +745,7 @@ function addDatasetToBatch(sourceKey, name, count, dateText, icon, iconGlyph, ba
       break;
     }
   }
+  saveDatasets();
   applyDsFilters();
 }
 function toggleExtractMode() {
@@ -1136,6 +1139,7 @@ function executeDelete() {
       DATASETS.splice(result.batchIndex, 1);
     }
   }
+  saveDatasets();
   applyDsFilters();
   showToast('已删除 ' + getDisplayName(type) + (downstreamKeys.length > 0 ? ' 及下游 ' + downstreamKeys.length + ' 个数据集' : ''));
 }
@@ -1147,8 +1151,8 @@ var dsSortAsc = false;
 var dsFiltered = [];
 
 // Each batch has all its sub-datasets grouped together
-var DATASETS = [
-  { batch:'上传批次_20260628', batchDate:'2026-06-28', status:'已完成', statusClass:'tag-success', children: [
+var DEFAULT_DATASETS = [
+  { project:'保安服检测', batch:'上传批次_20260628', batchDate:'2026-06-28', status:'已完成', statusClass:'tag-success', children: [
     { key:'raw_videos', name:'files/', count:'4 个文件', dateText:'2026-06-28 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
     { key:'extracted', name:'extracted_frames/', count:'1,248 张', dateText:'2026-06-29 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
     { key:'deduplicated', name:'deduplicated/', count:'1,102 张', dateText:'2026-06-30 生成', icon:'dedup', iconGlyph:'▦', badge:'已标注', badgeClass:'done' },
@@ -1156,17 +1160,42 @@ var DATASETS = [
     { key:'train', name:'train/', count:'771 张 + 标签', dateText:'2026-07-03 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
     { key:'val', name:'val/', count:'331 张 + 标签', dateText:'2026-07-03 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
   ]},
-  { batch:'上传批次_20260701', batchDate:'2026-07-01', status:'标注中', statusClass:'tag-processing', children: [
+  { project:'烟火检测', batch:'上传批次_20260701', batchDate:'2026-07-01', status:'标注中', statusClass:'tag-processing', children: [
     { key:'raw_videos_02', name:'files/', count:'3 个文件', dateText:'2026-07-01 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
     { key:'extracted_02', name:'extracted_frames/', count:'920 张', dateText:'2026-07-01 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
     { key:'deduplicated_02', name:'deduplicated/', count:'856 张', dateText:'2026-07-02 生成', icon:'dedup', iconGlyph:'▦', badge:'标注中 47/200', badgeClass:'processing', badgeId:'dedupBadge02' },
   ]},
-  { batch:'上传批次_20260702', batchDate:'2026-07-02', status:'未标注', statusClass:'tag-default', children: [
+  { project:'安全帽检测', batch:'上传批次_20260702', batchDate:'2026-07-02', status:'未标注', statusClass:'tag-default', children: [
     { key:'raw_videos_03', name:'files/', count:'6 个文件', dateText:'2026-07-02 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
     { key:'extracted_03', name:'extracted_frames/', count:'1,650 张', dateText:'2026-07-03 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
     { key:'deduplicated_03', name:'deduplicated/', count:'1,517 张', dateText:'2026-07-03 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done', badgeId:'dedupBadge03' },
   ]}
 ];
+
+// Load from localStorage or use default
+var DATASETS = [];
+var DS_KEY = 'platform_datasets';
+function loadDatasets() {
+  try {
+    var saved = JSON.parse(localStorage.getItem(DS_KEY));
+    if (saved && saved.length > 0) {
+      // Migrate: if old data has no project field, reset to defaults
+      if (!saved[0].project) {
+        DATASETS = JSON.parse(JSON.stringify(DEFAULT_DATASETS));
+        saveDatasets();
+        return;
+      }
+      DATASETS = saved;
+      return;
+    }
+  } catch(e) {}
+  DATASETS = JSON.parse(JSON.stringify(DEFAULT_DATASETS));
+  saveDatasets();
+}
+function saveDatasets() {
+  try { localStorage.setItem(DS_KEY, JSON.stringify(DATASETS)); } catch(e) {}
+}
+loadDatasets();
 
 function onDsSearch() {
   dsPage = 0;
@@ -1182,8 +1211,10 @@ function toggleDsSort() {
 
 function applyDsFilters() {
   var query = document.getElementById('dsSearch').value.trim().toLowerCase();
+  var currentProject = getProjectName(localStorage.getItem('current_project') || '');
 
-  dsFiltered = DATASETS.slice();
+  // Filter by current project
+  dsFiltered = DATASETS.filter(function(d) { return d.project === currentProject; });
 
   // Search filter: match batch name or any child name
   if (query) {
