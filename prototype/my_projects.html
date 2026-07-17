@@ -184,6 +184,162 @@ function savePersonalProjects(projects) {
   localStorage.setItem(PERSONAL_KEY, JSON.stringify(projects));
 }
 
+function getProjDataStatus(projectName) {
+  var datasets = [];
+  try { datasets = JSON.parse(localStorage.getItem('platform_datasets')) || []; } catch(e) {}
+  var pipeStatus = {};
+  try { pipeStatus = JSON.parse(localStorage.getItem('pipeline_annotation_status')) || {}; } catch(e) {}
+  var models = [];
+  try { models = JSON.parse(localStorage.getItem('platform_models')) || []; } catch(e) {}
+
+  // Filter datasets by project
+  datasets = datasets.filter(function(b) { return b.project === projectName; });
+
+  // Check which stages have data
+  var hasData = { files: false, extracted: false, dedup: false, labeled: false, train: false, val: false };
+  datasets.forEach(function(b) {
+    b.children.forEach(function(c) {
+      if (c.key.indexOf('raw_videos') === 0) hasData.files = true;
+      if (c.key.indexOf('extracted') === 0) hasData.extracted = true;
+      if (c.key.indexOf('deduplicated') === 0) hasData.dedup = true;
+      if (c.key.indexOf('labeled') === 0) hasData.labeled = true;
+      if (c.key.indexOf('train') === 0) hasData.train = true;
+      if (c.key.indexOf('val') === 0) hasData.val = true;
+    });
+  });
+
+  // Check if ANY deduplicated has annotation in progress
+  var dedupKeys = [];
+  datasets.forEach(function(b) {
+    b.children.forEach(function(c) {
+      if (c.key.indexOf('deduplicated') === 0) dedupKeys.push(c.key);
+    });
+  });
+  var hasRunning = false;
+  dedupKeys.forEach(function(key) {
+    var suffix = key.replace('deduplicated', '') || '_01';
+    var st = pipeStatus['p' + suffix] || '';
+    if (st === 'in_progress' || st === 'review') hasRunning = true;
+  });
+
+  // Check models for this project
+  var projModels = models.filter(function(m) { return m.project === projectName; });
+  var hasModel = projModels.length > 0;
+  var hasEval = projModels.some(function(m) { return m.mAP50 && m.mAP50 !== '-'; });
+  var hasDeploy = projModels.some(function(m) { return m.inUse; });
+
+  // Determine stage label
+  var stageLabel, stageClass;
+  if (hasDeploy) { stageLabel = '迭代中'; stageClass = 'tag-iterating'; }
+  else if (hasEval) { stageLabel = '已完成'; stageClass = 'tag-success'; }
+  else if (hasModel) { stageLabel = '训练中'; stageClass = 'tag-processing'; }
+  else if (hasRunning) { stageLabel = '标注中'; stageClass = 'tag-processing'; }
+  else if (hasData.dedup) { stageLabel = '待标注'; stageClass = 'tag-warning'; }
+  else if (hasData.files) { stageLabel = '数据准备'; stageClass = 'tag-warning'; }
+  else { stageLabel = '待开始'; stageClass = 'tag-warning'; }
+
+  // Pipeline dots: data→标注→训练→评估→部署→迭代
+  var pipe = [];
+  pipe.push(hasData.files ? 'done' : 'wait');           // 数据
+  pipe.push(hasData.dedup ? (hasRunning ? 'active' : 'done') : 'wait');  // 标注
+  pipe.push(hasModel ? 'done' : 'wait');                  // 训练
+  pipe.push(hasEval ? 'done' : 'wait');                   // 评估
+  pipe.push(hasDeploy ? 'done' : 'wait');                 // 部署
+  pipe.push(hasDeploy ? 'active' : 'wait');               // 迭代
+
+  return { stageLabel: stageLabel, stageClass: stageClass, pipe: pipe };
+}
+
+function onTeamFilter() {
+  renderAllProjects();
+}
+
+// ── Compute project stats dynamically ──
+function computeProjectStats(projectName) {
+  var datasets = [];
+  try { datasets = JSON.parse(localStorage.getItem('platform_datasets')) || []; } catch(e) {}
+  var pipeStatus = {};
+  try { pipeStatus = JSON.parse(localStorage.getItem('pipeline_annotation_status')) || {}; } catch(e) {}
+  var models = [];
+  try { models = JSON.parse(localStorage.getItem('platform_models')) || []; } catch(e) {}
+
+  // Filter datasets by project
+  datasets = datasets.filter(function(b) { return b.project === projectName; });
+  // Count batches & total deduplicated images
+  var batchCount = datasets.length;
+  var totalDedupImgs = 0;
+  var dedupKeys = [];  // collect deduplicated keys for status check
+  datasets.forEach(function(b) {
+    b.children.forEach(function(c) {
+      if (c.key.indexOf('deduplicated') === 0) {
+        var match = c.count.match(/(\d[\d,]*)/);
+        if (match) totalDedupImgs += parseInt(match[1].replace(/,/g, ''));
+        dedupKeys.push(c.key);
+      }
+    });
+  });
+
+  // Annotation status aggregation
+  var annoDone = 0, annoPending = 0, annoReview = 0;
+  dedupKeys.forEach(function(key) {
+    var suffix = key.replace('deduplicated', '') || '_01';
+    var status = pipeStatus['p' + suffix] || '';
+    if (status === 'review') annoReview++;
+    else if (status === 'in_progress') annoPending++;
+    else {
+      // Check if labeled exists downstream → done
+      var hasLabeled = false;
+      datasets.forEach(function(b) {
+        b.children.forEach(function(c) {
+          if (c.key.indexOf('labeled') === 0 && c.key.replace('labeled','') === key.replace('deduplicated','')) {
+            hasLabeled = true;
+          }
+        });
+      });
+      if (hasLabeled) annoDone++;
+    }
+  });
+  var annoTotal = dedupKeys.length;
+
+  // Model stats — find best model for this project
+  var projModels = models.filter(function(m) { return m.project === projectName; });
+  var bestModel = null;
+  var inUseModel = projModels.filter(function(m) { return m.inUse; })[0];
+  if (inUseModel) {
+    bestModel = inUseModel;
+  } else {
+    // Find one with highest mAP
+    projModels.forEach(function(m) {
+      if (m.mAP50 && (!bestModel || parseFloat(m.mAP50) > parseFloat(bestModel.mAP50 || '0'))) {
+        bestModel = m;
+      }
+    });
+  }
+
+  // Build stats HTML
+  var parts = [];
+  if (bestModel) {
+    parts.push('<span>模型：<strong>' + bestModel.model + ' ' + bestModel.version + '</strong></span>');
+    if (bestModel.mAP50) parts.push('<span>mAP@50：<strong style="color:var(--success);">' + bestModel.mAP50 + '</strong></span>');
+  }
+  parts.push('<span>数据集：<strong>' + batchCount + ' 个批次 / ' + totalDedupImgs.toLocaleString() + ' 张</strong></span>');
+
+  // Annotation summary
+  if (annoTotal > 0) {
+    var annoLabels = [];
+    if (annoDone > 0) annoLabels.push(annoDone + ' 个完成');
+    if (annoReview > 0) annoLabels.push(annoReview + ' 个待审核');
+    if (annoPending > 0) annoLabels.push(annoPending + ' 个进行中');
+    var untouched = annoTotal - annoDone - annoReview - annoPending;
+    if (untouched > 0) annoLabels.push(untouched + ' 个未开始');
+    parts.push('<span>标注：<strong>' + annoLabels.join(' · ') + '</strong></span>');
+  } else {
+    parts.push('<span>标注：<strong>暂无数据</strong></span>');
+  }
+
+  return parts.join('');
+}
+
 function renderProjects() {
   var projects = getPersonalProjects();
   var grid = document.getElementById('projectGrid');
@@ -209,19 +365,15 @@ function renderProjects() {
       ? '<span class="tag" style="background:#e6f7ff;color:#1890ff;margin-left:6px;">共享</span>'
       : '';
     // 状态标记放右上角
-    var stage = p.stage || '数据准备';
-    var stageClasses = { '运行中': 'tag-success', '标注中': 'tag-processing', '数据准备': 'tag-warning', '迭代中': 'tag-iterating' };
-    var stageTag = '<span class="tag ' + (stageClasses[stage] || '') + '" style="margin-left:auto;">' + stage + '</span>';
-
-    var pipelineHtml =
-      '<div class="pipe-step"><div class="pipe-dot active"></div><div class="pipe-label">数据</div></div><div class="pipe-arrow">→</div>' +
-      '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">标注</div></div><div class="pipe-arrow">→</div>' +
-      '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">训练</div></div><div class="pipe-arrow">→</div>' +
-      '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">评估</div></div><div class="pipe-arrow">→</div>' +
-      '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">部署</div></div><div class="pipe-arrow">→</div>' +
-      '<div class="pipe-step"><div class="pipe-dot wait"></div><div class="pipe-label">迭代</div></div>';
-    var statsHtml = '<span>数据集：<strong>—</strong></span><span>标注：<strong>未开始</strong></span>';
-
+    var projStats = getProjDataStatus(p.name);
+    var stageTag = '<span class="tag ' + projStats.stageClass + '" style="margin-left:auto;">' + projStats.stageLabel + '</span>';
+    var pipeLabels = ['数据','标注','训练','评估','部署','迭代'];
+    var pipelineHtml = '';
+    for (var k = 0; k < 6; k++) {
+      pipelineHtml += '<div class="pipe-step"><div class="pipe-dot ' + projStats.pipe[k] + '"></div><div class="pipe-label">' + pipeLabels[k] + '</div></div>';
+      if (k < 5) pipelineHtml += '<div class="pipe-arrow">→</div>';
+    }
+    var statsHtml = computeProjectStats(p.name);
     var buttonsHtml =
       '<div style="display:flex;gap:6px;justify-content:space-between;">' +
         '<button class="btn btn-default btn-sm" onclick="event.stopPropagation();enterProject(\'' + p.id + '\')">进入项目</button>' +
@@ -416,11 +568,51 @@ function executeDeletePersonalProject() {
   showToast('项目「' + name + '」已删除');
 }
 
+function initDefaultData() {
+  if (!localStorage.getItem('platform_datasets')) {
+    localStorage.setItem('platform_datasets', JSON.stringify([
+      { project:'保安服检测', batch:'上传批次_20260628', batchDate:'2026-06-28', status:'已完成', statusClass:'tag-success', children: [
+        { key:'raw_videos', name:'files/', count:'4 个文件', dateText:'2026-06-28 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+        { key:'extracted', name:'extracted_frames/', count:'1,248 张', dateText:'2026-06-29 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+        { key:'deduplicated', name:'deduplicated/', count:'1,102 张', dateText:'2026-06-30 生成', icon:'dedup', iconGlyph:'▦', badge:'已标注', badgeClass:'done' },
+        { key:'labeled', name:'labeled/', count:'1,102 张', dateText:'2026-07-02 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
+        { key:'train', name:'train/', count:'771 张 + 标签', dateText:'2026-07-03 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
+        { key:'val', name:'val/', count:'331 张 + 标签', dateText:'2026-07-03 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
+      ]},
+      { project:'烟火检测', batch:'上传批次_20260701', batchDate:'2026-07-01', status:'标注中', statusClass:'tag-processing', children: [
+        { key:'raw_videos_02', name:'files/', count:'3 个文件', dateText:'2026-07-01 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+        { key:'extracted_02', name:'extracted_frames/', count:'920 张', dateText:'2026-07-01 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+        { key:'deduplicated_02', name:'deduplicated/', count:'856 张', dateText:'2026-07-02 生成', icon:'dedup', iconGlyph:'▦', badge:'标注中 47/200', badgeClass:'processing', badgeId:'dedupBadge02' },
+      ]},
+      { project:'安全帽检测', batch:'上传批次_20260702', batchDate:'2026-07-02', status:'未标注', statusClass:'tag-default', children: [
+        { key:'raw_videos_03', name:'files/', count:'6 个文件', dateText:'2026-07-02 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+        { key:'extracted_03', name:'extracted_frames/', count:'1,650 张', dateText:'2026-07-03 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+        { key:'deduplicated_03', name:'deduplicated/', count:'1,517 张', dateText:'2026-07-03 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done', badgeId:'dedupBadge03' },
+      ]}
+    ]));
+  }
+  if (!localStorage.getItem('platform_models')) {
+    localStorage.setItem('platform_models', JSON.stringify([
+      { id: 1, project: '保安服检测', time: '2026-07-02 15:30', model: 'best.pt', version: 'v1.3.0', epochs: 800, mAP50: '0.872', mAP5095: '0.651', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+      { id: 2, project: '保安服检测', time: '2026-06-28 09:15', model: 'best.pt', version: 'v1.2.0', epochs: 500, mAP50: '0.851', mAP5095: '0.624', inUse: false, pretrained: 'yolo11m.pt', size: '12.7 MB', notes: '检测精度略有下降', stage: '已完成' },
+      { id: 3, project: '保安服检测', time: '2026-06-20 14:00', model: 'last.pt', version: 'v1.1.0', epochs: 500, mAP50: '0.813', mAP5095: '0.587', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
+      { id: 4, project: '烟火检测', time: '2026-07-05 10:20', model: 'best.pt', version: 'v2.0.0', epochs: 1000, mAP50: '0.918', mAP5095: '0.734', inUse: false, pretrained: 'yolo11m.pt', size: '12.9 MB', notes: '误报率偏高，需调整阈值', stage: '训练中' },
+      { id: 5, project: '烟火检测', time: '2026-06-30 16:45', model: 'best.pt', version: 'v1.0.0', epochs: 600, mAP50: '0.886', mAP5095: '0.691', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+      { id: 6, project: '安全帽检测', time: '2026-07-08 11:00', model: 'best.pt', version: 'v1.0.0', epochs: 800, mAP50: '0.835', mAP5095: '0.612', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+      { id: 7, project: '安全帽检测', time: '2026-06-20 14:00', model: 'best.pt', version: 'v0.5.0', epochs: 500, mAP50: '0.784', mAP5095: '0.543', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
+    ]));
+  }
+  if (!localStorage.getItem('pipeline_annotation_status')) {
+    localStorage.setItem('pipeline_annotation_status', JSON.stringify({ p_02: 'in_progress' }));
+  }
+}
+
 (function() {
   var user = getUser();
   if (!user) { location.href = 'login.html'; return; }
   document.getElementById('headerUserName').textContent = user.name;
   document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
+  initDefaultData();
   localStorage.removeItem('current_project');
   renderProjects();
 })();
