@@ -91,6 +91,20 @@
   .result-item .metric-label { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
 
   .modal { width: 700px; max-height: 85vh; overflow: auto; }
+
+  /* ===== Multi-Select Dataset ===== */
+  .multi-select { position: relative; user-select: none; }
+  .ms-trigger { display: flex; align-items: center; justify-content: space-between; padding: 5px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; background: #fff; cursor: pointer; min-height: 30px; box-sizing: border-box; }
+  .ms-trigger:hover { border-color: var(--primary); }
+  .ms-trigger .ms-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+  .ms-trigger .ms-arrow { color: var(--text-muted); font-size: 10px; margin-left: 6px; flex-shrink: 0; }
+  .multi-select.open .ms-trigger { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+  .ms-dropdown { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #d9d9d9; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; max-height: 180px; overflow-y: auto; margin-top: 2px; }
+  .multi-select.open .ms-dropdown { display: block; }
+  .ms-option { display: flex; align-items: center; gap: 6px; padding: 7px 10px; font-size: 12px; cursor: pointer; transition: var(--transition); margin: 0; font-weight: 400; }
+  .ms-option:hover { background: var(--primary-light); }
+  .ms-option input[type="checkbox"] { accent-color: var(--primary); width: 14px; height: 14px; margin: 0; flex-shrink: 0; }
+  .ms-trigger .ms-placeholder { color: var(--text-muted); }
 </style>
 </head>
 <body>
@@ -159,19 +173,33 @@
           <div class="form-section">
             <div class="form-section-title">基础设置</div>
             <div class="form-row">
-              <div class="form-group">
+              <div class="form-group" style="flex:1;">
                 <label>训练数据集</label>
-                <select id="trainDataset">
-                  <option value="">— 选择训练集 —</option>
-                  <option value="train" selected>上传批次_20260628 train/ (771 张)</option>
-                </select>
+                <div class="multi-select" id="trainDatasetWrap">
+                  <div class="ms-trigger" onclick="toggleMultiSelect('trainDatasetWrap')">
+                    <span class="ms-text" id="trainDatasetText">上传批次_20260628 train/ (771 张)</span>
+                    <span class="ms-arrow">▾</span>
+                  </div>
+                  <div class="ms-dropdown" id="trainDatasetDrop">
+                    <label class="ms-option"><input type="checkbox" value="train_01" checked onchange="updateMultiSelect('trainDatasetWrap')"> 上传批次_20260628 train/ (771 张)</label>
+                    <label class="ms-option"><input type="checkbox" value="train_02" onchange="updateMultiSelect('trainDatasetWrap')"> 上传批次_20260701 train/ (650 张)</label>
+                    <label class="ms-option"><input type="checkbox" value="train_03" onchange="updateMultiSelect('trainDatasetWrap')"> 上传批次_20260702 train/ (520 张)</label>
+                  </div>
+                </div>
               </div>
-              <div class="form-group">
+              <div class="form-group" style="flex:1;">
                 <label>验证数据集</label>
-                <select id="valDataset">
-                  <option value="">— 选择验证集 —</option>
-                  <option value="val" selected>上传批次_20260628 val/ (331 张)</option>
-                </select>
+                <div class="multi-select" id="valDatasetWrap">
+                  <div class="ms-trigger" onclick="toggleMultiSelect('valDatasetWrap')">
+                    <span class="ms-text" id="valDatasetText">上传批次_20260628 val/ (331 张)</span>
+                    <span class="ms-arrow">▾</span>
+                  </div>
+                  <div class="ms-dropdown" id="valDatasetDrop">
+                    <label class="ms-option"><input type="checkbox" value="val_01" checked onchange="updateMultiSelect('valDatasetWrap')"> 上传批次_20260628 val/ (331 张)</label>
+                    <label class="ms-option"><input type="checkbox" value="val_02" onchange="updateMultiSelect('valDatasetWrap')"> 上传批次_20260701 val/ (279 张)</label>
+                    <label class="ms-option"><input type="checkbox" value="val_03" onchange="updateMultiSelect('valDatasetWrap')"> 上传批次_20260702 val/ (223 张)</label>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="form-row">
@@ -489,6 +517,45 @@ function toggleAugPanel() {
   });
 }
 
+// ==================== MULTI-SELECT ====================
+function toggleMultiSelect(wrapId) {
+  var el = document.getElementById(wrapId);
+  el.classList.toggle('open');
+}
+function updateMultiSelect(wrapId) {
+  var el = document.getElementById(wrapId);
+  var checked = el.querySelectorAll('input[type="checkbox"]:checked');
+  var textEl = el.querySelector('.ms-text');
+  var labels = [];
+  checked.forEach(function(cb) {
+    var label = cb.parentElement.textContent.trim();
+    labels.push(label);
+  });
+  if (labels.length === 0) {
+    textEl.textContent = '— 未选择 —';
+    textEl.classList.add('ms-placeholder');
+  } else if (labels.length <= 2) {
+    textEl.textContent = labels.join('；');
+    textEl.classList.remove('ms-placeholder');
+  } else {
+    textEl.textContent = '已选 ' + labels.length + ' 个数据集';
+    textEl.classList.remove('ms-placeholder');
+  }
+}
+function getSelectedDatasets(wrapId) {
+  var el = document.getElementById(wrapId);
+  var checked = el.querySelectorAll('input[type="checkbox"]:checked');
+  var values = [];
+  checked.forEach(function(cb) { values.push(cb.value); });
+  return values;
+}
+// Close multi-select dropdowns when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.multi-select')) {
+    document.querySelectorAll('.multi-select.open').forEach(function(el) { el.classList.remove('open'); });
+  }
+});
+
 // ==================== COLLAPSIBLE ====================
 function toggleAdvanced() {
   const content = document.getElementById('collapseContent');
@@ -510,9 +577,9 @@ function updateTaskName() {
 }
 // ── Submit to training queue ──
 function submitToQueue() {
-  var trainDS = document.getElementById("trainDataset").value;
-  var valDS = document.getElementById("valDataset").value;
-  if (!trainDS || !valDS) { showToast("请选择训练集和验证集"); return; }
+  var trainDS = getSelectedDatasets("trainDatasetWrap");
+  var valDS = getSelectedDatasets("valDatasetWrap");
+  if (trainDS.length === 0 || valDS.length === 0) { showToast("请选择训练集和验证集"); return; }
   var projectName = getProjectName(localStorage.getItem("current_project") || "");
   var config = "epochs=" + document.getElementById("epochs").value + ", batch=" + document.getElementById("batch").value + ", imgsz=" + document.getElementById("imgsz").value + ", " + document.getElementById("optimizer").value + ", lr=" + document.getElementById("lr0").value;
   // Use user-entered name or auto-generate from params
@@ -541,9 +608,9 @@ function submitToQueue() {
   showToast("训练任务已提交到队列！当前队列共 " + queue.length + " 个任务，查看训练队列页面");
 }
 function startTraining() {
-  const trainDS = document.getElementById('trainDataset').value;
-  const valDS = document.getElementById('valDataset').value;
-  if (!trainDS || !valDS) { showToast('请选择训练集和验证集'); return; }
+  const trainDS = getSelectedDatasets("trainDatasetWrap");
+  const valDS = getSelectedDatasets("valDatasetWrap");
+  if (trainDS.length === 0 || valDS.length === 0) { showToast('请选择训练集和验证集'); return; }
 
   totalEpochs = parseInt(document.getElementById('epochs').value) || 1000;
   const batch = document.getElementById('batch').value;
@@ -619,8 +686,8 @@ function startTraining() {
   // Data config
   appendLog('', 'blank');
   appendLog('data: data/dataset.yaml', 'header');
-  appendLog('train: ../datasets/' + trainDS + '/images  (771 images, 5 classes)', 'dataInfo');
-  appendLog('val: ../datasets/' + valDS + '/images  (331 images)', 'dataInfo');
+  appendLog('train: ' + trainDS.length + ' 个数据集, 共 771 images, 5 classes', 'dataInfo');
+  appendLog('val: ' + valDS.length + ' 个数据集, 共 331 images', 'dataInfo');
   appendLog('test: None', 'dataInfo');
   appendLog('', 'blank');
 
@@ -641,7 +708,7 @@ function startTraining() {
 
   // Simulate first validation before epoch 1
   const initTime = new Date().toTimeString().slice(0, 8);
-  appendLog(`[${initTime}]  Validating initial model on ${valDS}/...`, 'info');
+  appendLog(`[${initTime}]  Validating initial model on ${valDS.length} dataset(s)...`, 'info');
   setTimeout(() => {
     appendLog(`[${new Date().toTimeString().slice(0,8)}]  val: box=0.0812 cls=0.0438 dfl=0.0311  mAP50=0.312  mAP50-95=0.185`, 'val');
     appendLog('', 'blank');
@@ -850,8 +917,8 @@ function addHistoryRow(statusText, statusType) {
   var now = new Date();
   var timeStr = now.toISOString().slice(0, 16).replace('T', ' ');
   var project = getProjectName(localStorage.getItem('current_project') || '');
-  var trainDS = document.getElementById('trainDataset').value;
-  var valDS = document.getElementById('valDataset').value;
+  var trainDS = getSelectedDatasets("trainDatasetWrap").join(', ');
+  var valDS = getSelectedDatasets("valDatasetWrap").join(', ');
   var model = document.getElementById('pretrainedModel').value;
   var finalMap50 = mapData.mAP50.length > 0 ? mapData.mAP50[mapData.mAP50.length-1].toFixed(3) : '-';
   var finalMap5095 = mapData.mAP5095.length > 0 ? mapData.mAP5095[mapData.mAP5095.length-1].toFixed(3) : '-';
