@@ -329,6 +329,7 @@
             <div class="park-select">
         <span class="ps-label">园区</span>
         <select id="headerPark" onchange="onParkChange(this)">
+          <option value="">— 请选择园区 —</option>
           <option value="ganzhou">赣州</option>
           <option value="vietnam">越南</option>
         </select>
@@ -336,6 +337,7 @@
 <div class="task-type-select">
         <span class="ts-label">模型任务</span>
         <select id="headerTaskType" onchange="onTaskTypeChange(this)">
+          <option value="">— 请选择任务 —</option>
           <option value="detection">目标检测（YOLO）</option>
           <option value="pose" disabled>姿态估计 — 规划中</option>
           <option value="segment" disabled>实例分割 — 规划中</option>
@@ -354,6 +356,14 @@
       </div>
     </div>
   </header>
+    <div class="setup-prompt" id="setupPrompt">
+      <div class="sp-card">
+        <div class="sp-icon">🌐</div>
+        <div class="sp-title">请选择园区和模型任务</div>
+        <div class="sp-desc">在顶部 <span class="sp-highlight">园区</span> 和 <span class="sp-highlight">模型任务</span> 下拉框中做出选择<br>即可进入工作区</div>
+      </div>
+    </div>
+
 
   <!-- Content -->
   <div class="content">

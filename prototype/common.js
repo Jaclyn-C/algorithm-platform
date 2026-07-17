@@ -51,30 +51,55 @@ function getCurrentTaskType() {
 }
 function onTaskTypeChange(sel) {
   localStorage.setItem('current_task_type', sel.value);
+  checkParkAndTask(true);
 }
 
 /* ----- Park / Campus ----- */
 function onParkChange(sel) {
   localStorage.setItem('current_park', sel.value);
+  checkParkAndTask(true);
 }
 setTimeout(function initHeaderSelectors() {
   var tsel = document.getElementById('headerTaskType');
   if (tsel) {
-    var current = localStorage.getItem('current_task_type') || 'detection';
-    tsel.value = current;
-    if (!localStorage.getItem('current_task_type')) {
-      localStorage.setItem('current_task_type', 'detection');
-    }
+    var current = localStorage.getItem('current_task_type');
+    if (current) tsel.value = current;
   }
   var psel = document.getElementById('headerPark');
   if (psel) {
-    var park = localStorage.getItem('current_park') || 'ganzhou';
-    psel.value = park;
-    if (!localStorage.getItem('current_park')) {
-      localStorage.setItem('current_park', 'ganzhou');
-    }
+    var park = localStorage.getItem('current_park');
+    if (park) psel.value = park;
   }
+  checkParkAndTask();
 }, 0);
+
+/* ----- Check if park + task are selected, show prompt if not ----- */
+function checkParkAndTask(fromUser) {
+  var park = localStorage.getItem('current_park');
+  var task = localStorage.getItem('current_task_type');
+  var ready = !!(park && task);
+  var promptEl = document.getElementById('setupPrompt');
+  var sidebarEl = document.querySelector('.sidebar');
+  var mainEl = document.querySelector('.content');
+  var breadcrumb = document.querySelector('.header .breadcrumb');
+
+  if (!ready) {
+    // Not ready: show prompt, hide everything
+    if (promptEl) promptEl.style.display = 'flex';
+    if (mainEl) mainEl.style.display = 'none';
+    if (sidebarEl) {
+      sidebarEl.querySelectorAll('.sidebar-group').forEach(function(g) { g.style.display = 'none'; });
+    }
+    if (breadcrumb) breadcrumb.style.display = 'none';
+  } else if (fromUser) {
+    // User just made the last selection — reload to apply
+    location.reload();
+  } else {
+    // Init: both already selected, just hide prompt
+    if (promptEl) promptEl.style.display = 'none';
+  }
+  return ready;
+}
 
 function toggleSidebar() {
   var s = document.querySelector('.sidebar');
