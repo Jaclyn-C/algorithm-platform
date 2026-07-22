@@ -30,8 +30,13 @@
 
   @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
 
-  .p-stats { display: flex; gap: 16px; font-size: 11px; color: var(--text-secondary); margin-bottom: 14px; }
-  .p-stats strong { color: var(--text); }
+  .p-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; margin-bottom: 16px; }
+  .p-stat-item { display: flex; flex-direction: column; gap: 2px; }
+  .p-stat-item .p-stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .p-stat-item .p-stat-value { font-size: 12px; color: var(--text); font-weight: 600; }
+  .p-stat-item .p-stat-value.success { color: var(--success); }
+  .p-stat-item .p-stat-value.primary { color: var(--primary); }
+  .p-stat-item .p-stat-value.muted { color: var(--text-secondary); font-weight: 400; }
 
   .tag-iterating { background: #f9f0ff; color: #722ed1; }
 </style>
@@ -351,28 +356,38 @@ function computeProjectStats(projectName) {
     });
   }
 
-  // Build stats HTML
-  var parts = [];
+  // Build stats as structured items for grid display
+  var items = [];
+
+  // Model + mAP (top-left)
   if (bestModel) {
-    parts.push('<span>模型：<strong>' + bestModel.model + ' ' + bestModel.version + '</strong></span>');
-    if (bestModel.mAP50) parts.push('<span>mAP@50：<strong style="color:var(--success);">' + bestModel.mAP50 + '</strong></span>');
-  }
-  parts.push('<span>数据集：<strong>' + batchCount + ' 个批次 / ' + totalDedupImgs.toLocaleString() + ' 张</strong></span>');
-
-  // Annotation summary
-  if (annoTotal > 0) {
-    var annoLabels = [];
-    if (annoDone > 0) annoLabels.push(annoDone + ' 个完成');
-    if (annoReview > 0) annoLabels.push(annoReview + ' 个待审核');
-    if (annoPending > 0) annoLabels.push(annoPending + ' 个进行中');
-    var untouched = annoTotal - annoDone - annoReview - annoPending;
-    if (untouched > 0) annoLabels.push(untouched + ' 个未开始');
-    parts.push('<span>标注：<strong>' + annoLabels.join(' · ') + '</strong></span>');
+    items.push('<div class="p-stat-item"><div class="p-stat-label">模型</div><div class="p-stat-value">' + bestModel.model + ' ' + bestModel.version + '</div></div>');
+    items.push('<div class="p-stat-item"><div class="p-stat-label">mAP@50</div><div class="p-stat-value success">' + (bestModel.mAP50 || '—') + '</div></div>');
   } else {
-    parts.push('<span>标注：<strong>暂无数据</strong></span>');
+    items.push('<div class="p-stat-item"><div class="p-stat-label">模型</div><div class="p-stat-value muted">暂无</div></div>');
+    items.push('<div class="p-stat-item"><div class="p-stat-label">mAP@50</div><div class="p-stat-value muted">—</div></div>');
   }
 
-  return parts.join('');
+  // Dataset (bottom-left)
+  var dsVal = batchCount > 0 ? batchCount + ' 批次 · ' + totalDedupImgs.toLocaleString() + ' 张' : '暂无数据';
+  items.push('<div class="p-stat-item"><div class="p-stat-label">数据集</div><div class="p-stat-value">' + dsVal + '</div></div>');
+
+  // Annotation (bottom-right)
+  var annoHtml;
+  if (annoTotal > 0) {
+    var annoParts = [];
+    if (annoDone > 0) annoParts.push('<span style="color:var(--success);font-weight:600;">' + annoDone + '</span> 完成');
+    if (annoReview > 0) annoParts.push('<span style="color:#eb2f96;font-weight:600;">' + annoReview + '</span> 待审');
+    if (annoPending > 0) annoParts.push('<span style="color:var(--primary);font-weight:600;">' + annoPending + '</span> 进行中');
+    var untouched = annoTotal - annoDone - annoReview - annoPending;
+    if (untouched > 0) annoParts.push('<span style="color:var(--text-muted);">' + untouched + '</span> 未开始');
+    annoHtml = annoParts.join(' · ');
+  } else {
+    annoHtml = '<span style="color:var(--text-muted);">暂无</span>';
+  }
+  items.push('<div class="p-stat-item"><div class="p-stat-label">标注</div><div class="p-stat-value" style="font-size:11px;">' + annoHtml + '</div></div>');
+
+  return items.join('');
 }
 
 // ── Render all project cards ──
