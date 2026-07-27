@@ -126,6 +126,37 @@
   .file-upload-row-custom:hover { border-color: var(--primary) !important; background: var(--primary-light); }
   .file-upload-row-custom.has-file { border-style: solid !important; background: #f6ffed; border-color: var(--success) !important; }
 
+  /* ===== Dataset Detail — File List ===== */
+  .file-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .file-table th { background: #fafafa; padding: 8px 12px; text-align: left; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
+  .file-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .file-table tbody tr { cursor: pointer; transition: var(--transition); }
+  .file-table tbody tr:hover { background: var(--primary-light); }
+  .file-table .file-icon-cell { width: 32px; }
+  .file-table .file-icon-cell .ficon { width: 28px; height: 28px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }
+  .ficon.video { background: #fff7e6; color: #fa8c16; }
+  .ficon.image { background: #e6f7ff; color: #1890ff; }
+  .ficon.folder { background: #f6ffed; color: #52c41a; }
+
+  /* ===== Folder breadcrumb (inside dataset modal) ===== */
+  .folder-breadcrumb { display: none; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; }
+  .folder-breadcrumb .fb-link { color: var(--primary); cursor: pointer; }
+  .folder-breadcrumb .fb-link:hover { color: #40a9ff; text-decoration: underline; }
+
+  /* ===== Lightbox ===== */
+  .img-lightbox { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 3000; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+  .img-lightbox .lb-close { position: absolute; top: 20px; right: 30px; font-size: 32px; color: #fff; cursor: pointer; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,0.15); transition: var(--transition); }
+  .img-lightbox .lb-close:hover { background: rgba(255,255,255,0.3); }
+  .img-lightbox .lb-info { position: absolute; top: 24px; left: 30px; color: #fff; font-size: 13px; }
+  .img-lightbox .lb-preview { width: 800px; height: 500px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #666; position: relative; overflow: hidden; }
+
+  /* ===== Video preview modal ===== */
+  .video-preview-body { text-align: center; padding: 20px; }
+  .video-preview-body .vp-icon { font-size: 80px; margin-bottom: 12px; }
+  .video-preview-body .vp-name { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .video-preview-body .vp-meta { font-size: 13px; color: var(--text-secondary); line-height: 1.8; }
+  .video-preview-body .vp-hint { margin-top: 20px; padding: 10px 20px; background: var(--primary-light); border-radius: 6px; font-size: 12px; color: var(--primary); display: inline-block; }
+
 </style>
 </head>
 <body>
@@ -459,11 +490,37 @@
       <button class="modal-close" onclick="closeDatasetModal()">✕</button>
     </div>
     <div style="padding:20px;">
+      <div class="folder-breadcrumb" id="folderBreadcrumb">
+        <span class="fb-link" onclick="backToFileList()">← 返回文件列表</span>
+        <span id="folderBreadcrumbName"></span>
+      </div>
       <div class="flex-between" style="margin-bottom:12px;">
         <div id="datasetModalStats" style="font-size:13px;"></div>
         <div class="flex gap-8" id="datasetModalActions"></div>
       </div>
-      <div class="img-grid" id="datasetModalGrid" style="max-height:400px;"></div>
+      <!-- File list / thumbnail grid area -->
+      <div id="datasetModalGridArea">
+        <div class="img-grid" id="datasetModalGrid" style="max-height:400px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Video Preview Modal ==================== -->
+<div class="modal-overlay" id="videoPreviewModal" style="display:none;" onclick="if(event.target==this)closeVideoPreview()">
+  <div class="modal" style="width:600px;">
+    <div class="modal-header">
+      视频文件详情
+      <button class="modal-close" onclick="closeVideoPreview()">✕</button>
+    </div>
+    <div class="video-preview-body">
+      <div class="vp-icon">🎬</div>
+      <div class="vp-name" id="vpName"></div>
+      <div class="vp-meta" id="vpMeta"></div>
+      <div class="vp-hint">该视频可在数据集详情中通过「抽帧」统一转换为图片帧</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeVideoPreview()">关闭</button>
     </div>
   </div>
 </div>
@@ -580,6 +637,13 @@
       <button class="btn btn-default" onclick="closeDedupModal()">关闭</button>
     </div>
   </div>
+</div>
+
+<!-- ==================== Image/FIle Lightbox ==================== -->
+<div class="img-lightbox" id="imgLightbox" style="display:none;" onclick="if(event.target===this)closeImgLightbox()">
+  <span class="lb-close" onclick="closeImgLightbox()">✕</span>
+  <div class="lb-info" id="lbInfo"></div>
+  <div class="lb-preview" id="lbPreview"></div>
 </div>
 
 <!-- Toast -->
@@ -968,27 +1032,51 @@ function closeDedupModal() {
   document.getElementById('dedupModal').style.display = 'none';
 }
 
+// ==================== MOCK FILE DATA ====================
+var MOCK_FILES = {
+  // 数据源 1
+  raw_videos: [
+    { name: 'A11-2F-通道1_20260628_0800-1200.mp4', size: '1.82 GB', type: 'video', duration: '4h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'A11-2F-通道2_20260628_0800-1200.mp4', size: '1.75 GB', type: 'video', duration: '4h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'A21-停车场-东_20260628_0800-1200.mp4', size: '1.63 GB', type: 'video', duration: '4h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'screenshot_20260628_143021.jpg', size: '3.2 MB', type: 'image', resolution: '3840×2160' },
+  ],
+  raw_videos_02: [
+    { name: 'A05-1F-入口_20260701_1200-1400.mp4', size: '980 MB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'A06-2F-走廊_20260701_1200-1400.mp4', size: '920 MB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'snapshot_20260701_0945.png', size: '5.1 MB', type: 'image', resolution: '2560×1440' },
+  ],
+  raw_videos_03: [
+    { name: 'A21-停车场-西_20260702_0800-1000.mp4', size: '1.12 GB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'A22-停车场-南_20260702_0800-1000.mp4', size: '1.05 GB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'A11-南一门_20260702_1400-1600.mp4', size: '1.32 GB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'A12-北一门_20260702_1400-1600.mp4', size: '1.28 GB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'capture_20260702_1123.jpg', size: '2.8 MB', type: 'image', resolution: '2048×1536' },
+    { name: 'capture_20260702_1520.jpg', size: '3.1 MB', type: 'image', resolution: '2048×1536' },
+  ],
+};
+
 // ==================== DATASET MANAGEMENT ====================
 function openDataset(type) {
-  const modal = document.getElementById('datasetModal');
-  const title = document.getElementById('datasetModalTitle');
-  const stats = document.getElementById('datasetModalStats');
-  const grid = document.getElementById('datasetModalGrid');
+  var modal = document.getElementById('datasetModal');
+  var title = document.getElementById('datasetModalTitle');
+  var stats = document.getElementById('datasetModalStats');
+  var grid = document.getElementById('datasetModalGrid');
 
-  const info = {
+  var info = {
     // 数据源 1 — 已完成
-    raw_videos: { title: '上传批次_20260628 files/ — 原始文件', count: '4 个文件（视频 + 图片）', imgs: [] },
+    raw_videos: { title: '上传批次_20260628 files/ — 原始文件', count: '4 个文件（3 个视频 + 1 张图片）', imgs: 0 },
     extracted: { title: '上传批次_20260628 extracted_frames/ — 抽帧结果', count: '1,248 张图片 · 4 个子文件夹', imgs: 24 },
     deduplicated: { title: '上传批次_20260628 deduplicated/ — 去重后图片', count: '1,102 张图片 · 已去重 11.7% · 已标注', imgs: 24 },
     labeled: { title: '上传批次_20260628 labeled/ — 标注完成（YOLO格式）', count: '1,102 张图片 · images/ + labels/ + data.yaml', imgs: 24 },
     train: { title: '上传批次_20260628 train/ — 训练集（YOLO格式）', count: '771 张图片 + 标签', imgs: 18 },
     val: { title: '上传批次_20260628 val/ — 验证集（YOLO格式）', count: '331 张图片 + 标签', imgs: 8 },
     // 数据源 2 — 标注中
-    raw_videos_02: { title: '上传批次_20260701 files/ — 原始文件', count: '3 个文件', imgs: [] },
+    raw_videos_02: { title: '上传批次_20260701 files/ — 原始文件', count: '3 个文件（2 个视频 + 1 张图片）', imgs: 0 },
     extracted_02: { title: '上传批次_20260701 extracted_frames/ — 抽帧结果', count: '920 张图片 · 3 个子文件夹', imgs: 20 },
     deduplicated_02: { title: '上传批次_20260701 deduplicated/ — 去重后图片', count: '856 张图片 · 已去重 12.3% · 标注中 (47/200)', imgs: 20 },
     // 数据源 3 — 未标注
-    raw_videos_03: { title: '上传批次_20260702 files/ — 原始文件', count: '6 个文件', imgs: [] },
+    raw_videos_03: { title: '上传批次_20260702 files/ — 原始文件', count: '6 个文件（4 个视频 + 2 张图片）', imgs: 0 },
     extracted_03: { title: '上传批次_20260702 extracted_frames/ — 抽帧结果', count: '1,650 张图片 · 6 个子文件夹', imgs: 24 },
     deduplicated_03: { title: '上传批次_20260702 deduplicated/ — 去重后图片', count: '1,517 张图片 · 已去重 9.5% · 未标注', imgs: 24 },
   };
@@ -1014,69 +1102,166 @@ function openDataset(type) {
   modal.style.display = 'flex';
 
   // Action buttons based on dataset type
-  const actions = document.getElementById('datasetModalActions');
+  var actions = document.getElementById('datasetModalActions');
 
   if (type.indexOf('raw_videos') === 0) {
-    actions.innerHTML = `
-      <button class="btn btn-primary btn-sm" onclick="closeDatasetModal();openExtractModal('${type}')">抽帧</button>
-      <button class="btn btn-default btn-sm">导出 ZIP</button>
-      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
+    actions.innerHTML =
+      '<button class="btn btn-primary btn-sm" onclick="closeDatasetModal();openExtractModal(\'' + type + '\')">抽帧</button>' +
+      '<button class="btn btn-default btn-sm">导出 ZIP</button>' +
+      '<button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset(\'' + type + '\')">删除</button>';
   } else if (type.indexOf('extracted') === 0) {
-    actions.innerHTML = `
-      <button class="btn btn-primary btn-sm" onclick="closeDatasetModal();openDedupModal('${type}')">去重</button>
-      <button class="btn btn-default btn-sm">导出 ZIP</button>
-      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
+    actions.innerHTML =
+      '<button class="btn btn-primary btn-sm" onclick="closeDatasetModal();openDedupModal(\'' + type + '\')">去重</button>' +
+      '<button class="btn btn-default btn-sm">导出 ZIP</button>' +
+      '<button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset(\'' + type + '\')">删除</button>';
   } else if (type.indexOf('deduplicated') === 0) {
     var pipeSuffix = type.replace('deduplicated', '') || '_01';
     var isReview = getPipelineStatus(pipeSuffix) === 'review';
     var isInProgress = getPipelineStatus(pipeSuffix) === 'in_progress';
     if (isReview) {
-      actions.innerHTML = `
-        <button class="btn btn-default btn-sm">导出 ZIP</button>
-        <button class="btn btn-primary" onclick="goToAnnotation('${type}')">审核修正标注</button>
-        <button class="btn btn-default btn-sm" onclick="closeDatasetModal();openAutoAnnoModal('${pipeSuffix}')">重新自动标注</button>
-        <button class="btn btn-default btn-sm" onclick="discardAutoAnno('${pipeSuffix}')">丢弃预标注</button>
-        <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
+      actions.innerHTML =
+        '<button class="btn btn-default btn-sm">导出 ZIP</button>' +
+        '<button class="btn btn-primary" onclick="goToAnnotation(\'' + type + '\')">审核修正标注</button>' +
+        '<button class="btn btn-default btn-sm" onclick="closeDatasetModal();openAutoAnnoModal(\'' + pipeSuffix + '\')">重新自动标注</button>' +
+        '<button class="btn btn-default btn-sm" onclick="discardAutoAnno(\'' + pipeSuffix + '\')">丢弃预标注</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset(\'' + type + '\')">删除</button>';
     } else if (isInProgress) {
-      actions.innerHTML = `
-        <button class="btn btn-default btn-sm">导出 ZIP</button>
-        <button class="btn btn-primary" onclick="goToAnnotation('${type}')">继续标注</button>
-        <button class="btn btn-default btn-sm" onclick="closeDatasetModal();openAutoAnnoModal('${pipeSuffix}')">重新自动标注</button>
-        <button class="btn btn-default btn-sm" onclick="discardAutoAnno('${pipeSuffix}')">丢弃预标注</button>
-        <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
+      actions.innerHTML =
+        '<button class="btn btn-default btn-sm">导出 ZIP</button>' +
+        '<button class="btn btn-primary" onclick="goToAnnotation(\'' + type + '\')">继续标注</button>' +
+        '<button class="btn btn-default btn-sm" onclick="closeDatasetModal();openAutoAnnoModal(\'' + pipeSuffix + '\')">重新自动标注</button>' +
+        '<button class="btn btn-default btn-sm" onclick="discardAutoAnno(\'' + pipeSuffix + '\')">丢弃预标注</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset(\'' + type + '\')">删除</button>';
     } else {
-      actions.innerHTML = `
-        <button class="btn btn-default btn-sm">导出 ZIP</button>
-        <button class="btn btn-primary" onclick="goToAnnotation('${type}')">创建标注任务</button>
-        <button class="btn btn-default btn-sm" onclick="closeDatasetModal();openAutoAnnoModal('${pipeSuffix}')">自动标注</button>
-        <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
+      actions.innerHTML =
+        '<button class="btn btn-default btn-sm">导出 ZIP</button>' +
+        '<button class="btn btn-primary" onclick="goToAnnotation(\'' + type + '\')">创建标注任务</button>' +
+        '<button class="btn btn-default btn-sm" onclick="closeDatasetModal();openAutoAnnoModal(\'' + pipeSuffix + '\')">自动标注</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset(\'' + type + '\')">删除</button>';
     }
   } else if (type.indexOf('labeled') === 0) {
-    actions.innerHTML = `
-      <button class="btn btn-primary" onclick="closeDatasetModal();openSplitModalForKey('${type}')">导出 YOLO 并划分</button>
-      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
+    actions.innerHTML =
+      '<button class="btn btn-primary" onclick="closeDatasetModal();openSplitModalForKey(\'' + type + '\')">导出 YOLO 并划分</button>' +
+      '<button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset(\'' + type + '\')">删除</button>';
   } else if (type.indexOf('train') === 0 || type.indexOf('val') === 0) {
-    actions.innerHTML = `
-      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
+    actions.innerHTML =
+      '<button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset(\'' + type + '\')">删除</button>';
   } else {
-    actions.innerHTML = `
-      <button class="btn btn-default btn-sm">导出 ZIP</button>
-      <button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset('${type}')">删除</button>`;
+    actions.innerHTML =
+      '<button class="btn btn-default btn-sm">导出 ZIP</button>' +
+      '<button class="btn btn-danger btn-sm" onclick="confirmDeleteDataset(\'' + type + '\')">删除</button>';
   }
-  if (d.imgs > 0) {
-    grid.innerHTML = Array.from({ length: d.imgs }, (_, i) => `
-      <div class="img-thumb">
-        <div style="width:100%;height:100%;background:hsl(${i*15},35%,78%);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;">${type}_${String(i+1).padStart(3,'0')}.jpg</div>
-        <div class="img-overlay">${String(i+1).padStart(3,'0')}.jpg</div>
-      </div>
-    `).join('');
+
+  // ── Render content area based on dataset type ──
+  var isRaw = type.indexOf('raw_videos') === 0;
+  var files = MOCK_FILES[type] || [];
+
+  if (isRaw && files.length > 0) {
+    // ── files/ : show file list table ──
+    var html = '<table class="file-table"><thead><tr>' +
+      '<th style="width:36px;"></th>' +
+      '<th>文件名</th>' +
+      '<th style="width:90px;">文件大小</th>' +
+      '<th style="width:90px;">类型</th>' +
+      '<th style="width:150px;">详细信息</th>' +
+      '</tr></thead><tbody>';
+
+    files.forEach(function(f, fi) {
+      var iconHtml = f.type === 'video'
+        ? '<div class="ficon video">▶</div>'
+        : '<div class="ficon image">▣</div>';
+      var detail = f.type === 'video'
+        ? '时长: ' + f.duration + ' · 分辨率: ' + f.resolution + ' · ' + f.fps + 'fps'
+        : '分辨率: ' + f.resolution;
+      html += '<tr onclick="previewFile(\'' + type + '\', ' + fi + ')">' +
+        '<td class="file-icon-cell">' + iconHtml + '</td>' +
+        '<td style="font-weight:500;">' + f.name + '</td>' +
+        '<td>' + f.size + '</td>' +
+        '<td><span class="tag" style="background:' + (f.type === 'video' ? '#fff7e6;color:#fa8c16' : '#e6f7ff;color:#1890ff') + ';">' + (f.type === 'video' ? '视频' : '图片') + '</span></td>' +
+        '<td style="font-size:11px;color:var(--text-secondary);">' + detail + '</td>' +
+        '</tr>';
+    });
+
+    html += '</tbody></table>';
+    document.getElementById('datasetModalContent').style.width = '900px';
+    grid.innerHTML = html;
+  } else if (d.imgs > 0) {
+    // ── Image datasets: thumbnail grid ──
+    document.getElementById('datasetModalContent').style.width = '800px';
+    var html = '';
+    for (var i = 0; i < d.imgs; i++) {
+      var frameName = type + '_' + String(i + 1).padStart(3, '0') + '.jpg';
+      html += '<div class="img-thumb" onclick="previewImage(\'' + frameName + '\', ' + i + ')">' +
+        '<div style="width:100%;height:100%;background:hsl(' + (i * 15) + ',35%,78%);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;">' + frameName + '</div>' +
+        '<div class="img-overlay">' + frameName + '</div>' +
+        '</div>';
+    }
+    grid.innerHTML = html;
   } else {
+    document.getElementById('datasetModalContent').style.width = '800px';
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">暂无数据</div>';
   }
 }
 
 function closeDatasetModal() {
   document.getElementById('datasetModal').style.display = 'none';
+}
+
+// ==================== LIGHTBOX ====================
+function previewFile(dsType, fileIdx) {
+  var files = MOCK_FILES[dsType];
+  if (!files) return;
+  var f = files[fileIdx];
+  if (!f) return;
+
+  if (f.type === 'video') {
+    // ── Open video preview modal ──
+    document.getElementById('vpName').textContent = f.name;
+    document.getElementById('vpMeta').innerHTML =
+      '大小: ' + f.size + '<br>' +
+      '时长: ' + f.duration + '<br>' +
+      '分辨率: ' + f.resolution + ' · ' + f.fps + 'fps';
+    document.getElementById('videoPreviewModal').style.display = 'flex';
+  } else {
+    // ── Open image lightbox ──
+    var lb = document.getElementById('imgLightbox');
+    document.getElementById('lbInfo').innerHTML =
+      '<div style="font-size:15px;font-weight:600;">' + f.name + '</div>' +
+      '<div style="font-size:11px;opacity:0.8;margin-top:4px;">' +
+        '大小: ' + f.size + ' · 分辨率: ' + f.resolution +
+      '</div>';
+    document.getElementById('lbPreview').innerHTML =
+      '<div style="width:100%;height:100%;background:hsl(' + (fileIdx * 37 + 180) + ',40%,75%);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-direction:column;">' +
+        '<div style="font-size:48px;margin-bottom:8px;">🖼</div>' +
+        '<div>' + f.name + '</div>' +
+        '<div style="font-size:11px;opacity:0.7;margin-top:8px;">' + f.resolution + ' · ' + f.size + '</div>' +
+      '</div>';
+    lb.style.display = 'flex';
+  }
+}
+
+function closeVideoPreview() {
+  document.getElementById('videoPreviewModal').style.display = 'none';
+}
+
+function previewImage(name, idx) {
+  var lb = document.getElementById('imgLightbox');
+  document.getElementById('lbInfo').innerHTML =
+    '<div style="font-size:15px;font-weight:600;">' + name + '</div>' +
+    '<div style="font-size:11px;opacity:0.8;margin-top:4px;">图片 #' + (idx + 1) + '</div>';
+
+  var hue = (idx * 37 + 180) % 360;
+  document.getElementById('lbPreview').innerHTML =
+    '<div style="width:100%;height:100%;background:hsl(' + hue + ',35%,78%);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-direction:column;">' +
+      '<div style="font-size:48px;margin-bottom:8px;">🖼</div>' +
+      '<div>' + name + '</div>' +
+    '</div>';
+
+  lb.style.display = 'flex';
+}
+
+function closeImgLightbox() {
+  document.getElementById('imgLightbox').style.display = 'none';
 }
 
 // ==================== CASCADE DELETE ====================

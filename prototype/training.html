@@ -60,38 +60,63 @@
 
   .table th { position: sticky; top: 0; }
 
-  .monitor-panel { display: none; }
-  .monitor-panel.active { display: flex; flex-direction: column; }
-  .monitor-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
-  .monitor-header .epoch-text { font-size: 18px; font-weight: 700; }
-  .monitor-header .eta-text { font-size: 12px; color: var(--text-secondary); }
-  .chart-box { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-bottom: 12px; }
-  .chart-box .chart-title { font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); }
-  .chart-box canvas { width: 100%; height: 120px; display: block; }
-  .log-box { background: #1e1e1e; color: #d4d4d4; border-radius: var(--radius); padding: 10px 14px; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 10px; height: 200px; overflow-y: auto; line-height: 1.55; margin-bottom: 12px; white-space: pre-wrap; word-break: break-all; }
-  .log-box .log-banner { color: #ffd700; font-weight: 600; }
-  .log-box .log-header { color: #4fc3f7; }
-  .log-box .log-cfg { color: #bdbdbd; }
-  .log-box .log-dataInfo { color: #80cbc4; }
-  .log-box .log-time { color: #6a9955; }
-  .log-box .log-epoch { color: #e0e0e0; }
-  .log-box .log-val { color: #9cdcfe; }
-  .log-box .log-valHeader { color: #888; }
-  .log-box .log-separator { color: #ffab40; }
-  .log-box .log-result { color: #a5d6a7; }
-  .log-box .log-speed { color: #ce93d8; }
-  .log-box .log-savePath { color: #81d4fa; }
-  .log-box .log-note { color: #888; font-style: italic; }
-
-  .result-box { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-top: 12px; }
-  .result-box .result-title { font-weight: 600; font-size: 13px; margin-bottom: 10px; }
-  .result-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  .result-item { background: #fafafa; border-radius: 4px; padding: 10px 14px; text-align: center; }
-  .result-item .metric-value { font-size: 20px; font-weight: 700; }
-  .result-item .metric-label { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
 
   .modal { width: 700px; max-height: 85vh; overflow: auto; }
 
+	  /* ===== Result Detail Modal ===== */
+	  .result-banner { background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%); border-bottom: 1px solid #d6e4ff; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; }
+	  .result-banner-left { display: flex; flex-direction: column; gap: 4px; }
+	  .result-banner-title { font-size: 16px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px; }
+	  .result-banner-sub { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 12px; }
+	  .result-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+	  .result-badge.done { background: #f6ffed; color: #52c41a; }
+	  .result-badge.stopped { background: #fff1f0; color: #ff4d4f; }
+	  .result-badge.running { background: #fff7e6; color: #fa8c16; }
+	  .result-badge-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+	  .result-badge.done .result-badge-dot { background: #52c41a; }
+	  .result-badge.stopped .result-badge-dot { background: #ff4d4f; }
+	  .result-badge.running .result-badge-dot { background: #fa8c16; animation: pulse 1.5s infinite; }
+	  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+
+	  .result-body { padding: 20px 24px; }
+
+	  .result-section { margin-bottom: 20px; }
+	  .result-section:last-child { margin-bottom: 0; }
+	  .result-section-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+	  .result-section-title::before { content: ''; width: 3px; height: 14px; border-radius: 2px; background: var(--primary); display: inline-block; }
+
+	  .result-metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+	  .result-metric-card { background: #fafafa; border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; text-align: center; transition: var(--transition); }
+	  .result-metric-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(24,144,255,0.08); }
+	  .result-metric-card .rm-value { font-size: 24px; font-weight: 700; line-height: 1.2; }
+	  .result-metric-card .rm-label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+	  .result-metric-card .rm-sub { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+	  .rm-green { color: #52c41a; }
+	  .rm-blue { color: var(--primary); }
+	  .rm-purple { color: #722ed1; }
+
+	  .result-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+	  .result-info-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+	  .result-info-item .ri-label { color: var(--text-secondary); min-width: 56px; flex-shrink: 0; }
+	  .result-info-item .ri-value { font-weight: 500; color: var(--text); }
+	  .result-info-item .ri-tag { display: inline-block; padding: 1px 8px; border-radius: 3px; font-size: 11px; background: #f0f0f0; color: var(--text-secondary); margin-right: 4px; }
+
+	  .result-chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+	  .result-chart-card { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+	  .result-chart-card .rc-header { padding: 10px 14px; background: #fafafa; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
+	  .result-chart-card .rc-legend { display: flex; gap: 12px; margin-left: auto; }
+	  .result-chart-card .rc-legend span { font-size: 10px; font-weight: 400; display: flex; align-items: center; gap: 4px; cursor: default; }
+	  .result-chart-card .rc-legend span::before { content: ''; width: 12px; height: 3px; border-radius: 2px; display: inline-block; flex-shrink: 0; background: var(--lc); }
+	  .result-chart-card canvas { width: 100%; height: 160px; display: block; margin: 8px 0; }
+
+	  .result-file-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+	  .result-file-card { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px; background: #fafafa; cursor: pointer; transition: var(--transition); }
+	  .result-file-card:hover { border-color: var(--primary); background: var(--primary-light); }
+	  .result-file-card .rf-icon { width: 40px; height: 40px; border-radius: 8px; background: #e6f7ff; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+	  .result-file-card .rf-info { flex: 1; min-width: 0; }
+	  .result-file-card .rf-name { font-size: 13px; font-weight: 600; color: var(--text); }
+	  .result-file-card .rf-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+	  .result-file-card .rf-dl { font-size: 11px; color: var(--primary); font-weight: 500; white-space: nowrap; }
   /* ===== Multi-Select Dataset ===== */
   .multi-select { position: relative; user-select: none; }
   .ms-trigger { display: flex; align-items: center; justify-content: space-between; padding: 5px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; background: #fff; cursor: pointer; min-height: 30px; box-sizing: border-box; }
@@ -407,42 +432,6 @@
           <button class="btn btn-primary btn-lg" style="width:100%;" onclick="submitToQueue()" id="btnStart">提交到训练队列</button>
         </div>
 
-        <!-- Monitor View (hidden initially) -->
-        <div class="card-header" id="monitorHeader" style="display:none;">训练监控 <span style="font-weight:400;font-size:12px;color:var(--success);" id="monitorStatus">● 运行中</span></div>
-        <div class="card-body monitor-panel" id="monitorView">
-          <div class="monitor-header">
-            <span class="epoch-text" id="monitorEpoch">Epoch 0/1000</span>
-            <span class="eta-text" id="monitorETA">预计剩余: 计算中...</span>
-          </div>
-          <div class="progress-bar"><div class="fill" id="progressFill" style="width:0%;"></div></div>
-
-          <!-- Loss Chart -->
-          <div class="chart-box">
-            <div class="chart-title">Loss 趋势</div>
-            <canvas id="lossChart"></canvas>
-          </div>
-
-          <!-- mAP Chart -->
-          <div class="chart-box">
-            <div class="chart-title">mAP 趋势</div>
-            <canvas id="mapChart"></canvas>
-          </div>
-
-          <!-- Log -->
-          <div class="log-box" id="logBox"></div>
-
-          <!-- Actions -->
-          <div class="flex gap-8">
-            <button class="btn btn-default btn-sm" onclick="pauseTraining()" id="btnPause">暂停</button>
-            <button class="btn btn-danger btn-sm" onclick="stopTraining()">终止训练</button>
-          </div>
-
-          <!-- Result (shown when done) -->
-          <div class="result-box" id="resultBox" style="display:none;">
-            <div class="result-title">训练完成</div>
-            <div class="result-grid" id="resultGrid"></div>
-          </div>
-        </div>
       </div>
 
     </div>
@@ -479,30 +468,66 @@
 
 <!-- History Result Modal -->
 <div class="modal-overlay" id="resultModal" style="display:none;" onclick="if(event.target==this)closeResultModal()">
-  <div class="modal">
+  <div class="modal" style="width:760px;">
     <div class="modal-header">
       <span id="resultModalTitle">训练结果详情</span>
       <button class="modal-close" onclick="closeResultModal()">✕</button>
     </div>
-    <div style="padding:20px;">
-      <div class="result-grid" id="resultModalMetrics"></div>
-      <div class="chart-box mt-16">
-        <div class="chart-title">Loss 曲线</div>
-        <canvas id="resultLossChart" style="height:140px;"></canvas>
+    <!-- Banner -->
+    <div class="result-banner" id="resultBanner">
+      <div class="result-banner-left">
+        <div class="result-banner-title" id="resultBannerTitle"></div>
+        <div class="result-banner-sub" id="resultBannerSub"></div>
       </div>
-      <div class="chart-box mt-12">
-        <div class="chart-title">mAP 曲线</div>
-        <canvas id="resultMapChart" style="height:140px;"></canvas>
+      <span class="result-badge" id="resultStatusBadge"></span>
+    </div>
+    <!-- Body -->
+    <div class="result-body">
+      <!-- Metrics -->
+      <div class="result-section">
+        <div class="result-section-title">训练指标</div>
+        <div class="result-metrics-row" id="resultModalMetrics"></div>
       </div>
-      <div class="flex-between mt-16" style="font-size:12px;">
-        <span class="text-secondary">模型文件：<strong id="resultModelPath">—</strong></span>
-        <span class="text-secondary">配置文件：<strong id="resultConfig">—</strong></span>
+      <!-- Config Info -->
+      <div class="result-section">
+        <div class="result-section-title">训练配置</div>
+        <div class="result-info-grid" id="resultConfigGrid"></div>
+      </div>
+      <!-- Charts -->
+      <div class="result-section">
+        <div class="result-section-title">训练曲线</div>
+        <div class="result-chart-row">
+          <div class="result-chart-card">
+            <div class="rc-header">
+              Loss
+              <div class="rc-legend">
+                <span style="--lc:#ff4d4f;">box_loss</span>
+                <span style="--lc:#1890ff;">cls_loss</span>
+                <span style="--lc:#52c41a;">dfl_loss</span>
+              </div>
+            </div>
+            <canvas id="resultLossChart"></canvas>
+          </div>
+          <div class="result-chart-card">
+            <div class="rc-header">
+              mAP
+              <div class="rc-legend">
+                <span style="--lc:#1890ff;">mAP@50</span>
+                <span style="--lc:#52c41a;">mAP@50-95</span>
+              </div>
+            </div>
+            <canvas id="resultMapChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <!-- Model Files -->
+      <div class="result-section">
+        <div class="result-section-title">模型文件</div>
+        <div class="result-file-row" id="resultFileRow"></div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-default btn-sm" onclick="closeResultModal()">关闭</button>
-      <button class="btn btn-primary btn-sm" onclick="closeResultModal();showToast('best.pt 已下载')">下载 best.pt</button>
-      <button class="btn btn-primary btn-sm" onclick="closeResultModal();showToast('last.pt 已下载')">下载 last.pt</button>
+      <button class="btn btn-default" onclick="closeResultModal()">关闭</button>
     </div>
   </div>
 </div>
@@ -533,24 +558,30 @@
 <script src="common.js"></script>
 <script>
 // ==================== STATE ====================
-let isTraining = false;
-let isPaused = false;
-let currentEpoch = 0;
-let totalEpochs = 1000;
-let trainInterval = null;
-let lossData = { box: [], cls: [], dfl: [], epochs: [] };
-let mapData = { mAP50: [], mAP5095: [], epochs: [] };
 
 // ==================== HISTORY DATA ====================
 const historyResults = [
-  { project:'保安服检测', taskName:'保安服检测-夜间场景优化', time:'2026-07-12 08:20', model:'yolo11m.pt', epochs:'1000', train:'771', val:'331', mAP50:'-', mAP5095:'-', status:'running', path:'models/security_v4/best.pt' },
-  { project:'保安服检测', taskName:'保安服检测-yolo11m-800e-16b', time:'2026-06-28 09:15', model:'yolo11m.pt', epochs:'800', train:'771', val:'331', mAP50:'0.872', mAP5095:'0.651', status:'done', path:'models/security_v3/best.pt' },
-  { project:'保安服检测', taskName:'保安服检测-yolo11l-500e-32b', time:'2026-06-20 14:00', model:'yolo11l.pt', epochs:'500', train:'771', val:'331', mAP50:'0.813', mAP5095:'0.587', status:'stopped', path:'models/security_v2/last.pt' },
-  { project:'烟火检测', taskName:'烟火检测-高精度版', time:'2026-07-10 16:45', model:'yolo11x.pt', epochs:'1500', train:'892', val:'383', mAP50:'-', mAP5095:'-', status:'running', path:'models/fire_v2/best.pt' },
-  { project:'烟火检测', taskName:'烟火检测-yolo11m-1000e-16b', time:'2026-07-02 15:30', model:'yolo11m.pt', epochs:'1000', train:'892', val:'383', mAP50:'0.918', mAP5095:'0.734', status:'done', path:'models/fire_v1/best.pt' },
-  { project:'烟火检测', taskName:'烟火检测-yolo11m-600e-16b', time:'2026-06-30 16:45', model:'yolo11m.pt', epochs:'600', train:'892', val:'383', mAP50:'0.886', mAP5095:'0.691', status:'done', path:'models/security_v3/best.pt' },
-  { project:'烟火检测', taskName:'烟火检测-yolo11n-400e-8b', time:'2026-06-25 10:00', model:'yolo11n.pt', epochs:'400', train:'650', val:'279', mAP50:'0.745', mAP5095:'-', status:'stopped', path:'models/fire_v0/last.pt' },
-  { project:'安全帽检测', taskName:'安全帽检测-yolo11n-500e-16b', time:'2026-06-20 14:00', model:'yolo11n.pt', epochs:'500', train:'650', val:'279', mAP50:'-', mAP5095:'-', status:'stopped', path:'models/helmet_v1/last.pt' },
+  // ── 保安服检测 ──
+  { project:'保安服检测', taskName:'保安服检测-夜间场景优化', time:'2026-07-25 08:20', model:'yolo11m.pt', epochs:'1000', train:'771', val:'331', mAP50:'-', mAP5095:'-', status:'running', path:'models/security_v4/best.pt' },
+  { project:'保安服检测', taskName:'保安服检测-yolo11m-800e-16b', time:'2026-07-18 09:15', model:'yolo11m.pt', epochs:'800', train:'771', val:'331', mAP50:'0.872', mAP5095:'0.651', status:'done', path:'models/security_v3/best.pt' },
+  { project:'保安服检测', taskName:'保安服检测-yolo11l-500e-32b', time:'2026-07-10 14:00', model:'yolo11l.pt', epochs:'500', train:'771', val:'331', mAP50:'0.813', mAP5095:'0.587', status:'stopped', path:'models/security_v2/last.pt' },
+  { project:'保安服检测', taskName:'保安服检测-yolo11m-300e-16b', time:'2026-06-28 10:30', model:'yolo11m.pt', epochs:'300', train:'650', val:'279', mAP50:'0.798', mAP5095:'0.562', status:'done', path:'models/security_v1/best.pt' },
+  { project:'保安服检测', taskName:'保安服检测-yolo11n-200e-8b', time:'2026-06-22 16:20', model:'yolo11n.pt', epochs:'200', train:'520', val:'223', mAP50:'0.724', mAP5095:'0.481', status:'done', path:'models/security_v0/best.pt' },
+  { project:'保安服检测', taskName:'保安服检测-数据增强实验', time:'2026-06-15 11:00', model:'yolo11m.pt', epochs:'500', train:'771', val:'331', mAP50:'0.691', mAP5095:'0.413', status:'stopped', path:'models/security_aug_exp/last.pt' },
+
+  // ── 烟火检测 ──
+  { project:'烟火检测', taskName:'烟火检测-高精度版', time:'2026-07-22 16:45', model:'yolo11x.pt', epochs:'1500', train:'892', val:'383', mAP50:'-', mAP5095:'-', status:'running', path:'models/fire_v3/best.pt' },
+  { project:'烟火检测', taskName:'烟火检测-yolo11m-1000e-16b', time:'2026-07-15 15:30', model:'yolo11m.pt', epochs:'1000', train:'892', val:'383', mAP50:'0.918', mAP5095:'0.734', status:'done', path:'models/fire_v2/best.pt' },
+  { project:'烟火检测', taskName:'烟火检测-yolo11m-600e-16b', time:'2026-07-05 16:45', model:'yolo11m.pt', epochs:'600', train:'892', val:'383', mAP50:'0.886', mAP5095:'0.691', status:'done', path:'models/fire_v1/best.pt' },
+  { project:'烟火检测', taskName:'烟火检测-小目标优化', time:'2026-07-01 09:00', model:'yolo11l.pt', epochs:'800', train:'650', val:'279', mAP50:'0.854', mAP5095:'0.627', status:'stopped', path:'models/fire_small_obj/last.pt' },
+  { project:'烟火检测', taskName:'烟火检测-yolo11n-400e-8b', time:'2026-06-25 10:00', model:'yolo11n.pt', epochs:'400', train:'650', val:'279', mAP50:'0.745', mAP5095:'0.523', status:'done', path:'models/fire_v0/best.pt' },
+  { project:'烟火检测', taskName:'烟火检测-yolo11m-500e-32b', time:'2026-06-18 13:40', model:'yolo11m.pt', epochs:'500', train:'520', val:'223', mAP50:'0.812', mAP5095:'0.598', status:'done', path:'models/fire_baseline/best.pt' },
+
+  // ── 安全帽检测 ──
+  { project:'安全帽检测', taskName:'安全帽检测-yolo11m-800e-16b', time:'2026-07-20 08:00', model:'yolo11m.pt', epochs:'800', train:'650', val:'279', mAP50:'0.861', mAP5095:'0.644', status:'done', path:'models/helmet_v3/best.pt' },
+  { project:'安全帽检测', taskName:'安全帽检测-yolo11l-600e-16b', time:'2026-07-08 14:30', model:'yolo11l.pt', epochs:'600', train:'650', val:'279', mAP50:'0.847', mAP5095:'0.625', status:'done', path:'models/helmet_v2/best.pt' },
+  { project:'安全帽检测', taskName:'安全帽检测-yolo11n-500e-16b', time:'2026-06-20 14:00', model:'yolo11n.pt', epochs:'500', train:'520', val:'223', mAP50:'0.751', mAP5095:'0.537', status:'done', path:'models/helmet_v1/best.pt' },
+  { project:'安全帽检测', taskName:'安全帽检测-yolo11n-300e-8b', time:'2026-06-12 10:20', model:'yolo11n.pt', epochs:'300', train:'400', val:'171', mAP50:'0.683', mAP5095:'0.426', status:'stopped', path:'models/helmet_v0/last.pt' },
 ];
 
 
@@ -672,297 +703,161 @@ function submitToQueue() {
   localStorage.setItem("training_queue", JSON.stringify(queue));
   showToast("训练任务已提交到队列！当前队列共 " + queue.length + " 个任务，查看训练队列页面");
 }
-function startTraining() {
-  const trainDS = getSelectedDatasets("trainDatasetWrap");
-  const valDS = getSelectedDatasets("valDatasetWrap");
-  if (trainDS.length === 0 || valDS.length === 0) { showToast('请选择训练集和验证集'); return; }
-
-  totalEpochs = parseInt(document.getElementById('epochs').value) || 1000;
-  const batch = document.getElementById('batch').value;
-  const imgsz = document.getElementById('imgsz').value;
-  const device = document.getElementById('device').value;
-  const optimizer = document.getElementById('optimizer').value;
-  const lr0 = document.getElementById('lr0').value;
-  const lrf = document.getElementById('lrf').value;
-  const momentum = document.getElementById('momentum').value;
-  const weightDecay = document.getElementById('weightDecay').value;
-  const workers = document.getElementById('workers').value;
-  const amp = document.getElementById('amp').checked;
-  const augEnabled = document.getElementById('augMaster').checked;
-  const aug_hsv_h = parseFloat(document.getElementById('aug_hsv_h').value) / 100;
-  const aug_hsv_s = parseFloat(document.getElementById('aug_hsv_s').value) / 100;
-  const aug_hsv_v = parseFloat(document.getElementById('aug_hsv_v').value) / 100;
-  const aug_degrees = parseInt(document.getElementById('aug_degrees').value);
-  const aug_fliplr = parseFloat(document.getElementById('aug_fliplr').value) / 100;
-  const aug_mosaic = parseFloat(document.getElementById('aug_mosaic').value) / 100;
-  const pretrained = document.getElementById('pretrainedModel').value;
-  const deviceStr = device === 'cpu' ? 'CPU' : 'cuda:' + device;
-
-  currentEpoch = 0;
-  isTraining = true;
-  isPaused = false;
-  lossData = { box: [], cls: [], dfl: [], epochs: [] };
-  mapData = { mAP50: [], mAP5095: [], epochs: [] };
-
-  // Switch views
-  document.getElementById('configView').style.display = 'none';
-  document.querySelector('.config-panel .card-header:first-of-type').style.display = 'none';
-  document.getElementById('monitorHeader').style.display = 'flex';
-  document.getElementById('monitorView').classList.add('active');
-  document.getElementById('resultBox').style.display = 'none';
-  document.getElementById('btnPause').textContent = '暂停';
-  document.getElementById('monitorStatus').innerHTML = '<span style="color:var(--success);">● 运行中</span>';
-  document.getElementById('logBox').innerHTML = '';
-
-  // === Training Start Header (aligning with PDF 图4-5) ===
-  appendLog('', 'blank');
-  appendLog('Ultralytics YOLOv8.2.0 🚀 Python-3.11.5 torch-2.3.0 ' + deviceStr, 'banner');
-
-  // Model summary
-  appendLog('', 'blank');
-  appendLog('Model summary (fused): 268 layers, 20,139,377 parameters, 0 gradients, 68.7 GFLOPs', 'header');
-  appendLog('', 'blank');
-
-  // Config table
-  const cfgLines = [
-    ['model', pretrained],
-    ['data', 'data/dataset.yaml'],
-    ['epochs', String(totalEpochs)],
-    ['time', ''],
-    ['batch', String(batch)],
-    ['imgsz', String(imgsz)],
-    ['plots', 'True'],
-    ['optimizer', optimizer + '  lr=' + String(parseFloat(lr0)) + '  momentum=' + momentum + '  weight_decay=' + weightDecay],
-    ['lr0', String(parseFloat(lr0))],
-    ['lrf', String(parseFloat(lrf))],
-    ['momentum', String(parseFloat(momentum))],
-    ['weight_decay', String(parseFloat(weightDecay))],
-    ['warmup_epochs', '3.0'],
-    ['warmup_momentum', '0.8'],
-    ['warmup_bias_lr', String(parseFloat(lr0))],
-    ['box', '7.5'],
-    ['cls', '0.5'],
-    ['dfl', '1.5'],
-  ];
-  cfgLines.forEach(([k, v]) => {
-    appendLog(k.padEnd(18) + v, 'cfg');
-  });
-
-  // Data config
-  appendLog('', 'blank');
-  appendLog('data: data/dataset.yaml', 'header');
-  appendLog('train: ' + trainDS.length + ' 个数据集, 共 771 images, 5 classes', 'dataInfo');
-  appendLog('val: ' + valDS.length + ' 个数据集, 共 331 images', 'dataInfo');
-  appendLog('test: None', 'dataInfo');
-  appendLog('', 'blank');
-
-  // Resume / AMP / Augment / Workers
-  appendLog('resume:  False', 'cfg');
-  appendLog('amp:  ' + String(amp), 'cfg');
-  appendLog('augment:  ' + String(augEnabled), 'cfg');
-  if (augEnabled) {
-    appendLog('  hsv_h: ' + aug_hsv_h.toFixed(3) + '  hsv_s: ' + aug_hsv_s.toFixed(2) + '  hsv_v: ' + aug_hsv_v.toFixed(2), 'cfg');
-    appendLog('  degrees: ' + aug_degrees + '  fliplr: ' + aug_fliplr.toFixed(2) + '  mosaic: ' + aug_mosaic.toFixed(2), 'cfg');
-  }
-  appendLog('workers:  ' + workers, 'cfg');
-  appendLog('save_period:  -1', 'cfg');
-  appendLog('', 'blank');
-
-  appendLog('Training starting...', 'banner');
-  appendLog('', 'blank');
-
-  // Simulate first validation before epoch 1
-  const initTime = new Date().toTimeString().slice(0, 8);
-  appendLog(`[${initTime}]  Validating initial model on ${valDS.length} dataset(s)...`, 'info');
-  setTimeout(() => {
-    appendLog(`[${new Date().toTimeString().slice(0,8)}]  val: box=0.0812 cls=0.0438 dfl=0.0311  mAP50=0.312  mAP50-95=0.185`, 'val');
-    appendLog('', 'blank');
-
-    // Start epoch loop
-    runEpochLoop();
-  }, 500);
+// ==================== HISTORY MODAL ====================
+function openHistoryModal() {
+  renderHistoryTable();
+  document.getElementById('historyModal').style.display = 'flex';
+}
+function closeHistoryModal() {
+  document.getElementById('historyModal').style.display = 'none';
 }
 
-function runEpochLoop() {
-  const batch = parseInt(document.getElementById('batch').value) || 16;
-  const imgsz = document.getElementById('imgsz').value;
+function viewHistoryResult(idx) {
+  const r = historyResults[idx];
 
-  trainInterval = setInterval(() => {
-    if (isPaused) return;
-    currentEpoch++;
-    const pct = Math.round(currentEpoch / totalEpochs * 100);
-    const time = new Date().toTimeString().slice(0, 8);
+  // Title
+  document.getElementById('resultModalTitle').textContent = '训练结果详情';
 
-    document.getElementById('monitorEpoch').textContent = `Epoch ${currentEpoch}/${totalEpochs}`;
-    document.getElementById('progressFill').style.width = pct + '%';
+  // Banner
+  var statusMap = { done: ['已完成', 'done'], running: ['进行中', 'running'], stopped: ['已终止', 'stopped'] };
+  var st = statusMap[r.status] || ['未知', ''];
+  document.getElementById('resultBannerTitle').innerHTML = r.taskName || (r.project + ' - ' + r.model);
+  document.getElementById('resultBannerSub').innerHTML =
+    '<span>' + r.time + '</span><span>算法：' + r.project + '</span>';
+  document.getElementById('resultStatusBadge').innerHTML =
+    '<span class="result-badge-dot"></span>' + st[0];
+  document.getElementById('resultStatusBadge').className = 'result-badge ' + st[1];
 
-    // Simulate metrics (trend down over time)
-    const boxLoss = (0.082 * Math.pow(0.97, currentEpoch/100) + 0.010 + Math.random() * 0.004).toFixed(4);
-    const clsLoss = (0.046 * Math.pow(0.97, currentEpoch/100) + 0.005 + Math.random() * 0.003).toFixed(4);
-    const dflLoss = (0.035 * Math.pow(0.97, currentEpoch/100) + 0.005 + Math.random() * 0.002).toFixed(4);
-    const mAP50 = Math.min(0.94, 0.32 + 0.62 * (1 - Math.exp(-currentEpoch/300)) + Math.random() * 0.015);
-    const mAP5095 = Math.min(0.78, 0.18 + 0.60 * (1 - Math.exp(-currentEpoch/400)) + Math.random() * 0.015);
-    const inst = Math.floor(10 + Math.random() * 8);
-    const gpuMem = (2.3 + Math.random() * 0.4).toFixed(1);
+  // Metrics
+  var mAP50Color = r.mAP50 === '-' ? 'var(--text-muted)' : '';
+  var mAP5095Color = r.mAP5095 === '-' ? 'var(--text-muted)' : '';
+  document.getElementById('resultModalMetrics').innerHTML =
+    '<div class="result-metric-card">' +
+      '<div class="rm-value rm-green"' + (mAP50Color ? ' style="color:' + mAP50Color + '"' : '') + '>' + r.mAP50 + '</div>' +
+      '<div class="rm-label">mAP@50</div><div class="rm-sub">平均精度</div>' +
+    '</div>' +
+    '<div class="result-metric-card">' +
+      '<div class="rm-value rm-blue"' + (mAP5095Color ? ' style="color:' + mAP5095Color + '"' : '') + '>' + r.mAP5095 + '</div>' +
+      '<div class="rm-label">mAP@50-95</div><div class="rm-sub">IoU 0.50-0.95</div>' +
+    '</div>' +
+    '<div class="result-metric-card">' +
+      '<div class="rm-value rm-purple">' + r.train + '</div>' +
+      '<div class="rm-label">训练集</div><div class="rm-sub">images + labels（' + r.epochs + ' epochs）</div>' +
+    '</div>' +
+    '<div class="result-metric-card">' +
+      '<div class="rm-value rm-purple">' + r.val + '</div>' +
+      '<div class="rm-label">验证集</div><div class="rm-sub">images + labels</div>' +
+    '</div>';
 
-    lossData.epochs.push(currentEpoch);
-    lossData.box.push(parseFloat(boxLoss));
-    lossData.cls.push(parseFloat(clsLoss));
-    lossData.dfl.push(parseFloat(dflLoss));
-    mapData.epochs.push(currentEpoch);
-    mapData.mAP50.push(mAP50);
-    mapData.mAP5095.push(mAP5095);
+  // Config info
+  var isRunning = r.status === 'running';
+  document.getElementById('resultConfigGrid').innerHTML =
+    '<div class="result-info-item"><span class="ri-label">模型</span><span class="ri-value"><span class="ri-tag">' + r.model + '</span></span></div>' +
+    '<div class="result-info-item"><span class="ri-label">Epochs</span><span class="ri-value">' + r.epochs + ' 轮' + (isRunning ? ' <span style="color:#fa8c16;font-size:11px;">训练中…</span>' : '') + '</span></div>' +
+    '<div class="result-info-item"><span class="ri-label">训练集</span><span class="ri-value">train/（' + r.train + ' 张）</span></div>' +
+    '<div class="result-info-item"><span class="ri-label">验证集</span><span class="ri-value">val/（' + r.val + ' 张）</span></div>' +
+    '<div class="result-info-item"><span class="ri-label">图像尺寸</span><span class="ri-value">640 × 640</span></div>' +
+    '<div class="result-info-item"><span class="ri-label">优化器</span><span class="ri-value">AdamW · batch=16 · amp</span></div>';
 
-    const eta = Math.round((totalEpochs - currentEpoch) * 0.15);
-    document.getElementById('monitorETA').textContent = `预计剩余: ${eta > 60 ? Math.round(eta/60)+'h'+(eta%60)+'m' : eta+'m'} · ~0.15s/batch`;
+  // Model files
+  var bestDisabled = r.status === 'running' ? ' style="opacity:0.5;pointer-events:none;"' : '';
+  document.getElementById('resultFileRow').innerHTML =
+    '<div class="result-file-card" title="历史最高精度模型"' + bestDisabled + ' onclick="closeResultModal();showToast(\'best.pt 已下载\')">' +
+      '<div class="rf-icon">📦</div>' +
+      '<div class="rf-info"><div class="rf-name">best.pt</div><div class="rf-meta">' + r.path + '</div></div>' +
+      '<span class="rf-dl"' + (r.status === 'running' ? ' style="color:var(--text-muted);"' : '') + '>' + (r.status === 'running' ? '—' : '下载') + '</span>' +
+    '</div>' +
+    '<div class="result-file-card" title="最后一轮模型" onclick="closeResultModal();showToast(\'last.pt 已下载\')">' +
+      '<div class="rf-icon">📄</div>' +
+      '<div class="rf-info"><div class="rf-name">last.pt</div><div class="rf-meta">' + r.path + '</div></div>' +
+      '<span class="rf-dl">下载</span>' +
+    '</div>';
 
-    // Per-epoch log (aligning with Ultralytics format)
-    appendLog(
-      `[${time}]  ${String(currentEpoch).padStart(4)}/${totalEpochs}  ` +
-      `${gpuMem}G  ` +
-      `box=${String(boxLoss).padEnd(10)} cls=${String(clsLoss).padEnd(10)} dfl=${String(dflLoss).padEnd(10)} ` +
-      `${String(inst).padEnd(14)} ` +
-      `${imgsz}:  100%|█| 48/48 [00:12<00:00]`,
-      'epoch'
-    );
-    appendLog(
-      `[${time}]            Class  Images  Instances    Box(P)       R      mAP50   mAP50-95`,
-      'valHeader'
-    );
-    appendLog(
-      `[${time}]              all    331      ${String(Math.floor(700 + Math.random()*100)).padEnd(12)} ${(mAP50-0.05).toFixed(3).padEnd(10)} ${(mAP50-0.03).toFixed(3).padEnd(8)} ${mAP50.toFixed(3).padEnd(8)} ${mAP5095.toFixed(3)}`,
-      'val'
-    );
-    appendLog('', 'blank');
+  document.getElementById('resultModal').style.display = 'flex';
 
-    drawLossChart();
-    drawMapChart();
-
-    // Every 100 epochs show a separator
-    if (currentEpoch % 100 === 0 && currentEpoch < totalEpochs) {
-      appendLog(`--- Epoch ${currentEpoch}/${totalEpochs} completed ---`, 'separator');
-      appendLog('', 'blank');
-    }
-
-    if (currentEpoch >= totalEpochs) {
-      finishTraining();
-    }
-  }, 120);
+  // Draw static charts in modal
+  setTimeout(function() { drawModalCharts(); }, 200);
 }
 
-function pauseTraining() {
-  isPaused = !isPaused;
-  const btn = document.getElementById('btnPause');
-  const status = document.getElementById('monitorStatus');
-  if (isPaused) {
-    btn.textContent = '继续';
-    status.innerHTML = '<span style="color:var(--warning);">● 已暂停</span>';
-    appendLog('--- 训练已暂停 ---', 'info');
-  } else {
-    btn.textContent = '暂停';
-    status.innerHTML = '<span style="color:var(--success);">● 运行中</span>';
-    appendLog('--- 训练继续 ---', 'info');
-  }
+function viewLatestResult() {
+  viewHistoryResult(0);
 }
 
-function stopTraining() {
+function deleteHistoryRow(btn) {
+  var row = btn.closest('tr');
   showConfirmModal(
-    '终止训练',
-    '确定要终止当前训练吗？',
-    '终止后模型将保存为 last.pt，可后续恢复继续训练。',
-    doStopTraining
+    '删除训练记录',
+    '确定删除该训练记录吗？',
+    '对应的模型文件也将一并删除，此操作不可撤销。',
+    function() { if (row) row.remove(); }
   );
 }
 
-function doStopTraining() {
-  clearInterval(trainInterval);
-  isTraining = false;
-  const finalMap50 = mapData.mAP50.length > 0 ? Math.max(...mapData.mAP50).toFixed(3) : '-';
-  const finalMap5095 = mapData.mAP5095.length > 0 ? Math.max(...mapData.mAP5095).toFixed(3) : '-';
-  const projectName = document.querySelector('.page-header select').selectedOptions[0].text;
-  const trainPath = 'models/' + projectName + '/train/weights';
+function drawModalCharts() {
+  ['resultLossChart', 'resultMapChart'].forEach(function(id) {
+    var canvas = document.getElementById(id);
+    if (!canvas) return;
+    canvas.width = canvas.offsetWidth * 2;
+    canvas.height = 320;
+    var ctx = canvas.getContext('2d');
+    var w = canvas.width, h = canvas.height;
+    var pad = { top: 16, right: 20, bottom: 28, left: 40 };
+    var pw = w - pad.left - pad.right;
+    var ph = h - pad.top - pad.bottom;
 
-  document.getElementById('monitorStatus').innerHTML = '<span style="color:var(--danger);">● 已终止</span>';
-  document.getElementById('btnPause').disabled = true;
+    ctx.clearRect(0, 0, w, h);
 
-  appendLog('', 'blank');
-  appendLog('======================================================', 'separator');
-  appendLog('     训练手动终止 (epoch ' + currentEpoch + '/' + totalEpochs + ')', 'banner');
-  appendLog('======================================================', 'separator');
-  appendLog('', 'blank');
-  appendLog('Results saved to ' + trainPath, 'savePath');
-  appendLog('    best.pt  (历史最高精度 mAP@50: ' + finalMap50 + ')', 'savePath');
-  appendLog('    last.pt  (最后一轮模型 epoch ' + currentEpoch + ')', 'savePath');
-  appendLog('', 'blank');
-  appendLog('NOTE: 人为提前中止训练，best.pt 与 last.pt 不同', 'note');
-  appendLog('     best.pt → 历史迭代中精度最高的模型', 'note');
-  appendLog('     last.pt → 训练最后一次有效迭代模型', 'note');
+    // Grid lines
+    ctx.strokeStyle = '#f5f5f5'; ctx.lineWidth = 1;
+    for (var i = 0; i <= 4; i++) {
+      var y = pad.top + ph * i / 4;
+      ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
+    }
 
-  addHistoryRow('手动终止', 'stopped');
-  showToast('训练已终止');
+    // Y-axis labels
+    ctx.fillStyle = '#999'; ctx.font = '11px -apple-system, "PingFang SC", sans-serif'; ctx.textAlign = 'right';
+    if (id === 'resultLossChart') {
+      for (var i = 0; i <= 4; i++) {
+        ctx.fillText((0.10 - 0.025 * i).toFixed(2), pad.left - 8, pad.top + ph * i / 4 + 4);
+      }
+    } else {
+      for (var i = 0; i <= 4; i++) {
+        ctx.fillText((1.0 - 0.25 * i).toFixed(2), pad.left - 8, pad.top + ph * i / 4 + 4);
+      }
+    }
+
+    // X-axis labels
+    ctx.textAlign = 'center';
+    for (var i = 0; i <= 4; i++) {
+      ctx.fillText(Math.round(i * 25) + '%', pad.left + pw * i / 4, h - 6);
+    }
+
+    // Smooth curves
+    var curves = id === 'resultLossChart'
+      ? [{c:'#ff4d4f',s:0.08,e:0.016},{c:'#1890ff',s:0.048,e:0.007},{c:'#52c41a',s:0.032,e:0.005}]
+      : [{c:'#1890ff',s:0.28,e:0.88},{c:'#52c41a',s:0.12,e:0.66}];
+
+    curves.forEach(function(col) {
+      ctx.strokeStyle = col.c; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (var i = 0; i <= 100; i++) {
+        var x = pad.left + (i / 100) * pw;
+        var val = id === 'resultLossChart'
+          ? col.s * Math.pow(0.97, i / 100 * 800) + col.e + (Math.random() - 0.5) * 0.004
+          : col.s + (col.e - col.s) * (1 - Math.exp(-i / 35)) + (Math.random() - 0.5) * 0.02;
+        var y = pad.top + (1 - val / (id === 'resultLossChart' ? 0.12 : 1)) * ph;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    });
+  });
 }
 
-function finishTraining() {
-  clearInterval(trainInterval);
-  isTraining = false;
-  document.getElementById('monitorStatus').innerHTML = '<span style="color:var(--success);">● 已完成</span>';
-  document.getElementById('btnPause').disabled = true;
-
-  const finalMap50 = mapData.mAP50.length > 0 ? mapData.mAP50[mapData.mAP50.length-1].toFixed(3) : '0.000';
-  const finalMap5095 = mapData.mAP5095.length > 0 ? mapData.mAP5095[mapData.mAP5095.length-1].toFixed(3) : '0.000';
-  const finalBox = lossData.box.length > 0 ? lossData.box[lossData.box.length-1].toFixed(4) : '0.0000';
-  const finalCls = lossData.cls.length > 0 ? lossData.cls[lossData.cls.length-1].toFixed(4) : '0.0000';
-  const finalDfl = lossData.dfl.length > 0 ? lossData.dfl[lossData.dfl.length-1].toFixed(4) : '0.0000';
-  const projectName = document.querySelector('.page-header select').selectedOptions[0].text;
-  const trainPath = 'models/' + projectName + '/train/weights';
-
-  // Show result box
-  document.getElementById('resultBox').style.display = 'block';
-  document.getElementById('resultGrid').innerHTML = `
-    <div class="result-item"><div class="metric-value" style="color:var(--success);">${finalMap50}</div><div class="metric-label">mAP@50</div></div>
-    <div class="result-item"><div class="metric-value" style="color:var(--primary);">${finalMap5095}</div><div class="metric-label">mAP@50-95</div></div>
-    <div class="result-item"><div class="metric-value">${finalBox}</div><div class="metric-label">最终 box_loss</div></div>
-    <div class="result-item"><div class="metric-value">${totalEpochs}</div><div class="metric-label">训练轮数</div></div>
-  `;
-
-  // === Training Complete (aligning with PDF 图4-6) ===
-  appendLog('', 'blank');
-  appendLog('======================================================', 'separator');
-  appendLog('               Training Complete', 'banner');
-  appendLog('======================================================', 'separator');
-  appendLog('', 'blank');
-
-  // Final results table
-  appendLog('Final Results:', 'header');
-  appendLog('  box_loss:  ' + finalBox + '    cls_loss:  ' + finalCls + '    dfl_loss:  ' + finalDfl, 'result');
-  appendLog('  mAP@50:    ' + finalMap50 + '      mAP@50-95: ' + finalMap5095, 'result');
-  appendLog('', 'blank');
-
-  // Speed summary (aligning with PDF output format)
-  appendLog('Speed: 0.2ms preprocess, 3.4ms inference, 0.0ms loss, 0.4ms postprocess per image', 'speed');
-  appendLog('', 'blank');
-
-  // Results saved (aligning with PDF)
-  appendLog('Results saved to ' + trainPath, 'savePath');
-  appendLog('    best.pt  (best mAP@50: ' + finalMap50 + ')', 'savePath');
-  appendLog('    last.pt  (last epoch model)', 'savePath');
-  appendLog('', 'blank');
-  appendLog('NOTE: best.pt 与 last.pt 为同一文件（训练程序自行结束）', 'note');
-  appendLog('     若人为提前中止，best 为历史最高精度模型，last 为最后一轮有效模型', 'note');
-
-  addHistoryRow('已完成', 'done');
-  showToast('训练完成！mAP@50: ' + finalMap50);
+function closeResultModal() {
+  document.getElementById('resultModal').style.display = 'none';
 }
 
-function resetToConfig() {
-  document.getElementById('configView').style.display = 'block';
-  document.querySelector('.config-panel .card-header:first-of-type').style.display = 'flex';
-  document.getElementById('monitorHeader').style.display = 'none';
-  document.getElementById('monitorView').classList.remove('active');
-  document.getElementById('resultBox').style.display = 'none';
-  document.getElementById('btnPause').disabled = false;
-}
-
+// ==================== RENDER HISTORY ====================
 function renderHistoryTable() {
   var project = getProjectName(localStorage.getItem('current_project') || '');
   var body = document.getElementById('historyBody');
@@ -986,232 +881,7 @@ function renderHistoryTable() {
   });
 }
 
-function addHistoryRow(statusText, statusType) {
-  var now = new Date();
-  var timeStr = now.toISOString().slice(0, 16).replace('T', ' ');
-  var project = getProjectName(localStorage.getItem('current_project') || '');
-  var trainDS = getSelectedDatasets("trainDatasetWrap").join(', ');
-  var valDS = getSelectedDatasets("valDatasetWrap").join(', ');
-  var model = document.getElementById('pretrainedModel').value;
-  var finalMap50 = mapData.mAP50.length > 0 ? mapData.mAP50[mapData.mAP50.length-1].toFixed(3) : '-';
-  var finalMap5095 = mapData.mAP5095.length > 0 ? mapData.mAP5095[mapData.mAP5095.length-1].toFixed(3) : '-';
-
-  var taskName = document.getElementById('taskName').value.trim() || (project + '-' + model.replace('.pt','') + '-' + currentEpoch + 'e-' + document.getElementById('batch').value + 'b');
-  // Add to historyResults and reload
-  historyResults.unshift({
-    project: project, taskName: taskName, time: timeStr, model: model, epochs: String(currentEpoch),
-    train: trainDS, val: valDS, mAP50: finalMap50, mAP5095: finalMap5095,
-    status: statusType === 'done' ? 'done' : 'stopped', path: 'models/' + project + '/train/weights'
-  });
-  renderHistoryTable();
-}
-
-// ==================== CHARTS ====================
-function drawLossChart() {
-  const canvas = document.getElementById('lossChart');
-  canvas.width = canvas.offsetWidth * 2;
-  canvas.height = 320;
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width, h = canvas.height;
-  const pad = { top: 20, right: 20, bottom: 30, left: 40 };
-  const pw = w - pad.left - pad.right;
-  const ph = h - pad.top - pad.bottom;
-
-  ctx.clearRect(0, 0, w, h);
-
-  // Grid
-  ctx.strokeStyle = '#f0f0f0'; ctx.lineWidth = 1;
-  for (let i = 0; i <= 4; i++) {
-    const y = pad.top + ph * i / 4;
-    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
-    ctx.fillStyle = '#999'; ctx.font = '18px ' + getComputedStyle(document.body).fontFamily;
-    ctx.textAlign = 'right'; ctx.fillText((0.10 - 0.025 * i).toFixed(2), pad.left - 8, y + 6);
-  }
-
-  if (lossData.epochs.length < 2) return;
-
-  function drawLine(data, color, maxVal) {
-    ctx.strokeStyle = color; ctx.lineWidth = 2;
-    ctx.beginPath();
-    data.forEach((val, i) => {
-      const x = pad.left + (lossData.epochs[i] / totalEpochs) * pw;
-      const y = pad.top + (1 - val / maxVal) * ph;
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-  }
-
-  const maxLoss = 0.12;
-  drawLine(lossData.box, '#ff4d4f', maxLoss);
-  drawLine(lossData.cls, '#1890ff', maxLoss);
-  drawLine(lossData.dfl, '#52c41a', maxLoss);
-
-  // Legend
-  ctx.font = '20px ' + getComputedStyle(document.body).fontFamily;
-  [{text:'box_loss',color:'#ff4d4f'},{text:'cls_loss',color:'#1890ff'},{text:'dfl_loss',color:'#52c41a'}].forEach((l, i) => {
-    const lx = w - pad.right - 180 + i * 70;
-    ctx.fillStyle = l.color; ctx.fillRect(lx, pad.top, 14, 14);
-    ctx.fillStyle = '#666'; ctx.textAlign = 'left'; ctx.fillText(l.text, lx + 18, pad.top + 12);
-  });
-}
-
-function drawMapChart() {
-  const canvas = document.getElementById('mapChart');
-  canvas.width = canvas.offsetWidth * 2;
-  canvas.height = 320;
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width, h = canvas.height;
-  const pad = { top: 20, right: 20, bottom: 30, left: 40 };
-  const pw = w - pad.left - pad.right;
-  const ph = h - pad.top - pad.bottom;
-
-  ctx.clearRect(0, 0, w, h);
-
-  ctx.strokeStyle = '#f0f0f0'; ctx.lineWidth = 1;
-  for (let i = 0; i <= 4; i++) {
-    const y = pad.top + ph * i / 4;
-    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
-    ctx.fillStyle = '#999'; ctx.font = '18px ' + getComputedStyle(document.body).fontFamily;
-    ctx.textAlign = 'right'; ctx.fillText((1.0 - 0.25 * i).toFixed(2), pad.left - 8, y + 6);
-  }
-
-  if (mapData.epochs.length < 2) return;
-
-  [{data:mapData.mAP50,color:'#1890ff',label:'mAP@50'},{data:mapData.mAP5095,color:'#52c41a',label:'mAP@50-95'}].forEach(s => {
-    ctx.strokeStyle = s.color; ctx.lineWidth = 2;
-    ctx.beginPath();
-    s.data.forEach((val, i) => {
-      const x = pad.left + (mapData.epochs[i] / totalEpochs) * pw;
-      const y = pad.top + (1 - val) * ph;
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-  });
-
-  ctx.font = '20px ' + getComputedStyle(document.body).fontFamily;
-  [{text:'mAP@50',color:'#1890ff'},{text:'mAP@50-95',color:'#52c41a'}].forEach((l, i) => {
-    const lx = w - pad.right - 200 + i * 100;
-    ctx.fillStyle = l.color; ctx.fillRect(lx, pad.top, 14, 14);
-    ctx.fillStyle = '#666'; ctx.textAlign = 'left'; ctx.fillText(l.text, lx + 18, pad.top + 12);
-  });
-}
-
-// ==================== LOG ====================
-function appendLog(msg, type) {
-  const box = document.getElementById('logBox');
-  const clsMap = {
-    'banner': 'log-banner',
-    'header': 'log-header',
-    'cfg': 'log-cfg',
-    'dataInfo': 'log-dataInfo',
-    'info': 'log-time',
-    'epoch': 'log-epoch',
-    'val': 'log-val',
-    'valHeader': 'log-valHeader',
-    'separator': 'log-separator',
-    'result': 'log-result',
-    'speed': 'log-speed',
-    'savePath': 'log-savePath',
-    'note': 'log-note',
-  };
-  const cls = clsMap[type] || '';
-  if (type === 'blank') {
-    box.innerHTML += '\n';
-  } else {
-    box.innerHTML += `<span class="${cls}">${msg}</span>\n`;
-  }
-  box.scrollTop = box.scrollHeight;
-}
-
-// ==================== HISTORY MODAL ====================
-function openHistoryModal() {
-  document.getElementById('historyModal').style.display = 'flex';
-}
-function closeHistoryModal() {
-  document.getElementById('historyModal').style.display = 'none';
-}
-
-function viewHistoryResult(idx) {
-  const r = historyResults[idx];
-  document.getElementById('resultModalTitle').textContent = r.taskName + ' — ' + r.time;
-  document.getElementById('resultModalMetrics').innerHTML = `
-    <div class="result-item"><div class="metric-value" style="color:var(--success);">${r.mAP50}</div><div class="metric-label">mAP@50</div></div>
-    <div class="result-item"><div class="metric-value" style="color:var(--primary);">${r.mAP5095}</div><div class="metric-label">mAP@50-95</div></div>
-    <div class="result-item"><div class="metric-value">${r.train}</div><div class="metric-label">训练集</div></div>
-    <div class="result-item"><div class="metric-value">${r.val}</div><div class="metric-label">验证集</div></div>
-  `;
-  document.getElementById('resultModelPath').innerHTML = `best.pt · last.pt<br><span style="font-weight:400;">${r.path}</span>`;
-  document.getElementById('resultConfig').textContent = `${r.model} · epochs=${r.epochs} · batch=16 · imgsz=640 · optimizer=AdamW`;
-  document.getElementById('resultModal').style.display = 'flex';
-
-  // Draw static charts in modal
-  setTimeout(() => drawModalCharts(), 200);
-}
-
-function viewLatestResult() {
-  viewHistoryResult(0);
-}
-
-function deleteHistoryRow(btn) {
-  var row = btn.closest('tr');
-  showConfirmModal(
-    '删除训练记录',
-    '确定删除该训练记录吗？',
-    '对应的模型文件也将一并删除，此操作不可撤销。',
-    function() { if (row) row.remove(); }
-  );
-}
-
-function drawModalCharts() {
-  ['resultLossChart', 'resultMapChart'].forEach(id => {
-    const canvas = document.getElementById(id);
-    if (!canvas) return;
-    canvas.width = canvas.offsetWidth * 2;
-    canvas.height = 280;
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width, h = canvas.height;
-    const pad = { top: 10, right: 20, bottom: 20, left: 35 };
-    const pw = w - pad.left - pad.right;
-    const ph = h - pad.top - pad.bottom;
-
-    ctx.clearRect(0, 0, w, h);
-    ctx.strokeStyle = '#f0f0f0'; ctx.lineWidth = 1;
-    for (let i = 0; i <= 4; i++) {
-      const y = pad.top + ph * i / 4;
-      ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
-    }
-
-    // Draw a nice mock curve
-    const colors = id === 'resultLossChart'
-      ? [{c:'#ff4d4f',s:0.08,e:0.018},{c:'#1890ff',s:0.05,e:0.008},{c:'#52c41a',s:0.03,e:0.006}]
-      : [{c:'#1890ff',s:0.3,e:0.87},{c:'#52c41a',s:0.15,e:0.65}];
-    colors.forEach(col => {
-      ctx.strokeStyle = col.c; ctx.lineWidth = 2;
-      ctx.beginPath();
-      for (let i = 0; i <= 100; i++) {
-        const x = pad.left + (i / 100) * pw;
-        const val = id === 'resultLossChart'
-          ? col.s * Math.pow(0.975, i/100*1000) + col.e + (Math.random()-0.5)*0.003
-          : col.s + (col.e - col.s) * (1 - Math.exp(-i/40)) + (Math.random()-0.5)*0.015;
-        const y = pad.top + (1 - val / (id === 'resultLossChart' ? 0.12 : 1)) * ph;
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-    });
-  });
-}
-
-function closeResultModal() {
-  document.getElementById('resultModal').style.display = 'none';
-}
-
 // ==================== INIT ====================
-// Resize handler for canvases
-window.addEventListener('resize', () => {
-  if (isTraining) {
-    if (!isPaused) { drawLossChart(); drawMapChart(); }
-  }
-});
 
 (function() {
   var user = getUser();
