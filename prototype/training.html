@@ -7,28 +7,38 @@
 <link rel="stylesheet" href="common.css">
 <style>
   .content { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 16px 20px; gap: 16px; }
-
   .train-layout { flex: 1; display: flex; gap: 12px; min-height: 0; }
-
   .card { display: flex; flex-direction: column; }
   .card-header { flex-shrink: 0; }
   .card-body { overflow-y: auto; flex: 1; }
-
   .config-panel { flex: 1; min-width: 0; }
 
-  .form-section { margin-bottom: 18px; }
+  /* ===== Collapsible Sections ===== */
+  .param-section { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+  .param-section:last-child { margin-bottom: 0; }
+  .param-section-header { padding: 10px 14px; background: #fafafa; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 8px; user-select: none; transition: background 0.15s; }
+  .param-section-header:hover { background: #f0f0f0; }
+  .param-section-header .ps-arrow { font-size: 10px; color: var(--text-muted); transition: transform 0.2s; }
+  .param-section-header .ps-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .param-section-header .ps-hint { font-size: 10px; color: var(--text-muted); font-weight: 400; margin-left: 6px; }
+  .param-section.collapsed .param-section-header { border-bottom: none; }
+  .param-section.collapsed .ps-arrow { transform: rotate(-90deg); }
+  .param-section-body { padding: 14px 16px; }
+  .param-section.collapsed .param-section-body { display: none; }
+
+  .form-section { margin-bottom: 12px; }
   .form-section:last-child { margin-bottom: 0; }
-  .form-section-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
-  .form-row { display: flex; gap: 12px; margin-bottom: 10px; align-items: center; }
+  .form-section-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+  .form-row { display: flex; gap: 12px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
   .form-row:last-child { margin-bottom: 0; }
-  .form-group { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+  .form-group { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 120px; }
   .form-group label { font-size: 11px; color: var(--text-secondary); }
   .form-group input, .form-group select { padding: 5px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; font-family: var(--font); height: 30px; box-sizing: border-box; }
   .form-group input[type="number"] { width: 100%; }
   .form-group .hint { font-size: 10px; color: var(--text-muted); }
   .form-inline { display: flex; align-items: center; gap: 6px; }
   .form-inline label { font-size: 11px; color: var(--text-secondary); white-space: nowrap; }
-  .form-inline input[type="number"] { width: 80px; }
+  .form-inline input[type="number"] { width: 70px; }
 
   .toggle { position: relative; display: inline-block; width: 36px; height: 20px; }
   .toggle input { opacity: 0; width: 0; height: 0; }
@@ -37,99 +47,95 @@
   .toggle input:checked + .slider { background: var(--primary); }
   .toggle input:checked + .slider::before { transform: translateX(16px); }
 
-  .collapse-toggle { cursor: pointer; display: flex; align-items: center; gap: 4px; color: var(--primary); font-size: 12px; padding: 4px 0; user-select: none; }
-  .collapse-toggle:hover { color: #40a9ff; }
-  .collapse-content { display: none; }
-  .collapse-content.open { display: block; }
-
-  /* ===== Augmentation Panel ===== */
-  .aug-section { background: #fafafa; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-  .aug-section-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-  .aug-master-toggle { display: flex; align-items: center; gap: 6px; }
-  .aug-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; }
-  .aug-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #fff; border: 1px solid var(--border); border-radius: 4px; transition: var(--transition); }
-  .aug-item:hover { border-color: var(--primary); }
-  .aug-item.disabled { opacity: 0.45; pointer-events: none; }
-  .aug-item .aug-label { font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
-  .aug-item .aug-label .aug-code { font-size: 10px; color: var(--text-muted); font-family: "SF Mono", Menlo, Consolas, monospace; }
-  .aug-item .aug-desc { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
-  .aug-item .aug-control { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-  .aug-item .aug-val { font-size: 11px; font-weight: 600; color: var(--primary); min-width: 36px; text-align: right; }
-  .aug-item input[type="range"] { width: 80px; accent-color: var(--primary); }
-  .aug-item input[type="range"]:disabled { opacity: 0.3; }
-
-  .table th { position: sticky; top: 0; }
-
-
-  .modal { width: 700px; max-height: 85vh; overflow: auto; }
-
-	  /* ===== Result Detail Modal ===== */
-	  .result-banner { background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%); border-bottom: 1px solid #d6e4ff; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; }
-	  .result-banner-left { display: flex; flex-direction: column; gap: 2px; }
-	  .result-banner-title { font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px; }
-	  .result-banner-sub { font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; gap: 10px; }
-	  .result-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 500; }
-	  .result-badge.done { background: #f6ffed; color: #52c41a; }
-	  .result-badge.stopped { background: #fff1f0; color: #ff4d4f; }
-	  .result-badge.running { background: #fff7e6; color: #fa8c16; }
-	  .result-badge-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
-	  .result-badge.done .result-badge-dot { background: #52c41a; }
-	  .result-badge.stopped .result-badge-dot { background: #ff4d4f; }
-	  .result-badge.running .result-badge-dot { background: #fa8c16; animation: pulse 1.5s infinite; }
-	  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
-
-	  .result-body { padding: 14px 20px; }
-
-	  .result-section { margin-bottom: 12px; }
-	  .result-section:last-child { margin-bottom: 0; }
-	  .result-section-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-	  .result-section-title::before { content: ''; width: 3px; height: 14px; border-radius: 2px; background: var(--primary); display: inline-block; }
-
-	  .result-metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-	  .result-metric-card { background: #fafafa; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; text-align: center; transition: var(--transition); }
-	  .result-metric-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(24,144,255,0.08); }
-	  .result-metric-card .rm-value { font-size: 20px; font-weight: 700; line-height: 1.1; }
-	  .result-metric-card .rm-label { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
-	  .result-metric-card .rm-sub { font-size: 9px; color: var(--text-muted); margin-top: 0; }
-	  .rm-green { color: #52c41a; }
-	  .rm-blue { color: var(--primary); }
-	  .rm-purple { color: #722ed1; }
-
-	  .result-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; }
-	  .result-info-item { display: flex; align-items: center; gap: 6px; font-size: 11px; }
-	  .result-info-item .ri-label { color: var(--text-secondary); min-width: 56px; flex-shrink: 0; }
-	  .result-info-item .ri-value { font-weight: 500; color: var(--text); }
-	  .result-info-item .ri-tag { display: inline-block; padding: 1px 8px; border-radius: 3px; font-size: 11px; background: #f0f0f0; color: var(--text-secondary); margin-right: 4px; }
-
-	  .result-chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-	  .result-chart-card { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-	  .result-chart-card .rc-header { padding: 6px 12px; background: #fafafa; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
-	  .result-chart-card .rc-legend { display: flex; gap: 12px; margin-left: auto; }
-	  .result-chart-card .rc-legend span { font-size: 10px; font-weight: 400; display: flex; align-items: center; gap: 4px; cursor: default; }
-	  .result-chart-card .rc-legend span::before { content: ''; width: 12px; height: 3px; border-radius: 2px; display: inline-block; flex-shrink: 0; background: var(--lc); }
-	  .result-chart-card canvas { width: 100%; height: 130px; display: block; margin: 4px 0; }
-
-	  .result-file-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-	  .result-file-card { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: #fafafa; cursor: pointer; transition: var(--transition); }
-	  .result-file-card:hover { border-color: var(--primary); background: var(--primary-light); }
-	  .result-file-card .rf-icon { width: 32px; height: 32px; border-radius: 8px; background: #e6f7ff; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-	  .result-file-card .rf-info { flex: 1; min-width: 0; }
-	  .result-file-card .rf-name { font-size: 12px; font-weight: 600; color: var(--text); }
-	  .result-file-card .rf-meta { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
-	  .result-file-card .rf-dl { font-size: 10px; color: var(--primary); font-weight: 500; white-space: nowrap; }
-  /* ===== Multi-Select Dataset ===== */
+  /* ===== Enhanced Multi-Select Dataset ===== */
   .multi-select { position: relative; user-select: none; }
-  .ms-trigger { display: flex; align-items: center; justify-content: space-between; padding: 5px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; background: #fff; cursor: pointer; min-height: 30px; box-sizing: border-box; }
+  .ms-trigger { display: flex; align-items: center; justify-content: space-between; padding: 5px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; background: #fff; cursor: pointer; min-height: 30px; box-sizing: border-box; }
   .ms-trigger:hover { border-color: var(--primary); }
   .ms-trigger .ms-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
   .ms-trigger .ms-arrow { color: var(--text-muted); font-size: 10px; margin-left: 6px; flex-shrink: 0; }
   .multi-select.open .ms-trigger { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
-  .ms-dropdown { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #d9d9d9; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; max-height: 180px; overflow-y: auto; margin-top: 2px; }
+  .ms-dropdown { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #d9d9d9; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; max-height: 260px; overflow-y: auto; margin-top: 2px; }
   .multi-select.open .ms-dropdown { display: block; }
-  .ms-option { display: flex; align-items: center; gap: 6px; padding: 7px 10px; font-size: 12px; cursor: pointer; transition: var(--transition); margin: 0; font-weight: 400; }
+  .ms-dropdown-toolbar { display: flex; gap: 6px; padding: 6px 8px; border-bottom: 1px solid var(--border); background: #fafafa; position: sticky; top: 0; }
+  .ms-dropdown-toolbar .ms-action { font-size: 10px; color: var(--primary); cursor: pointer; padding: 2px 6px; border-radius: 3px; border: 1px solid transparent; background: none; }
+  .ms-dropdown-toolbar .ms-action:hover { background: var(--primary-light); border-color: var(--primary); }
+  .ms-dropdown-search { padding: 5px 8px; border-bottom: 1px solid var(--border); position: sticky; top: 28px; background: #fff; }
+  .ms-dropdown-search input { width: 100%; padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 3px; font-size: 11px; font-family: var(--font); box-sizing: border-box; }
+  .ms-optgroup-label { padding: 5px 10px; font-size: 10px; font-weight: 600; color: var(--text-muted); background: #fafafa; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ms-option { display: flex; align-items: center; gap: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; transition: var(--transition); margin: 0; font-weight: 400; }
   .ms-option:hover { background: var(--primary-light); }
   .ms-option input[type="checkbox"] { accent-color: var(--primary); width: 14px; height: 14px; margin: 0; flex-shrink: 0; }
+  .ms-option.hidden { display: none; }
   .ms-trigger .ms-placeholder { color: var(--text-muted); }
+
+  /* ===== Tuning param inline row ===== */
+  .tune-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #fff; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 6px; }
+  .tune-row .tune-label { font-size: 11px; font-weight: 500; min-width: 90px; color: var(--text); flex-shrink: 0; }
+  .tune-row .tune-code { font-size: 9px; color: var(--text-muted); font-family: "SF Mono", Menlo, Consolas, monospace; margin-left: 2px; }
+  .tune-row .tune-desc { font-size: 10px; color: var(--text-muted); flex: 1; min-width: 0; }
+  .tune-row input[type="number"] { width: 72px; padding: 4px 6px; border: 1px solid #d9d9d9; border-radius: 3px; font-size: 12px; font-family: var(--font); text-align: right; }
+  .tune-row select { padding: 4px 6px; border: 1px solid #d9d9d9; border-radius: 3px; font-size: 11px; font-family: var(--font); }
+  .tune-row .toggle { flex-shrink: 0; }
+
+  .aug-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .aug-item { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; background: #fff; border: 1px solid var(--border); border-radius: 4px; transition: var(--transition); }
+  .aug-item:hover { border-color: var(--primary); }
+  .aug-item .aug-label { font-size: 11px; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+  .aug-item .aug-label .aug-code { font-size: 9px; color: var(--text-muted); font-family: "SF Mono", Menlo, Consolas, monospace; }
+  .aug-item .aug-control { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .aug-item .aug-val { font-size: 10px; font-weight: 600; color: var(--primary); min-width: 32px; text-align: right; }
+  .aug-item input[type="range"] { width: 70px; accent-color: var(--primary); }
+
+  /* ===== Train button ===== */
+  .submit-row { padding: 12px 0 0; border-top: 1px solid var(--border); }
+
+  /* ===== Result Detail Modal (kept from before) ===== */
+  .modal { width: 700px; max-height: 85vh; overflow: auto; }
+  .result-banner { background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%); border-bottom: 1px solid #d6e4ff; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .result-banner-left { display: flex; flex-direction: column; gap: 2px; }
+  .result-banner-title { font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px; }
+  .result-banner-sub { font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; gap: 10px; }
+  .result-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+  .result-badge.done { background: #f6ffed; color: #52c41a; }
+  .result-badge.stopped { background: #fff1f0; color: #ff4d4f; }
+  .result-badge.running { background: #fff7e6; color: #fa8c16; }
+  .result-badge-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+  .result-badge.done .result-badge-dot { background: #52c41a; }
+  .result-badge.stopped .result-badge-dot { background: #ff4d4f; }
+  .result-badge.running .result-badge-dot { background: #fa8c16; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+  .result-body { padding: 14px 20px; }
+  .result-section { margin-bottom: 12px; }
+  .result-section:last-child { margin-bottom: 0; }
+  .result-section-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .result-section-title::before { content: ''; width: 3px; height: 14px; border-radius: 2px; background: var(--primary); display: inline-block; }
+  .result-metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .result-metric-card { background: #fafafa; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; text-align: center; transition: var(--transition); }
+  .result-metric-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(24,144,255,0.08); }
+  .result-metric-card .rm-value { font-size: 20px; font-weight: 700; line-height: 1.1; }
+  .result-metric-card .rm-label { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+  .result-metric-card .rm-sub { font-size: 9px; color: var(--text-muted); margin-top: 0; }
+  .rm-green { color: #52c41a; } .rm-blue { color: var(--primary); } .rm-purple { color: #722ed1; }
+  .result-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; }
+  .result-info-item { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+  .result-info-item .ri-label { color: var(--text-secondary); min-width: 56px; flex-shrink: 0; }
+  .result-info-item .ri-value { font-weight: 500; color: var(--text); }
+  .result-info-item .ri-tag { display: inline-block; padding: 1px 8px; border-radius: 3px; font-size: 11px; background: #f0f0f0; color: var(--text-secondary); margin-right: 4px; }
+  .result-chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .result-chart-card { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .result-chart-card .rc-header { padding: 6px 12px; background: #fafafa; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
+  .result-chart-card .rc-legend { display: flex; gap: 12px; margin-left: auto; }
+  .result-chart-card .rc-legend span { font-size: 10px; font-weight: 400; display: flex; align-items: center; gap: 4px; cursor: default; }
+  .result-chart-card .rc-legend span::before { content: ''; width: 12px; height: 3px; border-radius: 2px; display: inline-block; flex-shrink: 0; background: var(--lc); }
+  .result-chart-card canvas { width: 100%; height: 130px; display: block; margin: 4px 0; }
+  .result-file-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .result-file-card { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: #fafafa; cursor: pointer; transition: var(--transition); }
+  .result-file-card:hover { border-color: var(--primary); background: var(--primary-light); }
+  .result-file-card .rf-icon { width: 32px; height: 32px; border-radius: 8px; background: #e6f7ff; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .result-file-card .rf-info { flex: 1; min-width: 0; }
+  .result-file-card .rf-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .result-file-card .rf-meta { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+  .result-file-card .rf-dl { font-size: 10px; color: var(--primary); font-weight: 500; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -142,7 +148,6 @@
     <div class="logo-text" id="sidebarLogoText">算法训练平台</div>
     <div class="sidebar-collapse-btn" onclick="toggleSidebar()" title="收起侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="10" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
   </div>
-
   <nav class="sidebar-nav">
     <div class="sidebar-group" id="sidebarTopHome"><a class="sidebar-item" href="my_projects.html" data-icon="🏠">首页</a></div>
     <div class="sidebar-group" id="sidebarProjectGroup" style="display:none;">
@@ -156,7 +161,6 @@
       <a class="sidebar-item" href="trial.html" data-icon="🧪">模型推理</a>
       <a class="sidebar-item" href="deployment.html" data-icon="🚀">模型部署</a>
     </div>
-
   </nav>
 </aside>
 <script>(function(){var s=document.querySelector(".sidebar");if(s&&localStorage.getItem("sidebar_collapsed")==="true"){s.classList.add("collapsed")}}())</script>
@@ -164,47 +168,22 @@
 <!-- Main -->
 <div class="main">
   <header class="header">
-    <div class="breadcrumb">
-      <a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>模型训练</span>
-    </div>
+    <div class="breadcrumb"><a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>模型训练</span></div>
     <div class="header-actions">
-            <div class="park-select">
-        <span class="ps-label">园区</span>
-        <select id="headerPark" onchange="onParkChange(this)">
-          <option value="">— 请选择园区 —</option>
-          <option value="ganzhou">赣州</option>
-          <option value="vietnam">越南</option>
-        </select>
+      <div class="park-select"><span class="ps-label">园区</span>
+        <select id="headerPark" onchange="onParkChange(this)"><option value="">— 请选择园区 —</option><option value="ganzhou">赣州</option><option value="vietnam">越南</option></select>
       </div>
-<div class="task-type-select">
-        <span class="ts-label">模型任务</span>
-        <select id="headerTaskType" onchange="onTaskTypeChange(this)">
-          <option value="">— 请选择任务 —</option>
-          <option value="detection">目标检测（YOLO）</option>
-          <option value="pose" disabled>姿态估计 — 规划中</option>
-          <option value="segment" disabled>实例分割 — 规划中</option>
-          <option value="embedding" disabled>文本嵌入 — 规划中</option>
-        </select>
+      <div class="task-type-select"><span class="ts-label">模型任务</span>
+        <select id="headerTaskType" onchange="onTaskTypeChange(this)"><option value="">— 请选择任务 —</option><option value="detection">目标检测（YOLO）</option><option value="pose" disabled>姿态估计 — 规划中</option><option value="segment" disabled>实例分割 — 规划中</option><option value="embedding" disabled>文本嵌入 — 规划中</option></select>
       </div>
-            
-
       <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
         <span style="font-size:12px;" id="headerUserName">用户</span>
         <div id="headerUserAvatar" style="width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">U</div>
-        <div class="user-dropdown" id="userDropdown">
-          <a href="profile.html" data-icon="👤">个人中心</a>
-          <a href="#" onclick="event.stopPropagation();logout()">退出登录</a>
-        </div>
+        <div class="user-dropdown" id="userDropdown"><a href="profile.html">个人中心</a><a href="#" onclick="event.stopPropagation();logout()">退出登录</a></div>
       </div>
     </div>
   </header>
-    <div class="setup-prompt" id="setupPrompt">
-      <div class="sp-card">
-        <div class="sp-title">请选择园区和模型任务</div>
-        <div class="sp-desc">在顶部 <span class="sp-highlight">园区</span> 和 <span class="sp-highlight">模型任务</span> 下拉框中做出选择<br>即可进入工作区</div>
-      </div>
-    </div>
-
+  <div class="setup-prompt" id="setupPrompt"><div class="sp-card"><div class="sp-title">请选择园区和模型任务</div><div class="sp-desc">在顶部 <span class="sp-highlight">园区</span> 和 <span class="sp-highlight">模型任务</span> 下拉框中做出选择<br>即可进入工作区</div></div></div>
 
   <div class="content">
     <div class="page-header">
@@ -213,227 +192,197 @@
         <button class="btn btn-default" onclick="openHistoryModal()">训练历史</button>
       </div>
     </div>
-
     <div class="train-layout">
-
-      <!-- ===== Left: Config / Monitor ===== -->
       <div class="card config-panel">
-        <!-- Config View -->
         <div class="card-header">训练配置</div>
         <div class="card-body" id="configView">
-          <!-- Basic Settings -->
+
+          <!-- ===== Dataset Selection ===== -->
           <div class="form-section">
-            <div class="form-section-title">基础设置</div>
+            <div class="form-section-title">训练数据集</div>
             <div class="form-row">
               <div class="form-group" style="flex:1;">
-                <label>训练数据集</label>
-                <div class="multi-select" id="trainDatasetWrap">
-                  <div class="ms-trigger" onclick="toggleMultiSelect('trainDatasetWrap')">
-                    <span class="ms-text" id="trainDatasetText">上传批次_20260628 train/ (771 张)</span>
+                <div class="multi-select" id="dsWrap">
+                  <div class="ms-trigger" onclick="toggleDsDropdown()">
+                    <span class="ms-text" id="dsText">上传批次_20260628 train/ (771 张)</span>
                     <span class="ms-arrow">▾</span>
                   </div>
-                  <div class="ms-dropdown" id="trainDatasetDrop">
-                    <label class="ms-option"><input type="checkbox" value="train_01" checked onchange="updateMultiSelect('trainDatasetWrap')"> 上传批次_20260628 train/ (771 张)</label>
-                    <label class="ms-option"><input type="checkbox" value="train_02" onchange="updateMultiSelect('trainDatasetWrap')"> 上传批次_20260701 train/ (650 张)</label>
-                    <label class="ms-option"><input type="checkbox" value="train_03" onchange="updateMultiSelect('trainDatasetWrap')"> 上传批次_20260702 train/ (520 张)</label>
-                  </div>
-                </div>
-              </div>
-              <div class="form-group" style="flex:1;">
-                <label>验证数据集</label>
-                <div class="multi-select" id="valDatasetWrap">
-                  <div class="ms-trigger" onclick="toggleMultiSelect('valDatasetWrap')">
-                    <span class="ms-text" id="valDatasetText">上传批次_20260628 val/ (331 张)</span>
-                    <span class="ms-arrow">▾</span>
-                  </div>
-                  <div class="ms-dropdown" id="valDatasetDrop">
-                    <label class="ms-option"><input type="checkbox" value="val_01" checked onchange="updateMultiSelect('valDatasetWrap')"> 上传批次_20260628 val/ (331 张)</label>
-                    <label class="ms-option"><input type="checkbox" value="val_02" onchange="updateMultiSelect('valDatasetWrap')"> 上传批次_20260701 val/ (279 张)</label>
-                    <label class="ms-option"><input type="checkbox" value="val_03" onchange="updateMultiSelect('valDatasetWrap')"> 上传批次_20260702 val/ (223 张)</label>
+                  <div class="ms-dropdown" id="dsDrop">
+                    <div class="ms-dropdown-toolbar">
+                      <button class="ms-action" onclick="event.stopPropagation();dsSelectAll()">全选</button>
+                      <button class="ms-action" onclick="event.stopPropagation();dsClearAll()">清空</button>
+                    </div>
+                    <div class="ms-dropdown-search"><input type="text" id="dsSearch" placeholder="搜索数据集..." oninput="dsFilter()"></div>
+                    <div class="ms-optgroup-label" id="dsGroup1">▸ 训练集 train/</div>
+                    <div id="dsTrainOptions"></div>
+                    <div class="ms-optgroup-label" id="dsGroup2">▸ 验证集 val/</div>
+                    <div id="dsValOptions"></div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- ===== Task Name + Pretrained Model ===== -->
+          <div class="form-section">
+            <div class="form-section-title">任务与模型</div>
             <div class="form-row">
               <div class="form-group" style="flex:2;">
                 <label>任务名称 <span style="font-size:10px;color:var(--text-muted);">选填，不填自动生成</span></label>
-                <input type="text" id="taskName" placeholder="如：保安服检测-yolo11m-800e-16b" style="padding:5px 8px;border:1px solid #d9d9d9;border-radius:4px;font-size:12px;font-family:var(--font);">
+                <input type="text" id="taskName" placeholder="如：保安服检测-yolo11m-800e-16b" style="padding:5px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:12px;font-family:var(--font);width:100%;">
               </div>
-            </div>
-            <div class="form-row">
               <div class="form-group" style="flex:2;">
                 <label>预训练模型</label>
-                <select id="pretrainedModel" style="flex:1;" onchange="updateTaskName()">
+                <select id="pretrainedModel" onchange="updateTaskName()" style="width:100%;">
                   <option value="yolo11n.pt">yolo11n.pt (轻量)</option>
                   <option value="yolo11m.pt" selected>yolo11m.pt (默认)</option>
                   <option value="yolo11l.pt">yolo11l.pt (较大)</option>
                   <option value="yolo11x.pt">yolo11x.pt (最大)</option>
                 </select>
-                <span class="hint">默认使用 yolo11m.pt</span>
               </div>
             </div>
           </div>
 
-          <!-- Training Hyperparams -->
-          <div class="form-section">
-            <div class="form-section-title">训练超参数</div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>训练轮数 (epochs)</label>
-                <input type="number" id="epochs" onchange="updateTaskName()" value="50" min="1">
-              </div>
-              <div class="form-group">
-                <label>批处理大小 (batch)</label>
-                <input type="number" id="batch" onchange="updateTaskName()" value="16" min="1">
-              </div>
-              <div class="form-group">
-                <label>图像尺寸 (imgsz)</label>
-                <input type="number" id="imgsz" value="640" min="32" step="32">
-              </div>
+          <!-- ===== SECTION 1: 基础训练参数 ===== -->
+          <div class="param-section" id="sec1">
+            <div class="param-section-header" onclick="toggleSection('sec1')">
+              <span class="ps-arrow">▼</span>
+              <span class="ps-title">基础训练参数</span>
+              <span class="ps-hint">epochs / batch / imgsz / GPU / 优化器 / lr0 / patience</span>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>训练设备</label>
-                <select id="device">
-                  <option value="0" selected>GPU 0</option>
-                  <option value="1">GPU 1</option>
-                  <option value="cpu">CPU</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>优化器</label>
-                <select id="optimizer">
-                  <option value="AdamW" selected>AdamW</option>
-                  <option value="SGD">SGD</option>
-                  <option value="Adam">Adam</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>数据加载进程 (workers)</label>
-                <input type="number" id="workers" value="0" min="0">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>初始学习率 (lr0)</label>
-                <input type="number" id="lr0" value="0.0001" step="0.0001">
-              </div>
-              <div class="form-group">
-                <label>最终学习率因子 (lrf)</label>
-                <input type="number" id="lrf" value="0.01" step="0.001">
-              </div>
-            </div>
-
-            <!-- Advanced (collapsible) -->
-            <div class="collapse-toggle" onclick="toggleAdvanced()" id="collapseToggle">
-              <span id="collapseArrow">▶</span> 更多参数
-            </div>
-            <div class="collapse-content" id="collapseContent">
+            <div class="param-section-body">
               <div class="form-row">
-                <div class="form-group">
-                  <label>动量 (momentum)</label>
-                  <input type="number" id="momentum" value="0.9" step="0.001">
-                </div>
-                <div class="form-group">
-                  <label>权重衰减 (weight_decay)</label>
-                  <input type="number" id="weightDecay" value="0.05" step="0.01">
-                </div>
+                <div class="form-group"><label>训练轮数 (epochs)</label><input type="number" id="epochs" onchange="updateTaskName()" value="300" min="1"></div>
+                <div class="form-group"><label>批次大小 (batch)</label><input type="number" id="batch" onchange="updateTaskName()" value="16" min="1"></div>
+                <div class="form-group"><label>输入图像尺寸 (imgsz)</label><input type="number" id="imgsz" value="640" min="32" step="32"></div>
               </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label>早停轮数 (patience)</label>
-                  <input type="number" id="patience" value="100" min="0">
-                  <span class="hint">精度不提升多少轮后自动停止</span>
+                  <label>训练设备</label>
+                  <select id="device"><option value="0" selected>GPU 0</option><option value="1">GPU 1</option><option value="cpu">CPU</option></select>
                 </div>
+                <div class="form-group">
+                  <label>优化器</label>
+                  <select id="optimizer"><option value="AdamW" selected>AdamW</option><option value="SGD">SGD</option><option value="Adam">Adam</option></select>
+                </div>
+                <div class="form-group"><label>初始学习率 (lr0)</label><input type="number" id="lr0" value="0.001" step="0.0001"></div>
               </div>
               <div class="form-row">
-                <div class="form-group">
-                  <div class="form-inline"><label>混合精度训练 (amp)</label><label class="toggle"><input type="checkbox" id="amp" checked><span class="slider"></span></label></div>
-                </div>
-              </div>
-
-              <!-- Data Augmentation -->
-              <div class="aug-section" style="margin-top:6px;">
-                <div class="aug-section-title">
-                  数据增强
-                  <label class="toggle" style="vertical-align:middle;" onclick="event.stopPropagation()">
-                    <input type="checkbox" id="augMaster" checked onchange="toggleAugPanel()">
-                    <span class="slider"></span>
-                  </label>
-                  <span style="font-size:10px;color:var(--text-muted);font-weight:400;">关闭后以下所有增强均不生效</span>
-                </div>
-                <div class="aug-grid" id="augGrid">
-                  <div class="aug-item">
-                    <div>
-                      <div class="aug-label">色调 <span class="aug-code">hsv_h</span></div>
-                      <div class="aug-desc">HSV-Hue 通道增强幅度</div>
-                    </div>
-                    <div class="aug-control">
-                      <input type="range" id="aug_hsv_h" min="0" max="10" value="1" step="0.5" oninput="document.getElementById('val_hsv_h').textContent=(this.value/100).toFixed(3)">
-                      <span class="aug-val" id="val_hsv_h">0.015</span>
-                    </div>
-                  </div>
-                  <div class="aug-item">
-                    <div>
-                      <div class="aug-label">饱和度 <span class="aug-code">hsv_s</span></div>
-                      <div class="aug-desc">HSV-Saturation 通道增强幅度</div>
-                    </div>
-                    <div class="aug-control">
-                      <input type="range" id="aug_hsv_s" min="0" max="100" value="70" step="1" oninput="document.getElementById('val_hsv_s').textContent=(this.value/100).toFixed(2)">
-                      <span class="aug-val" id="val_hsv_s">0.70</span>
-                    </div>
-                  </div>
-                  <div class="aug-item">
-                    <div>
-                      <div class="aug-label">亮度 <span class="aug-code">hsv_v</span></div>
-                      <div class="aug-desc">HSV-Value 通道增强幅度</div>
-                    </div>
-                    <div class="aug-control">
-                      <input type="range" id="aug_hsv_v" min="0" max="100" value="40" step="1" oninput="document.getElementById('val_hsv_v').textContent=(this.value/100).toFixed(2)">
-                      <span class="aug-val" id="val_hsv_v">0.40</span>
-                    </div>
-                  </div>
-                  <div class="aug-item">
-                    <div>
-                      <div class="aug-label">随机旋转 <span class="aug-code">degrees</span></div>
-                      <div class="aug-desc">随机旋转角度范围（°）</div>
-                    </div>
-                    <div class="aug-control">
-                      <input type="range" id="aug_degrees" min="0" max="180" value="10" step="1" oninput="document.getElementById('val_degrees').textContent=this.value+'.0'">
-                      <span class="aug-val" id="val_degrees">10.0</span>
-                    </div>
-                  </div>
-                  <div class="aug-item">
-                    <div>
-                      <div class="aug-label">水平翻转 <span class="aug-code">fliplr</span></div>
-                      <div class="aug-desc">随机水平翻转概率</div>
-                    </div>
-                    <div class="aug-control">
-                      <input type="range" id="aug_fliplr" min="0" max="100" value="50" step="5" oninput="document.getElementById('val_fliplr').textContent=(this.value/100).toFixed(2)">
-                      <span class="aug-val" id="val_fliplr">0.50</span>
-                    </div>
-                  </div>
-                  <div class="aug-item">
-                    <div>
-                      <div class="aug-label">Mosaic 增强 <span class="aug-code">mosaic</span></div>
-                      <div class="aug-desc">4 张图拼接为 1 张训练</div>
-                    </div>
-                    <div class="aug-control">
-                      <input type="range" id="aug_mosaic" min="0" max="100" value="100" step="5" oninput="document.getElementById('val_mosaic').textContent=(this.value/100).toFixed(2)">
-                      <span class="aug-val" id="val_mosaic">1.00</span>
-                    </div>
-                  </div>
-                </div>
+                <div class="form-group"><label>早停轮数 (patience)</label><input type="number" id="patience" value="100" min="0"><span class="hint">验证精度不再提升 N 轮后自动停止，0 = 不早停</span></div>
               </div>
             </div>
           </div>
 
-          <!-- Train Button -->
-          <button class="btn btn-primary btn-lg" style="width:100%;" onclick="submitToQueue()" id="btnStart">提交到训练队列</button>
+          <!-- ===== SECTION 2: 数据增强参数 ===== -->
+          <div class="param-section collapsed" id="sec2">
+            <div class="param-section-header" onclick="toggleSection('sec2')">
+              <span class="ps-arrow">▼</span>
+              <span class="ps-title">数据增强参数</span>
+              <span class="ps-hint">应对光照 / 角度 / 遮挡等场景变化，提升模型泛化性</span>
+            </div>
+            <div class="param-section-body">
+              <div class="aug-grid-3" id="augGrid">
+                <div class="aug-item">
+                  <div class="aug-label">色调 <span class="aug-code">hsv_h</span></div>
+                  <div class="aug-control"><input type="range" id="aug_hsv_h" min="0" max="10" value="1" step="0.5" oninput="document.getElementById('v_hsv_h').textContent=(this.value/100).toFixed(3)"><span class="aug-val" id="v_hsv_h">0.015</span></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">饱和度 <span class="aug-code">hsv_s</span></div>
+                  <div class="aug-control"><input type="range" id="aug_hsv_s" min="0" max="100" value="70" step="1" oninput="document.getElementById('v_hsv_s').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_hsv_s">0.70</span></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">明度 <span class="aug-code">hsv_v</span></div>
+                  <div class="aug-control"><input type="range" id="aug_hsv_v" min="0" max="100" value="40" step="1" oninput="document.getElementById('v_hsv_v').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_hsv_v">0.40</span></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">旋转角度 <span class="aug-code">degrees</span></div>
+                  <div class="aug-control"><input type="range" id="aug_degrees" min="0" max="180" value="10" step="1" oninput="document.getElementById('v_degrees').textContent=this.value"><span class="aug-val" id="v_degrees">10</span></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">平移 <span class="aug-code">translate</span></div>
+                  <div class="aug-control"><input type="range" id="aug_translate" min="0" max="50" value="10" step="1" oninput="document.getElementById('v_translate').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_translate">0.10</span></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">缩放 <span class="aug-code">scale</span></div>
+                  <div class="aug-control"><input type="range" id="aug_scale" min="0" max="90" value="50" step="1" oninput="document.getElementById('v_scale').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_scale">0.50</span></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">水平翻转 <span class="aug-code">fliplr</span></div>
+                  <div class="aug-control"><input type="range" id="aug_fliplr" min="0" max="100" value="50" step="5" oninput="document.getElementById('v_fliplr').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_fliplr">0.50</span></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">随机擦除 <span class="aug-code">erasing</span></div>
+                  <div class="aug-control"><input type="range" id="aug_erasing" min="0" max="100" value="40" step="5" oninput="document.getElementById('v_erasing').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_erasing">0.40</span></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">MixUp 增强 <span class="aug-code">mixup</span></div>
+                  <div class="aug-control"><input type="range" id="aug_mixup" min="0" max="100" value="15" step="5" oninput="document.getElementById('v_mixup').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_mixup">0.15</span></div>
+                </div>
+              </div>
+              <div class="form-row" style="margin-top:10px;">
+                <div class="form-group"><label>关闭 Mosaic 的轮数 (close_mosaic)</label><input type="number" id="aug_close_mosaic" value="10" min="0"><span class="hint">最后 N 轮关闭 Mosaic，避免拼接图导致语义失真</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== SECTION 3: 辅助调优参数 ===== -->
+          <div class="param-section collapsed" id="sec3">
+            <div class="param-section-header" onclick="toggleSection('sec3')">
+              <span class="ps-arrow">▼</span>
+              <span class="ps-title">辅助调优参数</span>
+              <span class="ps-hint">针对特定使用场景的精细化调节</span>
+            </div>
+            <div class="param-section-body">
+              <div class="tune-row">
+                <span class="tune-label">权重衰减 <span class="tune-code">weight_decay</span></span>
+                <span class="tune-desc">防止过拟合，L2 正则化惩罚大权重</span>
+                <input type="number" id="weightDecay" value="0.0005" step="0.0001">
+              </div>
+              <div class="tune-row">
+                <span class="tune-label">余弦学习率 <span class="tune-code">cos_lr</span></span>
+                <span class="tune-desc">余弦退火平滑下降学习率</span>
+                <label class="toggle"><input type="checkbox" id="cos_lr"><span class="slider"></span></label>
+              </div>
+              <div class="tune-row">
+                <span class="tune-label">动量 <span class="tune-code">momentum</span></span>
+                <span class="tune-desc">配合 SGD 优化器加速收敛</span>
+                <input type="number" id="momentum" value="0.937" step="0.001">
+              </div>
+              <div class="tune-row">
+                <span class="tune-label">预热轮数 <span class="tune-code">warmup_epochs</span></span>
+                <span class="tune-desc">训练初期逐步增大学习率，稳定启动</span>
+                <input type="number" id="warmupEpochs" value="3" min="0">
+              </div>
+              <div class="tune-row">
+                <span class="tune-label">冻结层 <span class="tune-code">freeze</span></span>
+                <span class="tune-desc">冻结 backbone 前 N 层，迁移学习微调</span>
+                <input type="number" id="freeze" value="0" min="0">
+              </div>
+              <div class="tune-row">
+                <span class="tune-label">多尺度训练 <span class="tune-code">multi_scale</span></span>
+                <span class="tune-desc">每批次随机变换输入尺寸，提升小目标检测</span>
+                <label class="toggle"><input type="checkbox" id="multiScale"><span class="slider"></span></label>
+              </div>
+              <div class="tune-row">
+                <span class="tune-label">混合精度 <span class="tune-code">amp</span></span>
+                <span class="tune-desc">FP16 训练，节省显存、提速</span>
+                <label class="toggle"><input type="checkbox" id="amp" checked><span class="slider"></span></label>
+              </div>
+              <div class="tune-row">
+                <span class="tune-label">数据加载线程 <span class="tune-code">workers</span></span>
+                <span class="tune-desc">加载数据的并行进程数，加速数据预处理</span>
+                <input type="number" id="workers" value="8" min="0">
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <div class="submit-row">
+            <button class="btn btn-primary btn-lg" style="width:100%;" onclick="submitToQueue()" id="btnStart">提交到训练队列</button>
+          </div>
+
         </div>
-
       </div>
-
     </div>
   </div>
 </div>
@@ -441,27 +390,10 @@
 <!-- Training History Modal -->
 <div class="modal-overlay" id="historyModal" style="display:none;" onclick="if(event.target==this)closeHistoryModal()">
   <div class="modal" style="width:900px;">
-    <div class="modal-header">
-      训练历史
-      <button class="modal-close" onclick="closeHistoryModal()">✕</button>
-    </div>
+    <div class="modal-header">训练历史<button class="modal-close" onclick="closeHistoryModal()">✕</button></div>
     <div style="padding:0;">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>时间</th>
-            <th>算法</th>
-            <th>任务名称</th>
-            <th>数据集</th>
-            <th>模型</th>
-            <th>Epochs</th>
-            <th>mAP@50</th>
-            <th>状态</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody id="historyBody"></tbody>
-      </table>
+      <table class="table"><thead><tr><th>时间</th><th>算法</th><th>任务名称</th><th>数据集</th><th>模型</th><th>Epochs</th><th>mAP@50</th><th>状态</th><th>操作</th></tr></thead>
+      <tbody id="historyBody"></tbody></table>
     </div>
   </div>
 </div>
@@ -469,87 +401,32 @@
 <!-- History Result Modal -->
 <div class="modal-overlay" id="resultModal" style="display:none;" onclick="if(event.target==this)closeResultModal()">
   <div class="modal" style="width:760px;">
-    <div class="modal-header">
-      <span id="resultModalTitle">训练结果详情</span>
-      <button class="modal-close" onclick="closeResultModal()">✕</button>
-    </div>
-    <!-- Banner -->
+    <div class="modal-header"><span id="resultModalTitle">训练结果详情</span><button class="modal-close" onclick="closeResultModal()">✕</button></div>
     <div class="result-banner" id="resultBanner">
-      <div class="result-banner-left">
-        <div class="result-banner-title" id="resultBannerTitle"></div>
-        <div class="result-banner-sub" id="resultBannerSub"></div>
-      </div>
+      <div class="result-banner-left"><div class="result-banner-title" id="resultBannerTitle"></div><div class="result-banner-sub" id="resultBannerSub"></div></div>
       <span class="result-badge" id="resultStatusBadge"></span>
     </div>
-    <!-- Body -->
     <div class="result-body">
-      <!-- Metrics -->
-      <div class="result-section">
-        <div class="result-section-title">训练指标</div>
-        <div class="result-metrics-row" id="resultModalMetrics"></div>
-      </div>
-      <!-- Config Info -->
-      <div class="result-section">
-        <div class="result-section-title">训练配置</div>
-        <div class="result-info-grid" id="resultConfigGrid"></div>
-      </div>
-      <!-- Charts -->
-      <div class="result-section">
-        <div class="result-section-title">训练曲线</div>
+      <div class="result-section"><div class="result-section-title">训练指标</div><div class="result-metrics-row" id="resultModalMetrics"></div></div>
+      <div class="result-section"><div class="result-section-title">训练配置</div><div class="result-info-grid" id="resultConfigGrid"></div></div>
+      <div class="result-section"><div class="result-section-title">训练曲线</div>
         <div class="result-chart-row">
-          <div class="result-chart-card">
-            <div class="rc-header">
-              Loss
-              <div class="rc-legend">
-                <span style="--lc:#ff4d4f;">box_loss</span>
-                <span style="--lc:#1890ff;">cls_loss</span>
-                <span style="--lc:#52c41a;">dfl_loss</span>
-              </div>
-            </div>
-            <canvas id="resultLossChart"></canvas>
-          </div>
-          <div class="result-chart-card">
-            <div class="rc-header">
-              mAP
-              <div class="rc-legend">
-                <span style="--lc:#1890ff;">mAP@50</span>
-                <span style="--lc:#52c41a;">mAP@50-95</span>
-              </div>
-            </div>
-            <canvas id="resultMapChart"></canvas>
-          </div>
+          <div class="result-chart-card"><div class="rc-header">Loss<div class="rc-legend"><span style="--lc:#ff4d4f;">box</span><span style="--lc:#1890ff;">cls</span><span style="--lc:#52c41a;">dfl</span></div></div><canvas id="resultLossChart"></canvas></div>
+          <div class="result-chart-card"><div class="rc-header">mAP<div class="rc-legend"><span style="--lc:#1890ff;">mAP@50</span><span style="--lc:#52c41a;">mAP@50-95</span></div></div><canvas id="resultMapChart"></canvas></div>
         </div>
       </div>
-      <!-- Model Files -->
-      <div class="result-section">
-        <div class="result-section-title">模型文件</div>
-        <div class="result-file-row" id="resultFileRow"></div>
-      </div>
+      <div class="result-section"><div class="result-section-title">模型文件</div><div class="result-file-row" id="resultFileRow"></div></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-default" onclick="closeResultModal()">关闭</button>
-    </div>
+    <div class="modal-footer"><button class="btn btn-default" onclick="closeResultModal()">关闭</button></div>
   </div>
 </div>
 
-<!-- Toast -->
 <!-- Confirm Modal -->
 <div class="modal-overlay" id="confirmModal" style="display:none;" onclick="if(event.target===this)closeConfirmModal()">
   <div class="modal" style="width:420px;">
-    <div class="modal-header">
-      <span id="confirmModalTitle">确认操作</span>
-      <button class="modal-close" onclick="closeConfirmModal()">✕</button>
-    </div>
-    <div class="modal-body" style="padding:28px 32px;">
-      <div style="display:flex;align-items:flex-start;gap:14px;">
-        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;" id="confirmModalMsg"></div>
-        <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;" id="confirmModalHint"></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-default btn-sm" onclick="closeConfirmModal()">取消</button>
-      <button class="btn btn-danger btn-sm" onclick="executeConfirm()">确认</button>
-    </div>
+    <div class="modal-header"><span id="confirmModalTitle">确认操作</span><button class="modal-close" onclick="closeConfirmModal()">✕</button></div>
+    <div class="modal-body" style="padding:28px 32px;"><div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;" id="confirmModalMsg"></div><div style="font-size:12px;color:var(--text-secondary);line-height:1.6;" id="confirmModalHint"></div></div>
+    <div class="modal-footer"><button class="btn btn-default btn-sm" onclick="closeConfirmModal()">取消</button><button class="btn btn-danger btn-sm" onclick="executeConfirm()">确认</button></div>
   </div>
 </div>
 
@@ -557,80 +434,167 @@
 
 <script src="common.js"></script>
 <script>
-// ==================== STATE ====================
-
 // ==================== HISTORY DATA ====================
-const historyResults = [
-  // ── 保安服检测 ──
+var historyResults = [
   { project:'保安服检测', taskName:'保安服检测-夜间场景优化', time:'2026-07-25 08:20', model:'yolo11m.pt', epochs:'1000', train:'771', val:'331', mAP50:'-', mAP5095:'-', status:'running', path:'models/security_v4/best.pt' },
   { project:'保安服检测', taskName:'保安服检测-yolo11m-800e-16b', time:'2026-07-18 09:15', model:'yolo11m.pt', epochs:'800', train:'771', val:'331', mAP50:'0.872', mAP5095:'0.651', status:'done', path:'models/security_v3/best.pt' },
   { project:'保安服检测', taskName:'保安服检测-yolo11l-500e-32b', time:'2026-07-10 14:00', model:'yolo11l.pt', epochs:'500', train:'771', val:'331', mAP50:'0.813', mAP5095:'0.587', status:'stopped', path:'models/security_v2/last.pt' },
   { project:'保安服检测', taskName:'保安服检测-yolo11m-300e-16b', time:'2026-06-28 10:30', model:'yolo11m.pt', epochs:'300', train:'650', val:'279', mAP50:'0.798', mAP5095:'0.562', status:'done', path:'models/security_v1/best.pt' },
   { project:'保安服检测', taskName:'保安服检测-yolo11n-200e-8b', time:'2026-06-22 16:20', model:'yolo11n.pt', epochs:'200', train:'520', val:'223', mAP50:'0.724', mAP5095:'0.481', status:'done', path:'models/security_v0/best.pt' },
   { project:'保安服检测', taskName:'保安服检测-数据增强实验', time:'2026-06-15 11:00', model:'yolo11m.pt', epochs:'500', train:'771', val:'331', mAP50:'0.691', mAP5095:'0.413', status:'stopped', path:'models/security_aug_exp/last.pt' },
-
-  // ── 烟火检测 ──
   { project:'烟火检测', taskName:'烟火检测-高精度版', time:'2026-07-22 16:45', model:'yolo11x.pt', epochs:'1500', train:'892', val:'383', mAP50:'-', mAP5095:'-', status:'running', path:'models/fire_v3/best.pt' },
   { project:'烟火检测', taskName:'烟火检测-yolo11m-1000e-16b', time:'2026-07-15 15:30', model:'yolo11m.pt', epochs:'1000', train:'892', val:'383', mAP50:'0.918', mAP5095:'0.734', status:'done', path:'models/fire_v2/best.pt' },
   { project:'烟火检测', taskName:'烟火检测-yolo11m-600e-16b', time:'2026-07-05 16:45', model:'yolo11m.pt', epochs:'600', train:'892', val:'383', mAP50:'0.886', mAP5095:'0.691', status:'done', path:'models/fire_v1/best.pt' },
   { project:'烟火检测', taskName:'烟火检测-小目标优化', time:'2026-07-01 09:00', model:'yolo11l.pt', epochs:'800', train:'650', val:'279', mAP50:'0.854', mAP5095:'0.627', status:'stopped', path:'models/fire_small_obj/last.pt' },
   { project:'烟火检测', taskName:'烟火检测-yolo11n-400e-8b', time:'2026-06-25 10:00', model:'yolo11n.pt', epochs:'400', train:'650', val:'279', mAP50:'0.745', mAP5095:'0.523', status:'done', path:'models/fire_v0/best.pt' },
   { project:'烟火检测', taskName:'烟火检测-yolo11m-500e-32b', time:'2026-06-18 13:40', model:'yolo11m.pt', epochs:'500', train:'520', val:'223', mAP50:'0.812', mAP5095:'0.598', status:'done', path:'models/fire_baseline/best.pt' },
-
-  // ── 安全帽检测 ──
   { project:'安全帽检测', taskName:'安全帽检测-yolo11m-800e-16b', time:'2026-07-20 08:00', model:'yolo11m.pt', epochs:'800', train:'650', val:'279', mAP50:'0.861', mAP5095:'0.644', status:'done', path:'models/helmet_v3/best.pt' },
   { project:'安全帽检测', taskName:'安全帽检测-yolo11l-600e-16b', time:'2026-07-08 14:30', model:'yolo11l.pt', epochs:'600', train:'650', val:'279', mAP50:'0.847', mAP5095:'0.625', status:'done', path:'models/helmet_v2/best.pt' },
   { project:'安全帽检测', taskName:'安全帽检测-yolo11n-500e-16b', time:'2026-06-20 14:00', model:'yolo11n.pt', epochs:'500', train:'520', val:'223', mAP50:'0.751', mAP5095:'0.537', status:'done', path:'models/helmet_v1/best.pt' },
   { project:'安全帽检测', taskName:'安全帽检测-yolo11n-300e-8b', time:'2026-06-12 10:20', model:'yolo11n.pt', epochs:'300', train:'400', val:'171', mAP50:'0.683', mAP5095:'0.426', status:'stopped', path:'models/helmet_v0/last.pt' },
 ];
 
-
-// ==================== AUGMENTATION ====================
-function toggleAugPanel() {
-  var master = document.getElementById('augMaster').checked;
-  var items = document.querySelectorAll('#augGrid .aug-item');
-  items.forEach(function(item) {
-    if (master) { item.classList.remove('disabled'); }
-    else { item.classList.add('disabled'); }
-  });
+// ==================== SECTION TOGGLE ====================
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle('collapsed');
 }
 
-// ==================== MULTI-SELECT ====================
-function toggleMultiSelect(wrapId) {
-  var el = document.getElementById(wrapId);
-  el.classList.toggle('open');
-}
-function updateMultiSelect(wrapId) {
-  var el = document.getElementById(wrapId);
-  var checked = el.querySelectorAll('input[type="checkbox"]:checked');
-  var textEl = el.querySelector('.ms-text');
-  var labels = [];
-  checked.forEach(function(cb) {
-    var label = cb.parentElement.textContent.trim();
-    labels.push(label);
+// ==================== DATASET MULTI-SELECT ====================
+var dsSelected = {};
+var dsAllOptions = [];
+
+function buildDsOptions() {
+  // Ensure datasets are initialized (fallback if user hasn't visited 数据中心 or 数据集总览)
+  try {
+    var existing = JSON.parse(localStorage.getItem('platform_datasets')) || [];
+    if (existing.length === 0) {
+      var defaults = [
+        { project:'保安服检测', batch:'上传批次_20260628', batchDate:'2026-06-28', status:'已完成', statusClass:'tag-success', children: [
+          { key:'raw_videos', name:'files/', count:'4 个文件', dateText:'2026-06-28 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+          { key:'extracted', name:'extracted_frames/', count:'1,248 张', dateText:'2026-06-29 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+          { key:'deduplicated', name:'deduplicated/', count:'1,102 张', dateText:'2026-06-30 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+          { key:'labeled', name:'labeled/', count:'1,102 张', dateText:'2026-07-02 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
+          { key:'train', name:'train/', count:'771 张 + 标签', dateText:'2026-07-03 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
+          { key:'val', name:'val/', count:'331 张 + 标签', dateText:'2026-07-03 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
+        ]},
+        { project:'烟火检测', batch:'上传批次_20260701', batchDate:'2026-07-01', status:'标注中', statusClass:'tag-processing', children: [
+          { key:'raw_videos_02', name:'files/', count:'3 个文件', dateText:'2026-07-01 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+          { key:'extracted_02', name:'extracted_frames/', count:'920 张', dateText:'2026-07-01 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+          { key:'deduplicated_02', name:'deduplicated/', count:'856 张', dateText:'2026-07-02 生成', icon:'dedup', iconGlyph:'▦', badge:'标注中 47/200', badgeClass:'processing' },
+        ]},
+        { project:'安全帽检测', batch:'上传批次_20260702', batchDate:'2026-07-02', status:'未标注', statusClass:'tag-default', children: [
+          { key:'raw_videos_03', name:'files/', count:'6 个文件', dateText:'2026-07-02 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+          { key:'extracted_03', name:'extracted_frames/', count:'1,650 张', dateText:'2026-07-03 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+          { key:'deduplicated_03', name:'deduplicated/', count:'1,517 张', dateText:'2026-07-03 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+        ]},
+      ];
+      localStorage.setItem('platform_datasets', JSON.stringify(defaults));
+    }
+  } catch(e) {}
+
+  var datasets = [];
+  try { datasets = JSON.parse(localStorage.getItem('platform_datasets')) || []; } catch(e) {}
+  var project = getProjectName(localStorage.getItem('current_project') || '');
+
+  var trainOpts = [], valOpts = [];
+  datasets.forEach(function(b) {
+    if (b.project !== project) return;
+    b.children.forEach(function(c) {
+      if (c.key.indexOf('train') === 0) {
+        trainOpts.push({ label: b.batch + ' train/ (' + c.count + ')', value: c.key, batch: b.batch });
+      } else if (c.key.indexOf('val') === 0) {
+        valOpts.push({ label: b.batch + ' val/ (' + c.count + ')', value: c.key, batch: b.batch });
+      }
+    });
   });
-  if (labels.length === 0) {
-    textEl.textContent = '— 未选择 —';
-    textEl.classList.add('ms-placeholder');
-  } else if (labels.length <= 2) {
-    textEl.textContent = labels.join('；');
-    textEl.classList.remove('ms-placeholder');
-  } else {
-    textEl.textContent = '已选 ' + labels.length + ' 个数据集';
-    textEl.classList.remove('ms-placeholder');
+
+  // Default: select all trains, none val
+  if (Object.keys(dsSelected).length === 0) {
+    trainOpts.forEach(function(o) { dsSelected[o.value] = true; });
+  }
+
+  dsAllOptions = [{ type: 'train', options: trainOpts }, { type: 'val', options: valOpts }];
+}
+
+function toggleDsDropdown() {
+  document.getElementById('dsWrap').classList.toggle('open');
+  if (document.getElementById('dsWrap').classList.contains('open')) {
+    buildDsOptions();
+    renderDsDropdown();
   }
 }
-function getSelectedDatasets(wrapId) {
-  var el = document.getElementById(wrapId);
-  var checked = el.querySelectorAll('input[type="checkbox"]:checked');
-  var values = [];
-  checked.forEach(function(cb) { values.push(cb.value); });
-  return values;
+
+function renderDsDropdown() {
+  var query = (document.getElementById('dsSearch').value || '').toLowerCase();
+  var trainHtml = '', valHtml = '', trainVisible = 0, valVisible = 0;
+
+  dsAllOptions.forEach(function(group) {
+    group.options.forEach(function(o) {
+      var isSel = dsSelected[o.value];
+      var hidden = query && o.label.toLowerCase().indexOf(query) < 0;
+      var html = '<label class="ms-option' + (hidden ? ' hidden' : '') + '" onclick="event.stopPropagation();">' +
+        '<input type="checkbox" value="' + o.value + '" ' + (isSel ? 'checked' : '') + ' onchange="onDsToggle(\'' + o.value + '\', this.checked)">' +
+        o.label + '</label>';
+      if (group.type === 'train') { trainHtml += html; if (!hidden) trainVisible++; }
+      else { valHtml += html; if (!hidden) valVisible++; }
+    });
+  });
+
+  document.getElementById('dsTrainOptions').innerHTML = trainHtml;
+  document.getElementById('dsValOptions').innerHTML = valHtml;
+  document.getElementById('dsGroup1').style.display = trainVisible > 0 ? '' : 'none';
+  document.getElementById('dsGroup2').style.display = valVisible > 0 ? '' : 'none';
+  updateDsText();
 }
-// Close multi-select dropdowns when clicking outside
+
+function onDsToggle(value, checked) {
+  if (checked) dsSelected[value] = true;
+  else delete dsSelected[value];
+  updateDsText();
+}
+
+function dsSelectAll() {
+  dsAllOptions.forEach(function(g) { g.options.forEach(function(o) { dsSelected[o.value] = true; }); });
+  renderDsDropdown();
+}
+
+function dsClearAll() {
+  dsSelected = {};
+  renderDsDropdown();
+}
+
+function dsFilter() { renderDsDropdown(); }
+
+function updateDsText() {
+  var sel = Object.keys(dsSelected);
+  var el = document.getElementById('dsText');
+  if (sel.length === 0) {
+    el.textContent = '— 未选择 —';
+    el.classList.add('ms-placeholder');
+  } else if (sel.length <= 2) {
+    // Find labels
+    var labels = [];
+    dsAllOptions.forEach(function(g) {
+      g.options.forEach(function(o) {
+        if (dsSelected[o.value]) labels.push(o.label);
+      });
+    });
+    el.textContent = labels.join('；');
+    el.classList.remove('ms-placeholder');
+  } else {
+    el.textContent = '已选 ' + sel.length + ' 个数据集';
+    el.classList.remove('ms-placeholder');
+  }
+}
+
+function getSelectedDsKeys() {
+  return Object.keys(dsSelected);
+}
+
+// Close dropdown on outside click
 document.addEventListener('click', function(e) {
-  if (!e.target.closest('.multi-select')) {
-    document.querySelectorAll('.multi-select.open').forEach(function(el) { el.classList.remove('open'); });
+  if (!e.target.closest('#dsWrap')) {
+    document.getElementById('dsWrap').classList.remove('open');
   }
 });
 
@@ -643,221 +607,54 @@ function showConfirmModal(title, msg, hint, callback) {
   document.getElementById('confirmModal').style.display = 'flex';
   _pendingConfirm = callback;
 }
-function closeConfirmModal() {
-  document.getElementById('confirmModal').style.display = 'none';
-  _pendingConfirm = null;
-}
-function executeConfirm() {
-  if (_pendingConfirm) { _pendingConfirm(); _pendingConfirm = null; }
-  document.getElementById('confirmModal').style.display = 'none';
-}
-
-// ==================== COLLAPSIBLE ====================
-function toggleAdvanced() {
-  const content = document.getElementById('collapseContent');
-  const arrow = document.getElementById('collapseArrow');
-  content.classList.toggle('open');
-  arrow.textContent = content.classList.contains('open') ? '▼' : '▶';
-}
+function closeConfirmModal() { document.getElementById('confirmModal').style.display = 'none'; _pendingConfirm = null; }
+function executeConfirm() { if (_pendingConfirm) { _pendingConfirm(); _pendingConfirm = null; } document.getElementById('confirmModal').style.display = 'none'; }
 
 // ==================== TRAINING ====================
-// ── Auto-generate task name from params ──
 function updateTaskName() {
-  var nameInput = document.getElementById("taskName");
+  var nameInput = document.getElementById('taskName');
   if (!nameInput) return;
-  var projectName = getProjectName(localStorage.getItem("current_project") || "");
-  var pretrained = document.getElementById("pretrainedModel").value.replace(".pt", "");
-  var epochs = document.getElementById("epochs").value;
-  var batch = document.getElementById("batch").value;
-  nameInput.placeholder = projectName + "-" + pretrained + "-" + epochs + "e-" + batch + "b";
+  var projectName = getProjectName(localStorage.getItem('current_project') || '');
+  var pretrained = document.getElementById('pretrainedModel').value.replace('.pt', '');
+  var epochs = document.getElementById('epochs').value;
+  var batch = document.getElementById('batch').value;
+  nameInput.placeholder = projectName + '-' + pretrained + '-' + epochs + 'e-' + batch + 'b';
 }
-// ── Submit to training queue ──
+
 function submitToQueue() {
-  var trainDS = getSelectedDatasets("trainDatasetWrap");
-  var valDS = getSelectedDatasets("valDatasetWrap");
-  if (trainDS.length === 0 || valDS.length === 0) { showToast("请选择训练集和验证集"); return; }
-  var projectName = getProjectName(localStorage.getItem("current_project") || "");
-  var config = "epochs=" + document.getElementById("epochs").value + ", batch=" + document.getElementById("batch").value + ", imgsz=" + document.getElementById("imgsz").value + ", " + document.getElementById("optimizer").value + ", lr=" + document.getElementById("lr0").value;
-  // Use user-entered name or auto-generate from params
-  var taskName = document.getElementById("taskName").value.trim();
+  var dsKeys = getSelectedDsKeys();
+  if (dsKeys.length === 0) { showToast('请选择训练数据集'); return; }
+  var projectName = getProjectName(localStorage.getItem('current_project') || '');
+  var config = 'epochs=' + document.getElementById('epochs').value + ', batch=' + document.getElementById('batch').value + ', imgsz=' + document.getElementById('imgsz').value + ', ' + document.getElementById('optimizer').value + ', lr=' + document.getElementById('lr0').value;
+  var taskName = document.getElementById('taskName').value.trim();
   if (!taskName) {
-    var pretrained = document.getElementById("pretrainedModel").value.replace(".pt", "");
-    var epochs = document.getElementById("epochs").value;
-    var batch = document.getElementById("batch").value;
-    taskName = projectName + "-" + pretrained + "-" + epochs + "e-" + batch + "b";
+    var pretrained = document.getElementById('pretrainedModel').value.replace('.pt', '');
+    var epochs = document.getElementById('epochs').value;
+    var batch = document.getElementById('batch').value;
+    taskName = projectName + '-' + pretrained + '-' + epochs + 'e-' + batch + 'b';
   }
   var queue = [];
-  try { queue = JSON.parse(localStorage.getItem("training_queue")) || []; } catch(e) {}
+  try { queue = JSON.parse(localStorage.getItem('training_queue')) || []; } catch(e) {}
   queue.push({
-    id: "q_" + Date.now(),
+    id: 'q_' + Date.now(),
     project: projectName,
     name: taskName,
-    model: document.getElementById("pretrainedModel").value,
-    version: "v" + new Date().toISOString().slice(2,10).replace(/-/g,""),
+    model: document.getElementById('pretrainedModel').value,
+    version: 'v' + new Date().toISOString().slice(2,10).replace(/-/g,''),
     config: config,
-    status: "queued",
+    status: 'queued',
     progress: 0,
-    currentEpoch: 0, totalEpochs: parseInt(document.getElementById("epochs").value) || 1000,
-    submittedAt: new Date().toISOString().slice(0,16).replace("T"," ")
+    currentEpoch: 0, totalEpochs: parseInt(document.getElementById('epochs').value) || 300,
+    submittedAt: new Date().toISOString().slice(0,16).replace('T',' ')
   });
-  localStorage.setItem("training_queue", JSON.stringify(queue));
-  showToast("训练任务已提交到队列！当前队列共 " + queue.length + " 个任务，查看训练队列页面");
+  localStorage.setItem('training_queue', JSON.stringify(queue));
+  showToast('训练任务已提交到队列！当前队列共 ' + queue.length + ' 个任务');
 }
+
 // ==================== HISTORY MODAL ====================
-function openHistoryModal() {
-  renderHistoryTable();
-  document.getElementById('historyModal').style.display = 'flex';
-}
-function closeHistoryModal() {
-  document.getElementById('historyModal').style.display = 'none';
-}
+function openHistoryModal() { renderHistoryTable(); document.getElementById('historyModal').style.display = 'flex'; }
+function closeHistoryModal() { document.getElementById('historyModal').style.display = 'none'; }
 
-function viewHistoryResult(idx) {
-  const r = historyResults[idx];
-
-  // Title
-  document.getElementById('resultModalTitle').textContent = '训练结果详情';
-
-  // Banner
-  var statusMap = { done: ['已完成', 'done'], running: ['进行中', 'running'], stopped: ['已终止', 'stopped'] };
-  var st = statusMap[r.status] || ['未知', ''];
-  document.getElementById('resultBannerTitle').innerHTML = r.taskName || (r.project + ' - ' + r.model);
-  document.getElementById('resultBannerSub').innerHTML =
-    '<span>' + r.time + '</span><span>算法：' + r.project + '</span>';
-  document.getElementById('resultStatusBadge').innerHTML =
-    '<span class="result-badge-dot"></span>' + st[0];
-  document.getElementById('resultStatusBadge').className = 'result-badge ' + st[1];
-
-  // Metrics
-  var mAP50Color = r.mAP50 === '-' ? 'var(--text-muted)' : '';
-  var mAP5095Color = r.mAP5095 === '-' ? 'var(--text-muted)' : '';
-  document.getElementById('resultModalMetrics').innerHTML =
-    '<div class="result-metric-card">' +
-      '<div class="rm-value rm-green"' + (mAP50Color ? ' style="color:' + mAP50Color + '"' : '') + '>' + r.mAP50 + '</div>' +
-      '<div class="rm-label">mAP@50</div><div class="rm-sub">平均精度</div>' +
-    '</div>' +
-    '<div class="result-metric-card">' +
-      '<div class="rm-value rm-blue"' + (mAP5095Color ? ' style="color:' + mAP5095Color + '"' : '') + '>' + r.mAP5095 + '</div>' +
-      '<div class="rm-label">mAP@50-95</div>' +
-    '</div>' +
-    '<div class="result-metric-card">' +
-      '<div class="rm-value rm-purple">' + r.train + '</div>' +
-      '<div class="rm-label">训练集</div><div class="rm-sub">images + labels（' + r.epochs + ' epochs）</div>' +
-    '</div>' +
-    '<div class="result-metric-card">' +
-      '<div class="rm-value rm-purple">' + r.val + '</div>' +
-      '<div class="rm-label">验证集</div><div class="rm-sub">" + r.val + " 张</div>' +
-    '</div>';
-
-  // Config info
-  var isRunning = r.status === 'running';
-  document.getElementById('resultConfigGrid').innerHTML =
-    '<div class="result-info-item"><span class="ri-label">模型</span><span class="ri-value"><span class="ri-tag">' + r.model + '</span></span></div>' +
-    '<div class="result-info-item"><span class="ri-label">Epochs</span><span class="ri-value">' + r.epochs + ' 轮' + (isRunning ? ' <span style="color:#fa8c16;font-size:11px;">训练中…</span>' : '') + '</span></div>' +
-    '<div class="result-info-item"><span class="ri-label">训练集</span><span class="ri-value">train/（' + r.train + ' 张）</span></div>' +
-    '<div class="result-info-item"><span class="ri-label">验证集</span><span class="ri-value">val/（' + r.val + ' 张）</span></div>' +
-    '<div class="result-info-item"><span class="ri-label">图像尺寸</span><span class="ri-value">640 × 640</span></div>' +
-    '<div class="result-info-item"><span class="ri-label">优化器</span><span class="ri-value">AdamW · batch=16 · amp</span></div>';
-
-  // Model files
-  var bestDisabled = r.status === 'running' ? ' style="opacity:0.5;pointer-events:none;"' : '';
-  document.getElementById('resultFileRow').innerHTML =
-    '<div class="result-file-card" title="历史最高精度模型"' + bestDisabled + ' onclick="closeResultModal();showToast(\'best.pt 已下载\')">' +
-      '<div class="rf-icon">📦</div>' +
-      '<div class="rf-info"><div class="rf-name">best.pt</div><div class="rf-meta">' + r.path + '</div></div>' +
-      '<span class="rf-dl"' + (r.status === 'running' ? ' style="color:var(--text-muted);"' : '') + '>' + (r.status === 'running' ? '—' : '下载') + '</span>' +
-    '</div>' +
-    '<div class="result-file-card" title="最后一轮模型" onclick="closeResultModal();showToast(\'last.pt 已下载\')">' +
-      '<div class="rf-icon">📄</div>' +
-      '<div class="rf-info"><div class="rf-name">last.pt</div><div class="rf-meta">' + r.path + '</div></div>' +
-      '<span class="rf-dl">下载</span>' +
-    '</div>';
-
-  document.getElementById('resultModal').style.display = 'flex';
-
-  // Draw static charts in modal
-  setTimeout(function() { drawModalCharts(); }, 200);
-}
-
-function viewLatestResult() {
-  viewHistoryResult(0);
-}
-
-function deleteHistoryRow(btn) {
-  var row = btn.closest('tr');
-  showConfirmModal(
-    '删除训练记录',
-    '确定删除该训练记录吗？',
-    '对应的模型文件也将一并删除，此操作不可撤销。',
-    function() { if (row) row.remove(); }
-  );
-}
-
-function drawModalCharts() {
-  ['resultLossChart', 'resultMapChart'].forEach(function(id) {
-    var canvas = document.getElementById(id);
-    if (!canvas) return;
-    canvas.width = canvas.offsetWidth * 2;
-    canvas.height = 280;
-    var ctx = canvas.getContext('2d');
-    var w = canvas.width, h = canvas.height;
-    var pad = { top: 16, right: 20, bottom: 28, left: 40 };
-    var pw = w - pad.left - pad.right;
-    var ph = h - pad.top - pad.bottom;
-
-    ctx.clearRect(0, 0, w, h);
-
-    // Grid lines
-    ctx.strokeStyle = '#f5f5f5'; ctx.lineWidth = 1;
-    for (var i = 0; i <= 4; i++) {
-      var y = pad.top + ph * i / 4;
-      ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
-    }
-
-    // Y-axis labels
-    ctx.fillStyle = '#999'; ctx.font = '11px -apple-system, "PingFang SC", sans-serif'; ctx.textAlign = 'right';
-    if (id === 'resultLossChart') {
-      for (var i = 0; i <= 4; i++) {
-        ctx.fillText((0.10 - 0.025 * i).toFixed(2), pad.left - 8, pad.top + ph * i / 4 + 4);
-      }
-    } else {
-      for (var i = 0; i <= 4; i++) {
-        ctx.fillText((1.0 - 0.25 * i).toFixed(2), pad.left - 8, pad.top + ph * i / 4 + 4);
-      }
-    }
-
-    // X-axis labels
-    ctx.textAlign = 'center';
-    for (var i = 0; i <= 4; i++) {
-      ctx.fillText(Math.round(i * 25) + '%', pad.left + pw * i / 4, h - 6);
-    }
-
-    // Smooth curves
-    var curves = id === 'resultLossChart'
-      ? [{c:'#ff4d4f',s:0.08,e:0.016},{c:'#1890ff',s:0.048,e:0.007},{c:'#52c41a',s:0.032,e:0.005}]
-      : [{c:'#1890ff',s:0.28,e:0.88},{c:'#52c41a',s:0.12,e:0.66}];
-
-    curves.forEach(function(col) {
-      ctx.strokeStyle = col.c; ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      for (var i = 0; i <= 100; i++) {
-        var x = pad.left + (i / 100) * pw;
-        var val = id === 'resultLossChart'
-          ? col.s * Math.pow(0.97, i / 100 * 800) + col.e + (Math.random() - 0.5) * 0.004
-          : col.s + (col.e - col.s) * (1 - Math.exp(-i / 35)) + (Math.random() - 0.5) * 0.02;
-        var y = pad.top + (1 - val / (id === 'resultLossChart' ? 0.12 : 1)) * ph;
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-    });
-  });
-}
-
-function closeResultModal() {
-  document.getElementById('resultModal').style.display = 'none';
-}
-
-// ==================== RENDER HISTORY ====================
 function renderHistoryTable() {
   var project = getProjectName(localStorage.getItem('current_project') || '');
   var body = document.getElementById('historyBody');
@@ -867,32 +664,106 @@ function renderHistoryTable() {
     var mapClass = r.status === 'done' ? 'tag-success' : r.status === 'running' ? 'tag-processing' : 'tag-error';
     var statusLabel = r.status === 'done' ? '已完成' : r.status === 'running' ? '进行中' : '已终止';
     body.innerHTML +=
-      '<tr>' +
-      '<td>' + r.time + '</td>' +
-      '<td>' + r.project + '</td>' +
-      '<td>' + (r.taskName || '') + '</td>' +
-      '<td>train (' + r.train + ') / val (' + r.val + ')</td>' +
-      '<td>' + r.model + '</td>' +
-      '<td>' + r.epochs + '</td>' +
-      '<td style="color:var(--success);font-weight:600;">' + r.mAP50 + '</td>' +
+      '<tr><td>' + r.time + '</td><td>' + r.project + '</td><td>' + (r.taskName || '') + '</td>' +
+      '<td>train (' + r.train + ') / val (' + r.val + ')</td><td>' + r.model + '</td>' +
+      '<td>' + r.epochs + '</td><td style="color:var(--success);font-weight:600;">' + r.mAP50 + '</td>' +
       '<td><span class="tag ' + mapClass + '">' + statusLabel + '</span></td>' +
-      '<td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(' + idx + ')">查看</button> <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td>' +
-      '</tr>';
+      '<td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(' + idx + ')">查看</button>' +
+      ' <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td></tr>';
+  });
+}
+
+function viewHistoryResult(idx) {
+  var r = historyResults[idx];
+  document.getElementById('resultModalTitle').textContent = '训练结果详情';
+
+  var statusMap = { done: ['已完成','done'], running: ['进行中','running'], stopped: ['已终止','stopped'] };
+  var st = statusMap[r.status] || ['未知',''];
+  document.getElementById('resultBannerTitle').innerHTML = r.taskName || (r.project + ' - ' + r.model);
+  document.getElementById('resultBannerSub').innerHTML = '<span>' + r.time + '</span><span>算法：' + r.project + '</span>';
+  document.getElementById('resultStatusBadge').innerHTML = '<span class="result-badge-dot"></span>' + st[0];
+  document.getElementById('resultStatusBadge').className = 'result-badge ' + st[1];
+
+  var m50C = r.mAP50 === '-' ? 'var(--text-muted)' : '';
+  var m95C = r.mAP5095 === '-' ? 'var(--text-muted)' : '';
+  document.getElementById('resultModalMetrics').innerHTML =
+    '<div class="result-metric-card"><div class="rm-value rm-green"' + (m50C ? ' style="color:'+m50C+'"' : '') + '>' + r.mAP50 + '</div><div class="rm-label">mAP@50</div></div>' +
+    '<div class="result-metric-card"><div class="rm-value rm-blue"' + (m95C ? ' style="color:'+m95C+'"' : '') + '>' + r.mAP5095 + '</div><div class="rm-label">mAP@50-95</div></div>' +
+    '<div class="result-metric-card"><div class="rm-value rm-purple">' + r.train + '</div><div class="rm-label">训练集</div><div class="rm-sub">' + r.epochs + ' epochs</div></div>' +
+    '<div class="result-metric-card"><div class="rm-value rm-purple">' + r.val + '</div><div class="rm-label">验证集</div><div class="rm-sub">images + labels</div></div>';
+
+  var isRunning = r.status === 'running';
+  document.getElementById('resultConfigGrid').innerHTML =
+    '<div class="result-info-item"><span class="ri-label">模型</span><span class="ri-value"><span class="ri-tag">' + r.model + '</span></span></div>' +
+    '<div class="result-info-item"><span class="ri-label">Epochs</span><span class="ri-value">' + r.epochs + ' 轮' + (isRunning ? ' <span style="color:#fa8c16;font-size:11px;">训练中…</span>' : '') + '</span></div>' +
+    '<div class="result-info-item"><span class="ri-label">训练集</span><span class="ri-value">train/（' + r.train + ' 张）</span></div>' +
+    '<div class="result-info-item"><span class="ri-label">验证集</span><span class="ri-value">val/（' + r.val + ' 张）</span></div>' +
+    '<div class="result-info-item"><span class="ri-label">图像尺寸</span><span class="ri-value">640 × 640</span></div>' +
+    '<div class="result-info-item"><span class="ri-label">优化器</span><span class="ri-value">AdamW · batch=16 · amp</span></div>';
+
+  var bestDisabled = r.status === 'running' ? ' style="opacity:0.5;pointer-events:none;"' : '';
+  document.getElementById('resultFileRow').innerHTML =
+    '<div class="result-file-card" title="历史最高精度模型"' + bestDisabled + ' onclick="closeResultModal();showToast(\'best.pt 已下载\')">' +
+    '<div class="rf-icon">📦</div><div class="rf-info"><div class="rf-name">best.pt</div><div class="rf-meta">' + r.path + '</div></div><span class="rf-dl"' + (r.status === 'running' ? ' style="color:var(--text-muted);"' : '') + '>' + (r.status === 'running' ? '—' : '下载') + '</span></div>' +
+    '<div class="result-file-card" title="最后一轮模型" onclick="closeResultModal();showToast(\'last.pt 已下载\')">' +
+    '<div class="rf-icon">📄</div><div class="rf-info"><div class="rf-name">last.pt</div><div class="rf-meta">' + r.path + '</div></div><span class="rf-dl">下载</span></div>';
+
+  document.getElementById('resultModal').style.display = 'flex';
+  setTimeout(function() { drawModalCharts(); }, 200);
+}
+
+function deleteHistoryRow(btn) {
+  var row = btn.closest('tr');
+  showConfirmModal('删除训练记录', '确定删除该训练记录吗？', '对应的模型文件也将一并删除，此操作不可撤销。', function() { if (row) row.remove(); });
+}
+
+function closeResultModal() { document.getElementById('resultModal').style.display = 'none'; }
+
+function drawModalCharts() {
+  ['resultLossChart','resultMapChart'].forEach(function(id) {
+    var canvas = document.getElementById(id);
+    if (!canvas) return;
+    canvas.width = canvas.offsetWidth * 2; canvas.height = 280;
+    var ctx = canvas.getContext('2d'), w = canvas.width, h = canvas.height;
+    var pad = { top:16,right:20,bottom:28,left:40 }, pw = w-pad.left-pad.right, ph = h-pad.top-pad.bottom;
+    ctx.clearRect(0,0,w,h);
+    ctx.strokeStyle='#f5f5f5'; ctx.lineWidth=1;
+    for (var i=0;i<=4;i++) { var gy=pad.top+ph*i/4; ctx.beginPath(); ctx.moveTo(pad.left,gy); ctx.lineTo(w-pad.right,gy); ctx.stroke(); }
+    ctx.fillStyle='#999'; ctx.font='11px sans-serif'; ctx.textAlign='right';
+    if (id==='resultLossChart') { for (var i=0;i<=4;i++) ctx.fillText((0.10-0.025*i).toFixed(2),pad.left-8,pad.top+ph*i/4+4); }
+    else { for (var i=0;i<=4;i++) ctx.fillText((1.0-0.25*i).toFixed(2),pad.left-8,pad.top+ph*i/4+4); }
+    ctx.textAlign='center';
+    for (var i=0;i<=4;i++) ctx.fillText(Math.round(i*25)+'%',pad.left+pw*i/4,h-6);
+    var curves = id==='resultLossChart'
+      ? [{c:'#ff4d4f',s:0.08,e:0.016},{c:'#1890ff',s:0.048,e:0.007},{c:'#52c41a',s:0.032,e:0.005}]
+      : [{c:'#1890ff',s:0.28,e:0.88},{c:'#52c41a',s:0.12,e:0.66}];
+    curves.forEach(function(col) {
+      ctx.strokeStyle=col.c; ctx.lineWidth=2.5; ctx.beginPath();
+      for (var i=0;i<=100;i++) {
+        var x=pad.left+(i/100)*pw;
+        var val=id==='resultLossChart' ? col.s*Math.pow(0.97,i/100*800)+col.e+(Math.random()-0.5)*0.004 : col.s+(col.e-col.s)*(1-Math.exp(-i/35))+(Math.random()-0.5)*0.02;
+        var y=pad.top+(1-val/(id==='resultLossChart'?0.12:1))*ph;
+        if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    });
   });
 }
 
 // ==================== INIT ====================
-
 (function() {
   var user = getUser();
   if (!user) { location.href = 'login.html'; return; }
   document.getElementById('headerUserName').textContent = user.name;
   document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
-
-  var project = localStorage.getItem('current_project'); if (!project) { location.href = 'projects.html'; return; } document.getElementById("sidebarProjectGroup").style.display = "block"; document.getElementById("sidebarSubPages").style.display = "block";
+  var project = localStorage.getItem('current_project');
+  if (!project) { location.href = 'projects.html'; return; }
+  document.getElementById('sidebarProjectGroup').style.display = 'block';
+  document.getElementById('sidebarSubPages').style.display = 'block';
   document.getElementById('sidebarLogoText').textContent = getProjectName(project);
   updateTaskName();
-  renderHistoryTable();
+  buildDsOptions();
+  updateDsText();
 })();
 </script>
 </body>
