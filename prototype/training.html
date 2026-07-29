@@ -68,14 +68,7 @@
   .ms-option.hidden { display: none; }
   .ms-trigger .ms-placeholder { color: var(--text-muted); }
 
-  /* ===== Tuning param inline row ===== */
-  .tune-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #fff; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 6px; }
-  .tune-row .tune-label { font-size: 11px; font-weight: 500; min-width: 90px; color: var(--text); flex-shrink: 0; }
-  .tune-row .tune-code { font-size: 9px; color: var(--text-muted); font-family: "SF Mono", Menlo, Consolas, monospace; margin-left: 2px; }
-  .tune-row .tune-desc { font-size: 10px; color: var(--text-muted); flex: 1; min-width: 0; }
-  .tune-row input[type="number"] { width: 72px; padding: 4px 6px; border: 1px solid #d9d9d9; border-radius: 3px; font-size: 12px; font-family: var(--font); text-align: right; }
-  .tune-row select { padding: 4px 6px; border: 1px solid #d9d9d9; border-radius: 3px; font-size: 11px; font-family: var(--font); }
-  .tune-row .toggle { flex-shrink: 0; }
+  .aug-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 
   .aug-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .aug-item { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; background: #fff; border: 1px solid var(--border); border-radius: 4px; transition: var(--transition); }
@@ -85,6 +78,8 @@
   .aug-item .aug-control { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .aug-item .aug-val { font-size: 10px; font-weight: 600; color: var(--primary); min-width: 32px; text-align: right; }
   .aug-item input[type="range"] { width: 70px; accent-color: var(--primary); }
+  .aug-item input[type="number"] { width: 66px; padding: 3px 6px; border: 1px solid #d9d9d9; border-radius: 3px; font-size: 11px; font-family: var(--font); text-align: right; }
+  .aug-item .toggle { flex-shrink: 0; }
 
   /* ===== Train button ===== */
   .submit-row { padding: 12px 0 0; border-top: 1px solid var(--border); }
@@ -251,24 +246,39 @@
               <span class="ps-hint">epochs / batch / imgsz / GPU / 优化器 / lr0 / patience</span>
             </div>
             <div class="param-section-body">
-              <div class="form-row">
-                <div class="form-group"><label>训练轮数 (epochs)</label><input type="number" id="epochs" onchange="updateTaskName()" value="300" min="1"></div>
-                <div class="form-group"><label>批次大小 (batch)</label><input type="number" id="batch" onchange="updateTaskName()" value="16" min="1"></div>
-                <div class="form-group"><label>输入图像尺寸 (imgsz)</label><input type="number" id="imgsz" value="640" min="32" step="32"></div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>训练设备</label>
-                  <select id="device"><option value="0" selected>GPU 0</option><option value="1">GPU 1</option><option value="cpu">CPU</option></select>
+              <div class="aug-grid-3">
+                <div class="aug-item">
+                  <div class="aug-label">epochs <span class="aug-code">训练轮数</span></div>
+                  <div class="aug-control"><input type="number" id="epochs" onchange="updateTaskName()" value="300" min="1"></div>
                 </div>
-                <div class="form-group">
-                  <label>优化器</label>
-                  <select id="optimizer"><option value="AdamW" selected>AdamW</option><option value="SGD">SGD</option><option value="Adam">Adam</option></select>
+                <div class="aug-item">
+                  <div class="aug-label">batch <span class="aug-code">批次大小</span></div>
+                  <div class="aug-control"><input type="number" id="batch" onchange="updateTaskName()" value="16" min="1"></div>
                 </div>
-                <div class="form-group"><label>初始学习率 (lr0)</label><input type="number" id="lr0" value="0.001" step="0.0001"></div>
-              </div>
-              <div class="form-row">
-                <div class="form-group"><label>早停轮数 (patience)</label><input type="number" id="patience" value="100" min="0"><span class="hint">验证精度不再提升 N 轮后自动停止，0 = 不早停</span></div>
+                <div class="aug-item">
+                  <div class="aug-label">imgsz <span class="aug-code">输入图像尺寸</span></div>
+                  <div class="aug-control"><input type="number" id="imgsz" value="640" min="32" step="32"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">device <span class="aug-code">训练设备</span></div>
+                  <div class="aug-control"><select id="device"><option value="0" selected>GPU 0</option><option value="1">GPU 1</option><option value="cpu">CPU</option></select></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">optimizer <span class="aug-code">优化器</span></div>
+                  <div class="aug-control"><select id="optimizer"><option value="AdamW" selected>AdamW</option><option value="SGD">SGD</option><option value="Adam">Adam</option></select></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">lr0 <span class="aug-code">初始学习率</span></div>
+                  <div class="aug-control"><input type="number" id="lr0" value="0.001" step="0.0001"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">patience <span class="aug-code">早停轮数</span></div>
+                  <div class="aug-control"><input type="number" id="patience" value="100" min="0"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">cache <span class="aug-code">内存加载数据集</span></div>
+                  <div class="aug-control"><label class="toggle"><input type="checkbox" id="cache"><span class="slider"></span></label></div>
+                </div>
               </div>
             </div>
           </div>
@@ -283,95 +293,105 @@
             <div class="param-section-body">
               <div class="aug-grid-3" id="augGrid">
                 <div class="aug-item">
-                  <div class="aug-label">色调 <span class="aug-code">hsv_h</span></div>
+                  <div class="aug-label">hsv_h <span class="aug-code">色调</span></div>
                   <div class="aug-control"><input type="range" id="aug_hsv_h" min="0" max="10" value="1" step="0.5" oninput="document.getElementById('v_hsv_h').textContent=(this.value/100).toFixed(3)"><span class="aug-val" id="v_hsv_h">0.015</span></div>
                 </div>
                 <div class="aug-item">
-                  <div class="aug-label">饱和度 <span class="aug-code">hsv_s</span></div>
+                  <div class="aug-label">hsv_s <span class="aug-code">饱和度</span></div>
                   <div class="aug-control"><input type="range" id="aug_hsv_s" min="0" max="100" value="70" step="1" oninput="document.getElementById('v_hsv_s').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_hsv_s">0.70</span></div>
                 </div>
                 <div class="aug-item">
-                  <div class="aug-label">明度 <span class="aug-code">hsv_v</span></div>
+                  <div class="aug-label">hsv_v <span class="aug-code">明度</span></div>
                   <div class="aug-control"><input type="range" id="aug_hsv_v" min="0" max="100" value="40" step="1" oninput="document.getElementById('v_hsv_v').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_hsv_v">0.40</span></div>
                 </div>
                 <div class="aug-item">
-                  <div class="aug-label">旋转角度 <span class="aug-code">degrees</span></div>
+                  <div class="aug-label">degrees <span class="aug-code">旋转角度</span></div>
                   <div class="aug-control"><input type="range" id="aug_degrees" min="0" max="180" value="10" step="1" oninput="document.getElementById('v_degrees').textContent=this.value"><span class="aug-val" id="v_degrees">10</span></div>
                 </div>
                 <div class="aug-item">
-                  <div class="aug-label">平移 <span class="aug-code">translate</span></div>
+                  <div class="aug-label">translate <span class="aug-code">平移</span></div>
                   <div class="aug-control"><input type="range" id="aug_translate" min="0" max="50" value="10" step="1" oninput="document.getElementById('v_translate').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_translate">0.10</span></div>
                 </div>
                 <div class="aug-item">
-                  <div class="aug-label">缩放 <span class="aug-code">scale</span></div>
+                  <div class="aug-label">scale <span class="aug-code">缩放</span></div>
                   <div class="aug-control"><input type="range" id="aug_scale" min="0" max="90" value="50" step="1" oninput="document.getElementById('v_scale').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_scale">0.50</span></div>
                 </div>
                 <div class="aug-item">
-                  <div class="aug-label">水平翻转 <span class="aug-code">fliplr</span></div>
+                  <div class="aug-label">fliplr <span class="aug-code">水平翻转</span></div>
                   <div class="aug-control"><input type="range" id="aug_fliplr" min="0" max="100" value="50" step="5" oninput="document.getElementById('v_fliplr').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_fliplr">0.50</span></div>
                 </div>
                 <div class="aug-item">
-                  <div class="aug-label">随机擦除 <span class="aug-code">erasing</span></div>
+                  <div class="aug-label">erasing <span class="aug-code">随机擦除</span></div>
                   <div class="aug-control"><input type="range" id="aug_erasing" min="0" max="100" value="40" step="5" oninput="document.getElementById('v_erasing').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_erasing">0.40</span></div>
                 </div>
                 <div class="aug-item">
-                  <div class="aug-label">MixUp 增强 <span class="aug-code">mixup</span></div>
+                  <div class="aug-label">mixup <span class="aug-code">MixUp 增强</span></div>
                   <div class="aug-control"><input type="range" id="aug_mixup" min="0" max="100" value="15" step="5" oninput="document.getElementById('v_mixup').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_mixup">0.15</span></div>
                 </div>
-              </div>
-              <div class="form-row" style="margin-top:10px;">
-                <div class="form-group"><label>关闭 Mosaic 的轮数 (close_mosaic)</label><input type="number" id="aug_close_mosaic" value="10" min="0"><span class="hint">最后 N 轮关闭 Mosaic，避免拼接图导致语义失真</span></div>
-              </div>
+                <div class="aug-item">
+                  <div class="aug-label">mosaic <span class="aug-code">Mosaic 增强</span></div>
+                  <div class="aug-control"><input type="range" id="aug_mosaic" min="0" max="100" value="50" step="5" oninput="document.getElementById('v_mosaic').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_mosaic">0.50</span></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">close_mosaic <span class="aug-code">关闭 mosaic 轮数</span></div>
+                  <div class="aug-control"><input type="number" id="aug_close_mosaic" value="10" min="0"></div>
+                </div>
             </div>
           </div>
 
           <!-- ===== SECTION 3: 辅助调优参数 ===== -->
-          <div class="param-section collapsed" id="sec3">
+          <div class="param-section" id="sec3">
             <div class="param-section-header" onclick="toggleSection('sec3')">
               <span class="ps-arrow">▼</span>
               <span class="ps-title">辅助调优参数</span>
               <span class="ps-hint">针对特定使用场景的精细化调节</span>
             </div>
             <div class="param-section-body">
-              <div class="tune-row">
-                <span class="tune-label">权重衰减 <span class="tune-code">weight_decay</span></span>
-                <span class="tune-desc">防止过拟合，L2 正则化惩罚大权重</span>
-                <input type="number" id="weightDecay" value="0.0005" step="0.0001">
-              </div>
-              <div class="tune-row">
-                <span class="tune-label">余弦学习率 <span class="tune-code">cos_lr</span></span>
-                <span class="tune-desc">余弦退火平滑下降学习率</span>
-                <label class="toggle"><input type="checkbox" id="cos_lr"><span class="slider"></span></label>
-              </div>
-              <div class="tune-row">
-                <span class="tune-label">动量 <span class="tune-code">momentum</span></span>
-                <span class="tune-desc">配合 SGD 优化器加速收敛</span>
-                <input type="number" id="momentum" value="0.937" step="0.001">
-              </div>
-              <div class="tune-row">
-                <span class="tune-label">预热轮数 <span class="tune-code">warmup_epochs</span></span>
-                <span class="tune-desc">训练初期逐步增大学习率，稳定启动</span>
-                <input type="number" id="warmupEpochs" value="3" min="0">
-              </div>
-              <div class="tune-row">
-                <span class="tune-label">冻结层 <span class="tune-code">freeze</span></span>
-                <span class="tune-desc">冻结 backbone 前 N 层，迁移学习微调</span>
-                <input type="number" id="freeze" value="0" min="0">
-              </div>
-              <div class="tune-row">
-                <span class="tune-label">多尺度训练 <span class="tune-code">multi_scale</span></span>
-                <span class="tune-desc">每批次随机变换输入尺寸，提升小目标检测</span>
-                <label class="toggle"><input type="checkbox" id="multiScale"><span class="slider"></span></label>
-              </div>
-              <div class="tune-row">
-                <span class="tune-label">混合精度 <span class="tune-code">amp</span></span>
-                <span class="tune-desc">FP16 训练，节省显存、提速</span>
-                <label class="toggle"><input type="checkbox" id="amp" checked><span class="slider"></span></label>
-              </div>
-              <div class="tune-row">
-                <span class="tune-label">数据加载线程 <span class="tune-code">workers</span></span>
-                <span class="tune-desc">加载数据的并行进程数，加速数据预处理</span>
-                <input type="number" id="workers" value="8" min="0">
+              <div class="aug-grid-3">
+                <div class="aug-item">
+                  <div class="aug-label">box <span class="aug-code">坐标框 loss 权重</span></div>
+                  <div class="aug-control"><input type="number" id="boxLoss" value="7.5" step="0.1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">cls <span class="aug-code">分类 loss 权重</span></div>
+                  <div class="aug-control"><input type="number" id="clsLoss" value="0.5" step="0.1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">dfl <span class="aug-code">DFL loss 权重</span></div>
+                  <div class="aug-control"><input type="number" id="dflLoss" value="1.5" step="0.1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">weight_decay <span class="aug-code">权重衰减</span></div>
+                  <div class="aug-control"><input type="number" id="weightDecay" value="0.0005" step="0.0001"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">cos_lr <span class="aug-code">余弦学习率</span></div>
+                  <div class="aug-control"><label class="toggle"><input type="checkbox" id="cos_lr"><span class="slider"></span></label></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">momentum <span class="aug-code">动量，配合 SGD</span></div>
+                  <div class="aug-control"><input type="number" id="momentum" value="0.937" step="0.001"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">warmup_epochs <span class="aug-code">预热轮数</span></div>
+                  <div class="aug-control"><input type="number" id="warmupEpochs" value="3" min="0"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">freeze <span class="aug-code">冻结层数</span></div>
+                  <div class="aug-control"><input type="number" id="freeze" value="0" min="0"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">multi_scale <span class="aug-code">多尺度训练</span></div>
+                  <div class="aug-control"><label class="toggle"><input type="checkbox" id="multiScale"><span class="slider"></span></label></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">amp <span class="aug-code">混合精度，省显存</span></div>
+                  <div class="aug-control"><label class="toggle"><input type="checkbox" id="amp" checked><span class="slider"></span></label></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">workers <span class="aug-code">数据加载线程</span></div>
+                  <div class="aug-control"><input type="number" id="workers" value="8" min="0"></div>
+                </div>
               </div>
             </div>
           </div>
