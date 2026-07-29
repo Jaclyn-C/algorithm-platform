@@ -219,7 +219,7 @@ function initDemoData() {
   if (existing.length > 5) return;
 
   var DEMO = [
-    // ── 保安服检测 ──
+    // ═══ 保安服检测 — 5 个批次 ═══
     { project:'保安服检测', batch:'上传批次_20260628', batchDate:'2026-06-28', status:'已完成', statusClass:'tag-success', children: [
       { key:'raw_videos', name:'files/', count:'4 个文件', dateText:'2026-06-28 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
       { key:'extracted', name:'extracted_frames/', count:'1,248 张', dateText:'2026-06-29 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
@@ -228,82 +228,80 @@ function initDemoData() {
       { key:'train', name:'train/', count:'771 张 + 标签', dateText:'2026-07-03 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
       { key:'val', name:'val/', count:'331 张 + 标签', dateText:'2026-07-03 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
     ]},
-    { project:'保安服检测', batch:'上传批次_20260710', batchDate:'2026-07-10', status:'审核中', statusClass:'tag-review', children: [
+    { project:'保安服检测', batch:'上传批次_20260722', batchDate:'2026-07-22', status:'原始数据', statusClass:'tag-default', children: [
+      { key:'raw_videos_b3', name:'files/', count:'8 个文件', dateText:'2026-07-22 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+    ]},
+    { project:'保安服检测', batch:'上传批次_20260725', batchDate:'2026-07-25', status:'已抽帧', statusClass:'tag-warning', children: [
+      { key:'raw_videos_b5', name:'files/', count:'5 个文件', dateText:'2026-07-25 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_b5', name:'extracted_frames/', count:'3,200 张', dateText:'2026-07-26 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+    ]},
+    { project:'保安服检测', batch:'上传批次_20260718', batchDate:'2026-07-18', status:'审核中', statusClass:'tag-review', children: [
+      { key:'raw_videos_b4', name:'files/', count:'3 个文件', dateText:'2026-07-18 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_b4', name:'extracted_frames/', count:'720 张', dateText:'2026-07-19 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_b4', name:'deduplicated/', count:'688 张', dateText:'2026-07-20 生成', icon:'dedup', iconGlyph:'▦', badge:'待审核', badgeClass:'review' },
+    ]},
+    { project:'保安服检测', batch:'上传批次_20260710', batchDate:'2026-07-10', status:'已标注', statusClass:'tag-success', children: [
       { key:'raw_videos_b2', name:'files/', count:'2 个文件', dateText:'2026-07-10 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
-      { key:'extracted_b2', name:'extracted_frames/', count:'586 张', dateText:'2026-07-10 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-      { key:'deduplicated_b2', name:'deduplicated/', count:'542 张', dateText:'2026-07-11 生成', icon:'dedup', iconGlyph:'▦', badge:'待审核', badgeClass:'review' },
-    ]},
-    { project:'保安服检测', batch:'上传批次_20260720', batchDate:'2026-07-20', status:'已抽帧', statusClass:'tag-extract', children: [
-      { key:'raw_videos_b3', name:'files/', count:'6 个文件', dateText:'2026-07-20 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
-      { key:'extracted_b3', name:'extracted_frames/', count:'2,150 张', dateText:'2026-07-21 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'extracted_b2', name:'extracted_frames/', count:'586 张', dateText:'2026-07-11 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_b2', name:'deduplicated/', count:'540 张', dateText:'2026-07-12 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+      { key:'labeled_b2', name:'labeled/', count:'540 张', dateText:'2026-07-14 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
     ]},
 
-    // ── 烟火检测 ──
-    { project:'烟火检测', batch:'上传批次_20260701', batchDate:'2026-07-01', status:'标注中', statusClass:'tag-processing', children: [
-      { key:'raw_videos_f1', name:'files/', count:'3 个文件', dateText:'2026-07-01 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
-      { key:'extracted_f1', name:'extracted_frames/', count:'920 张', dateText:'2026-07-01 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-      { key:'deduplicated_f1', name:'deduplicated/', count:'856 张', dateText:'2026-07-02 生成', icon:'dedup', iconGlyph:'▦', badge:'标注中 47/200', badgeClass:'processing' },
-    ]},
+    // ═══ 烟火检测 — 5 个批次 ═══
     { project:'烟火检测', batch:'上传批次_20260705', batchDate:'2026-07-05', status:'已完成', statusClass:'tag-success', children: [
-      { key:'raw_videos_f2', name:'files/', count:'5 个文件', dateText:'2026-07-05 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
-      { key:'extracted_f2', name:'extracted_frames/', count:'892 张', dateText:'2026-07-06 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-      { key:'deduplicated_f2', name:'deduplicated/', count:'856 张', dateText:'2026-07-07 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
-      { key:'labeled_f2', name:'labeled/', count:'856 张', dateText:'2026-07-08 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
-      { key:'train_f2', name:'train/', count:'599 张 + 标签', dateText:'2026-07-09 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
-      { key:'val_f2', name:'val/', count:'257 张 + 标签', dateText:'2026-07-09 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
+      { key:'raw_videos_f1', name:'files/', count:'5 个文件', dateText:'2026-07-05 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_f1', name:'extracted_frames/', count:'1,380 张', dateText:'2026-07-06 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_f1', name:'deduplicated/', count:'1,250 张', dateText:'2026-07-07 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+      { key:'labeled_f1', name:'labeled/', count:'1,250 张', dateText:'2026-07-09 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
+      { key:'train_f1', name:'train/', count:'875 张 + 标签', dateText:'2026-07-10 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
+      { key:'val_f1', name:'val/', count:'375 张 + 标签', dateText:'2026-07-10 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
     ]},
-    { project:'烟火检测', batch:'上传批次_20260712', batchDate:'2026-07-12', status:'已标注', statusClass:'tag-labeled', children: [
-      { key:'raw_videos_f4', name:'files/', count:'4 个文件', dateText:'2026-07-12 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
-      { key:'extracted_f4', name:'extracted_frames/', count:'1,050 张', dateText:'2026-07-13 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-      { key:'deduplicated_f4', name:'deduplicated/', count:'980 张', dateText:'2026-07-14 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
-      { key:'labeled_f4', name:'labeled/', count:'980 张', dateText:'2026-07-16 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
+    { project:'烟火检测', batch:'上传批次_20260701', batchDate:'2026-07-01', status:'标注中', statusClass:'tag-processing', children: [
+      { key:'raw_videos_f2', name:'files/', count:'3 个文件', dateText:'2026-07-01 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_f2', name:'extracted_frames/', count:'920 张', dateText:'2026-07-02 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_f2', name:'deduplicated/', count:'856 张', dateText:'2026-07-03 生成', icon:'dedup', iconGlyph:'▦', badge:'标注中 47/200', badgeClass:'processing' },
     ]},
-    { project:'烟火检测', batch:'上传批次_20260718', batchDate:'2026-07-18', status:'已去重', statusClass:'tag-dedup', children: [
-      { key:'raw_videos_f3', name:'files/', count:'4 个文件', dateText:'2026-07-18 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
-      { key:'extracted_f3', name:'extracted_frames/', count:'1,320 张', dateText:'2026-07-19 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-      { key:'deduplicated_f3', name:'deduplicated/', count:'1,218 张', dateText:'2026-07-20 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+    { project:'烟火检测', batch:'上传批次_20260715', batchDate:'2026-07-15', status:'审核中', statusClass:'tag-review', children: [
+      { key:'raw_videos_f5', name:'files/', count:'2 个文件', dateText:'2026-07-15 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_f5', name:'extracted_frames/', count:'640 张', dateText:'2026-07-16 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_f5', name:'deduplicated/', count:'612 张', dateText:'2026-07-17 生成', icon:'dedup', iconGlyph:'▦', badge:'待审核', badgeClass:'review' },
+    ]},
+    { project:'烟火检测', batch:'上传批次_20260720', batchDate:'2026-07-20', status:'原始数据', statusClass:'tag-default', children: [
+      { key:'raw_videos_f4', name:'files/', count:'6 个文件', dateText:'2026-07-20 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+    ]},
+    { project:'烟火检测', batch:'上传批次_20260712', batchDate:'2026-07-12', status:'已去重', statusClass:'tag-dedup', children: [
+      { key:'raw_videos_f3', name:'files/', count:'4 个文件', dateText:'2026-07-12 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_f3', name:'extracted_frames/', count:'1,050 张', dateText:'2026-07-13 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_f3', name:'deduplicated/', count:'980 张', dateText:'2026-07-14 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
     ]},
 
-    // ── 安全帽检测 ──
-    { project:'安全帽检测', batch:'上传批次_20260628', _source:'保安服检测', batchDate:'2026-07-20', status:'已完成', statusClass:'tag-success', children: [
-      { key:'raw_videos_h0', name:'files/', count:'4 个文件', dateText:'2026-07-20 复制', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
-      { key:'extracted_h0', name:'extracted_frames/', count:'1,248 张', dateText:'2026-07-20 复制', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-      { key:'deduplicated_h0', name:'deduplicated/', count:'1,102 张', dateText:'2026-07-20 复制', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
-      { key:'labeled_h0', name:'labeled/', count:'1,102 张', dateText:'2026-07-20 复制', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
-      { key:'train_h0', name:'train/', count:'771 张 + 标签', dateText:'2026-07-20 复制', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
-      { key:'val_h0', name:'val/', count:'331 张 + 标签', dateText:'2026-07-20 复制', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
+    // ═══ 安全帽检测 — 5 个批次 ═══
+    { project:'安全帽检测', batch:'上传批次_20260725', batchDate:'2026-07-25', status:'已完成', statusClass:'tag-success', children: [
+      { key:'raw_videos_h1', name:'files/', count:'8 个文件', dateText:'2026-07-25 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_h1', name:'extracted_frames/', count:'3,410 张', dateText:'2026-07-26 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_h1', name:'deduplicated/', count:'3,105 张', dateText:'2026-07-27 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+      { key:'labeled_h1', name:'labeled/', count:'3,105 张', dateText:'2026-07-28 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
+      { key:'train_h1', name:'train/', count:'2,174 张 + 标签', dateText:'2026-07-29 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
+      { key:'val_h1', name:'val/', count:'931 张 + 标签', dateText:'2026-07-29 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
     ]},
     { project:'安全帽检测', batch:'上传批次_20260702', batchDate:'2026-07-02', status:'已去重', statusClass:'tag-dedup', children: [
-      { key:'raw_videos_h1', name:'files/', count:'6 个文件', dateText:'2026-07-02 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
-      { key:'extracted_h1', name:'extracted_frames/', count:'1,650 张', dateText:'2026-07-03 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-      { key:'deduplicated_h1', name:'deduplicated/', count:'1,517 张', dateText:'2026-07-03 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+      { key:'raw_videos_h2', name:'files/', count:'6 个文件', dateText:'2026-07-02 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_h2', name:'extracted_frames/', count:'1,650 张', dateText:'2026-07-03 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_h2', name:'deduplicated/', count:'1,517 张', dateText:'2026-07-04 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
     ]},
     { project:'安全帽检测', batch:'上传批次_20260715', batchDate:'2026-07-15', status:'标注中', statusClass:'tag-processing', children: [
-      { key:'raw_videos_h2', name:'files/', count:'3 个文件', dateText:'2026-07-15 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
-      { key:'extracted_h2', name:'extracted_frames/', count:'780 张', dateText:'2026-07-16 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-      { key:'deduplicated_h2', name:'deduplicated/', count:'728 张', dateText:'2026-07-17 生成', icon:'dedup', iconGlyph:'▦', badge:'标注中 182/728', badgeClass:'processing' },
+      { key:'raw_videos_h3', name:'files/', count:'3 个文件', dateText:'2026-07-15 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_h3', name:'extracted_frames/', count:'780 张', dateText:'2026-07-16 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_h3', name:'deduplicated/', count:'728 张', dateText:'2026-07-17 生成', icon:'dedup', iconGlyph:'▦', badge:'标注中 182/728', badgeClass:'processing' },
     ]},
-    { project:'安全帽检测', batch:'上传批次_20260725', batchDate:'2026-07-25', status:'已完成', statusClass:'tag-success', children: [
-      { key:'raw_videos_h3', name:'files/', count:'8 个文件', dateText:'2026-07-25 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
-      { key:'extracted_h3', name:'extracted_frames/', count:'3,410 张', dateText:'2026-07-26 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-      { key:'deduplicated_h3', name:'deduplicated/', count:'3,105 张', dateText:'2026-07-26 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
-      { key:'labeled_h3', name:'labeled/', count:'3,105 张', dateText:'2026-07-27 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
-      { key:'train_h3', name:'train/', count:'2,174 张 + 标签', dateText:'2026-07-28 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
-      { key:'val_h3', name:'val/', count:'931 张 + 标签', dateText:'2026-07-28 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
+    { project:'安全帽检测', batch:'上传批次_20260728', batchDate:'2026-07-28', status:'原始数据', statusClass:'tag-default', children: [
+      { key:'raw_videos_h4', name:'files/', count:'12 个文件', dateText:'2026-07-28 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
     ]},
-
-    // ── 区域入侵检测 ──
-    { project:'区域入侵检测', batch:'上传批次_20260722', batchDate:'2026-07-22', status:'已完成', statusClass:'tag-success', children: [
-      { key:'raw_videos_z1', name:'files/', count:'5 个文件', dateText:'2026-07-22 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
-      { key:'extracted_z1', name:'extracted_frames/', count:'1,840 张', dateText:'2026-07-23 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-      { key:'deduplicated_z1', name:'deduplicated/', count:'1,692 张', dateText:'2026-07-23 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
-      { key:'labeled_z1', name:'labeled/', count:'1,692 张', dateText:'2026-07-25 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
-      { key:'train_z1', name:'train/', count:'1,184 张 + 标签', dateText:'2026-07-26 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
-      { key:'val_z1', name:'val/', count:'508 张 + 标签', dateText:'2026-07-26 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
-    ]},
-    { project:'区域入侵检测', batch:'上传批次_20260728', batchDate:'2026-07-28', status:'已抽帧', statusClass:'tag-extract', children: [
-      { key:'raw_videos_z2', name:'files/', count:'10 个文件', dateText:'2026-07-28 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
-      { key:'extracted_z2', name:'extracted_frames/', count:'4,500 张', dateText:'2026-07-28 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+    { project:'安全帽检测', batch:'上传批次_20260708', batchDate:'2026-07-08', status:'已标注', statusClass:'tag-success', children: [
+      { key:'raw_videos_h5', name:'files/', count:'4 个文件', dateText:'2026-07-08 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_h5', name:'extracted_frames/', count:'960 张', dateText:'2026-07-09 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_h5', name:'deduplicated/', count:'902 张', dateText:'2026-07-10 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+      { key:'labeled_h5', name:'labeled/', count:'902 张', dateText:'2026-07-12 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
     ]},
   ];
 
