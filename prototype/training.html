@@ -64,10 +64,10 @@
   .modal { width: 700px; max-height: 85vh; overflow: auto; }
 
 	  /* ===== Result Detail Modal ===== */
-	  .result-banner { background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%); border-bottom: 1px solid #d6e4ff; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; }
-	  .result-banner-left { display: flex; flex-direction: column; gap: 4px; }
-	  .result-banner-title { font-size: 16px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px; }
-	  .result-banner-sub { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 12px; }
+	  .result-banner { background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%); border-bottom: 1px solid #d6e4ff; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; }
+	  .result-banner-left { display: flex; flex-direction: column; gap: 2px; }
+	  .result-banner-title { font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px; }
+	  .result-banner-sub { font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; gap: 10px; }
 	  .result-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 500; }
 	  .result-badge.done { background: #f6ffed; color: #52c41a; }
 	  .result-badge.stopped { background: #fff1f0; color: #ff4d4f; }
@@ -78,45 +78,45 @@
 	  .result-badge.running .result-badge-dot { background: #fa8c16; animation: pulse 1.5s infinite; }
 	  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
 
-	  .result-body { padding: 20px 24px; }
+	  .result-body { padding: 14px 20px; }
 
-	  .result-section { margin-bottom: 20px; }
+	  .result-section { margin-bottom: 12px; }
 	  .result-section:last-child { margin-bottom: 0; }
-	  .result-section-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+	  .result-section-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
 	  .result-section-title::before { content: ''; width: 3px; height: 14px; border-radius: 2px; background: var(--primary); display: inline-block; }
 
-	  .result-metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-	  .result-metric-card { background: #fafafa; border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; text-align: center; transition: var(--transition); }
+	  .result-metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+	  .result-metric-card { background: #fafafa; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; text-align: center; transition: var(--transition); }
 	  .result-metric-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(24,144,255,0.08); }
-	  .result-metric-card .rm-value { font-size: 24px; font-weight: 700; line-height: 1.2; }
-	  .result-metric-card .rm-label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
-	  .result-metric-card .rm-sub { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+	  .result-metric-card .rm-value { font-size: 20px; font-weight: 700; line-height: 1.1; }
+	  .result-metric-card .rm-label { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+	  .result-metric-card .rm-sub { font-size: 9px; color: var(--text-muted); margin-top: 0; }
 	  .rm-green { color: #52c41a; }
 	  .rm-blue { color: var(--primary); }
 	  .rm-purple { color: #722ed1; }
 
-	  .result-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
-	  .result-info-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+	  .result-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; }
+	  .result-info-item { display: flex; align-items: center; gap: 6px; font-size: 11px; }
 	  .result-info-item .ri-label { color: var(--text-secondary); min-width: 56px; flex-shrink: 0; }
 	  .result-info-item .ri-value { font-weight: 500; color: var(--text); }
 	  .result-info-item .ri-tag { display: inline-block; padding: 1px 8px; border-radius: 3px; font-size: 11px; background: #f0f0f0; color: var(--text-secondary); margin-right: 4px; }
 
 	  .result-chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 	  .result-chart-card { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-	  .result-chart-card .rc-header { padding: 10px 14px; background: #fafafa; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
+	  .result-chart-card .rc-header { padding: 6px 12px; background: #fafafa; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
 	  .result-chart-card .rc-legend { display: flex; gap: 12px; margin-left: auto; }
 	  .result-chart-card .rc-legend span { font-size: 10px; font-weight: 400; display: flex; align-items: center; gap: 4px; cursor: default; }
 	  .result-chart-card .rc-legend span::before { content: ''; width: 12px; height: 3px; border-radius: 2px; display: inline-block; flex-shrink: 0; background: var(--lc); }
-	  .result-chart-card canvas { width: 100%; height: 160px; display: block; margin: 8px 0; }
+	  .result-chart-card canvas { width: 100%; height: 130px; display: block; margin: 4px 0; }
 
-	  .result-file-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-	  .result-file-card { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px; background: #fafafa; cursor: pointer; transition: var(--transition); }
+	  .result-file-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+	  .result-file-card { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: #fafafa; cursor: pointer; transition: var(--transition); }
 	  .result-file-card:hover { border-color: var(--primary); background: var(--primary-light); }
-	  .result-file-card .rf-icon { width: 40px; height: 40px; border-radius: 8px; background: #e6f7ff; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+	  .result-file-card .rf-icon { width: 32px; height: 32px; border-radius: 8px; background: #e6f7ff; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
 	  .result-file-card .rf-info { flex: 1; min-width: 0; }
-	  .result-file-card .rf-name { font-size: 13px; font-weight: 600; color: var(--text); }
-	  .result-file-card .rf-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
-	  .result-file-card .rf-dl { font-size: 11px; color: var(--primary); font-weight: 500; white-space: nowrap; }
+	  .result-file-card .rf-name { font-size: 12px; font-weight: 600; color: var(--text); }
+	  .result-file-card .rf-meta { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+	  .result-file-card .rf-dl { font-size: 10px; color: var(--primary); font-weight: 500; white-space: nowrap; }
   /* ===== Multi-Select Dataset ===== */
   .multi-select { position: relative; user-select: none; }
   .ms-trigger { display: flex; align-items: center; justify-content: space-between; padding: 5px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; background: #fff; cursor: pointer; min-height: 30px; box-sizing: border-box; }
@@ -153,7 +153,7 @@
       <a class="sidebar-item" href="annotation.html" data-icon="🏷">数据标注</a>
       <a class="sidebar-item active" href="#" data-icon="🏋">模型训练</a>
       <a class="sidebar-item" href="evaluation.html" data-icon="📈">模型评估</a>
-      <a class="sidebar-item" href="trial.html" data-icon="🧪">模型试用</a>
+      <a class="sidebar-item" href="trial.html" data-icon="🧪">模型推理</a>
       <a class="sidebar-item" href="deployment.html" data-icon="🚀">模型部署</a>
     </div>
 
@@ -738,7 +738,7 @@ function viewHistoryResult(idx) {
     '</div>' +
     '<div class="result-metric-card">' +
       '<div class="rm-value rm-blue"' + (mAP5095Color ? ' style="color:' + mAP5095Color + '"' : '') + '>' + r.mAP5095 + '</div>' +
-      '<div class="rm-label">mAP@50-95</div><div class="rm-sub">IoU 0.50-0.95</div>' +
+      '<div class="rm-label">mAP@50-95</div>' +
     '</div>' +
     '<div class="result-metric-card">' +
       '<div class="rm-value rm-purple">' + r.train + '</div>' +
@@ -746,7 +746,7 @@ function viewHistoryResult(idx) {
     '</div>' +
     '<div class="result-metric-card">' +
       '<div class="rm-value rm-purple">' + r.val + '</div>' +
-      '<div class="rm-label">验证集</div><div class="rm-sub">images + labels</div>' +
+      '<div class="rm-label">验证集</div><div class="rm-sub">" + r.val + " 张</div>' +
     '</div>';
 
   // Config info
@@ -798,7 +798,7 @@ function drawModalCharts() {
     var canvas = document.getElementById(id);
     if (!canvas) return;
     canvas.width = canvas.offsetWidth * 2;
-    canvas.height = 320;
+    canvas.height = 280;
     var ctx = canvas.getContext('2d');
     var w = canvas.width, h = canvas.height;
     var pad = { top: 16, right: 20, bottom: 28, left: 40 };

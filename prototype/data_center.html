@@ -180,7 +180,7 @@
       <a class="sidebar-item" href="annotation.html" data-icon="🏷">数据标注</a>
       <a class="sidebar-item" href="training.html" data-icon="🏋">模型训练</a>
       <a class="sidebar-item" href="evaluation.html" data-icon="📈">模型评估</a>
-      <a class="sidebar-item" href="trial.html" data-icon="🧪">模型试用</a>
+      <a class="sidebar-item" href="trial.html" data-icon="🧪">模型推理</a>
       <a class="sidebar-item" href="deployment.html" data-icon="🚀">模型部署</a>
     </div>
     
@@ -1896,8 +1896,6 @@ document.addEventListener('dblclick', function(e) {
     }
   } catch(e) {}
 })();
-
-
 
 function goToAnnotation(dsType) {
   var project = localStorage.getItem('current_project') || 'security';
