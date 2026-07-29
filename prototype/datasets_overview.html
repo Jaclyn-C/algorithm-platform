@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>算法训练平台 — 数据集总览</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  .content { padding: 20px 24px; }
+
+  .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .toolbar .btn { height: 34px; padding: 0 16px; }
+  .toolbar .toolbar-hint { font-size: 11px; color: var(--text-secondary); }
+  .toolbar .toolbar-spacer { flex: 1; }
+
+  .overview-table { width: 100%; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--card-shadow); overflow: hidden; }
+  .overview-table table { width: 100%; border-collapse: collapse; }
+  .overview-table th { background: #fafafa; padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .overview-table th:first-child { width: 40px; text-align: center; }
+  .overview-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 13px; }
+  .overview-table tr:last-child td { border-bottom: none; }
+  .overview-table tbody tr { transition: var(--transition); cursor: pointer; }
+  .overview-table tbody tr:hover { background: #fafafa; }
+  .overview-table tbody tr.selected { background: var(--primary-light); }
+  .overview-table input[type="checkbox"] { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; }
+
+  .batch-name { font-weight: 600; }
+  .project-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }
+  .project-tag .p-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+  .stage-badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+  .stage-done { background: #f6ffed; color: #52c41a; }
+  .stage-labeled { background: #f6ffed; color: #389e0d; }
+  .stage-annotating { background: #fff7e6; color: #fa8c16; }
+  .stage-review { background: #fff0f6; color: #eb2f96; }
+  .stage-dedup { background: #e6f7ff; color: #1890ff; }
+  .stage-extract { background: #f0f5ff; color: #2f54eb; }
+  .stage-raw { background: #f5f5f5; color: #8c8c8c; }
+
+  .img-count { font-weight: 600; }
+  .batch-date { font-size: 11px; color: var(--text-muted); }
+
+  .source-tag { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; }
+  .source-upload { color: var(--text-secondary); }
+  .source-copy { color: var(--primary); }
+
+  .empty-state { padding: 64px 20px; text-align: center; color: var(--text-muted); }
+
+  /* Project multi-select */
+  .proj-filter { position: relative; user-select: none; }
+  .proj-filter .pf-trigger { display: flex; align-items: center; justify-content: space-between; padding: 5px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; background: #fff; cursor: pointer; min-height: 34px; box-sizing: border-box; min-width: 200px; }
+  .proj-filter .pf-trigger:hover { border-color: var(--primary); }
+  .proj-filter .pf-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .proj-filter .pf-arrow { color: var(--text-muted); font-size: 10px; margin-left: 6px; }
+  .proj-filter.open .pf-trigger { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+  .proj-filter .pf-dropdown { display: none; position: absolute; top: 100%; left: 0; background: #fff; border: 1px solid #d9d9d9; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; max-height: 200px; overflow-y: auto; margin-top: 2px; min-width: 200px; }
+  .proj-filter.open .pf-dropdown { display: block; }
+  .proj-filter .pf-option { display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: 12px; cursor: pointer; margin: 0; font-weight: 400; }
+  .proj-filter .pf-option:hover { background: var(--primary-light); }
+  .proj-filter .pf-option input[type="checkbox"] { accent-color: var(--primary); width: 14px; height: 14px; margin: 0; flex-shrink: 0; }
+  .pf-placeholder { color: var(--text-muted); }
+
+
+
+  /* Copy result banner */
+  .copy-done-banner { background: #f6ffed; border: 1px solid #b7eb8f; border-radius: var(--radius); padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #52c41a; display: none; }
+  .copy-done-banner.show { display: block; }
+
+  /* Copy modal */
+  .copy-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+  .copy-modal { background: #fff; border-radius: 8px; width: 480px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+  .copy-modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
+  .copy-modal-close { width: 28px; height: 28px; border: none; background: none; cursor: pointer; color: var(--text-muted); font-size: 16px; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+  .copy-modal-close:hover { background: #f0f0f0; }
+  .copy-modal-body { padding: 20px 24px; }
+  .copy-modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+  .copy-summary { font-size: 13px; color: var(--text); margin-bottom: 16px; line-height: 1.8; }
+  .copy-summary .cs-count { font-weight: 600; color: var(--primary); font-size: 16px; }
+  .copy-project-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+  .copy-project-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: var(--transition); }
+  .copy-project-item:hover { border-color: var(--primary); background: var(--primary-light); }
+  .copy-project-item.selected { border-color: var(--primary); background: var(--primary-light); }
+  .copy-project-item .cp-radio { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #d9d9d9; flex-shrink: 0; transition: var(--transition); }
+  .copy-project-item.selected .cp-radio { border-color: var(--primary); background: var(--primary); box-shadow: inset 0 0 0 3px #fff; }
+  .copy-project-item .cp-name { font-size: 13px; font-weight: 500; }
+  .copy-project-item .cp-hint { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">AI</div>
+    <div class="sidebar-expand-btn" onclick="toggleSidebar()" title="展开侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+    <div class="logo-text" id="sidebarLogoText">算法训练平台</div>
+    <div class="sidebar-collapse-btn" onclick="toggleSidebar()" title="收起侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="10" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
+      <a class="sidebar-item" href="my_projects.html" data-icon="📁">个人算法</a>
+      <a class="sidebar-item" href="projects.html" data-icon="👥">团队算法</a>
+      <a class="sidebar-item" href="models.html" data-icon="📊">模型总览</a>
+      <a class="sidebar-item active" href="#" data-icon="📦">数据集总览</a>
+      <a class="sidebar-item" href="models_use.html" data-icon="🔍">通用推理</a>
+      <a class="sidebar-item" href="training_queue.html" data-icon="📋">训练队列</a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
+      <a class="sidebar-item" href="team_manage.html" data-icon="⚙">团队管理</a>
+      <a class="sidebar-item" href="profile.html" data-icon="👤">个人中心</a>
+    </div>
+  </nav>
+</aside>
+<script>(function(){var s=document.querySelector(".sidebar");if(s&&localStorage.getItem("sidebar_collapsed")==="true"){s.classList.add("collapsed")}}())</script>
+
+<div class="main">
+  <header class="header">
+    <div class="breadcrumb"><a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>数据集总览</span></div>
+    <div class="header-actions">
+      <div class="park-select"><span class="ps-label">园区</span>
+        <select id="headerPark" onchange="onParkChange(this)"><option value="">— 请选择园区 —</option><option value="ganzhou">赣州</option><option value="vietnam">越南</option></select>
+      </div>
+      <div class="task-type-select"><span class="ts-label">模型任务</span>
+        <select id="headerTaskType" onchange="onTaskTypeChange(this)"><option value="">— 请选择任务 —</option><option value="detection">目标检测（YOLO）</option><option value="pose" disabled>姿态估计 — 规划中</option><option value="segment" disabled>实例分割 — 规划中</option><option value="embedding" disabled>文本嵌入 — 规划中</option></select>
+      </div>
+      <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
+        <span style="font-size:12px;" id="headerUserName">用户</span>
+        <div id="headerUserAvatar" style="width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">U</div>
+        <div class="user-dropdown" id="userDropdown">
+          <a href="profile.html">个人中心</a>
+          <a href="#" onclick="event.stopPropagation();logout()">退出登录</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="copy-done-banner" id="copyBanner">✓ 已复制到 <strong id="copyBannerTarget"></strong></div>
+
+    <div class="page-header">
+      <h2>数据集总览</h2>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <span style="font-size:12px;color:var(--text-secondary);">目标算法：</span>
+      <div class="proj-filter" id="projFilter">
+        <div class="pf-trigger" onclick="toggleProjFilter()">
+          <span class="pf-text" id="projFilterText">全部算法</span>
+          <span class="pf-arrow">▾</span>
+        </div>
+        <div class="pf-dropdown" id="projFilterDrop"></div>
+      </div>
+      <input type="text" id="searchInput" placeholder="搜索名称..." oninput="renderTable()" style="padding:6px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:12px;font-family:var(--font);width:200px;height:34px;box-sizing:border-box;">
+      <span class="toolbar-hint" id="hintCount">共 0 个批次</span>
+      <span class="toolbar-spacer"></span>
+      <button class="btn btn-primary" id="btnCopy" onclick="openCopyModal()" disabled>复制</button>
+    </div>
+
+    <!-- Table -->
+    <div class="overview-table">
+      <table>
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()" title="全选"></th>
+            <th>名称</th>
+            <th>算法项目</th>
+            <th>流水线阶段</th>
+            <th>数据集来源</th>
+            <th>数据量（图片数）</th>
+            <th>上传日期</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+      </table>
+      <div class="empty-state" id="emptyState" style="display:none;">没有匹配的数据集</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Copy Modal -->
+<div class="copy-modal-overlay" id="copyModal" style="display:none;" onclick="if(event.target===this)closeCopyModal()">
+  <div class="copy-modal">
+    <div class="copy-modal-header">
+      复制数据集
+      <button class="copy-modal-close" onclick="closeCopyModal()">✕</button>
+    </div>
+    <div class="copy-modal-body">
+      <div class="copy-summary">
+        已选中 <span class="cs-count" id="copyModalCount">0</span> 个批次，将整批复制（含全链条子数据集）到目标项目。
+      </div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">选择目标项目：</div>
+      <div class="copy-project-list" id="copyModalProjects"></div>
+    </div>
+    <div class="copy-modal-footer">
+      <button class="btn btn-default" onclick="closeCopyModal()">取消</button>
+      <button class="btn btn-primary" id="copyModalBtn" onclick="executeCopy()" disabled>确认复制</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="common.js"></script>
+<script>
+// ==================== STATE ====================
+var selectedBatches = {}; // { batchId: true }
+var allBatches = [];      // flattened view
+var selectedProjFilter = {}; // { projectName: true }, empty = all
+var copyTargetProjects = {}; // { projectName: true }, multi-select in modal
+
+// ==================== DATA ====================
+function initDemoData() {
+  var dsKey = 'platform_datasets';
+  var existing = [];
+  try { existing = JSON.parse(localStorage.getItem(dsKey)) || []; } catch(e) {}
+  // Only re-init if not already populated
+  if (existing.length > 5) return;
+
+  var DEMO = [
+    // ── 保安服检测 ──
+    { project:'保安服检测', batch:'上传批次_20260628', batchDate:'2026-06-28', status:'已完成', statusClass:'tag-success', children: [
+      { key:'raw_videos', name:'files/', count:'4 个文件', dateText:'2026-06-28 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted', name:'extracted_frames/', count:'1,248 张', dateText:'2026-06-29 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated', name:'deduplicated/', count:'1,102 张', dateText:'2026-06-30 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+      { key:'labeled', name:'labeled/', count:'1,102 张', dateText:'2026-07-02 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
+      { key:'train', name:'train/', count:'771 张 + 标签', dateText:'2026-07-03 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
+      { key:'val', name:'val/', count:'331 张 + 标签', dateText:'2026-07-03 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
+    ]},
+    { project:'保安服检测', batch:'上传批次_20260710', batchDate:'2026-07-10', status:'审核中', statusClass:'tag-review', children: [
+      { key:'raw_videos_b2', name:'files/', count:'2 个文件', dateText:'2026-07-10 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_b2', name:'extracted_frames/', count:'586 张', dateText:'2026-07-10 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_b2', name:'deduplicated/', count:'542 张', dateText:'2026-07-11 生成', icon:'dedup', iconGlyph:'▦', badge:'待审核', badgeClass:'review' },
+    ]},
+    { project:'保安服检测', batch:'上传批次_20260720', batchDate:'2026-07-20', status:'已抽帧', statusClass:'tag-extract', children: [
+      { key:'raw_videos_b3', name:'files/', count:'6 个文件', dateText:'2026-07-20 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_b3', name:'extracted_frames/', count:'2,150 张', dateText:'2026-07-21 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+    ]},
+
+    // ── 烟火检测 ──
+    { project:'烟火检测', batch:'上传批次_20260701', batchDate:'2026-07-01', status:'标注中', statusClass:'tag-processing', children: [
+      { key:'raw_videos_f1', name:'files/', count:'3 个文件', dateText:'2026-07-01 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_f1', name:'extracted_frames/', count:'920 张', dateText:'2026-07-01 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_f1', name:'deduplicated/', count:'856 张', dateText:'2026-07-02 生成', icon:'dedup', iconGlyph:'▦', badge:'标注中 47/200', badgeClass:'processing' },
+    ]},
+    { project:'烟火检测', batch:'上传批次_20260705', batchDate:'2026-07-05', status:'已完成', statusClass:'tag-success', children: [
+      { key:'raw_videos_f2', name:'files/', count:'5 个文件', dateText:'2026-07-05 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_f2', name:'extracted_frames/', count:'892 张', dateText:'2026-07-06 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_f2', name:'deduplicated/', count:'856 张', dateText:'2026-07-07 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+      { key:'labeled_f2', name:'labeled/', count:'856 张', dateText:'2026-07-08 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
+      { key:'train_f2', name:'train/', count:'599 张 + 标签', dateText:'2026-07-09 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
+      { key:'val_f2', name:'val/', count:'257 张 + 标签', dateText:'2026-07-09 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
+    ]},
+    { project:'烟火检测', batch:'上传批次_20260712', batchDate:'2026-07-12', status:'已标注', statusClass:'tag-labeled', children: [
+      { key:'raw_videos_f4', name:'files/', count:'4 个文件', dateText:'2026-07-12 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_f4', name:'extracted_frames/', count:'1,050 张', dateText:'2026-07-13 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_f4', name:'deduplicated/', count:'980 张', dateText:'2026-07-14 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+      { key:'labeled_f4', name:'labeled/', count:'980 张', dateText:'2026-07-16 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
+    ]},
+    { project:'烟火检测', batch:'上传批次_20260718', batchDate:'2026-07-18', status:'已去重', statusClass:'tag-dedup', children: [
+      { key:'raw_videos_f3', name:'files/', count:'4 个文件', dateText:'2026-07-18 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_f3', name:'extracted_frames/', count:'1,320 张', dateText:'2026-07-19 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_f3', name:'deduplicated/', count:'1,218 张', dateText:'2026-07-20 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+    ]},
+
+    // ── 安全帽检测 ──
+    { project:'安全帽检测', batch:'上传批次_20260628', _source:'保安服检测', batchDate:'2026-07-20', status:'已完成', statusClass:'tag-success', children: [
+      { key:'raw_videos_h0', name:'files/', count:'4 个文件', dateText:'2026-07-20 复制', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_h0', name:'extracted_frames/', count:'1,248 张', dateText:'2026-07-20 复制', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_h0', name:'deduplicated/', count:'1,102 张', dateText:'2026-07-20 复制', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+      { key:'labeled_h0', name:'labeled/', count:'1,102 张', dateText:'2026-07-20 复制', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
+      { key:'train_h0', name:'train/', count:'771 张 + 标签', dateText:'2026-07-20 复制', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
+      { key:'val_h0', name:'val/', count:'331 张 + 标签', dateText:'2026-07-20 复制', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
+    ]},
+    { project:'安全帽检测', batch:'上传批次_20260702', batchDate:'2026-07-02', status:'已去重', statusClass:'tag-dedup', children: [
+      { key:'raw_videos_h1', name:'files/', count:'6 个文件', dateText:'2026-07-02 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_h1', name:'extracted_frames/', count:'1,650 张', dateText:'2026-07-03 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_h1', name:'deduplicated/', count:'1,517 张', dateText:'2026-07-03 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+    ]},
+    { project:'安全帽检测', batch:'上传批次_20260715', batchDate:'2026-07-15', status:'标注中', statusClass:'tag-processing', children: [
+      { key:'raw_videos_h2', name:'files/', count:'3 个文件', dateText:'2026-07-15 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_h2', name:'extracted_frames/', count:'780 张', dateText:'2026-07-16 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_h2', name:'deduplicated/', count:'728 张', dateText:'2026-07-17 生成', icon:'dedup', iconGlyph:'▦', badge:'标注中 182/728', badgeClass:'processing' },
+    ]},
+    { project:'安全帽检测', batch:'上传批次_20260725', batchDate:'2026-07-25', status:'已完成', statusClass:'tag-success', children: [
+      { key:'raw_videos_h3', name:'files/', count:'8 个文件', dateText:'2026-07-25 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_h3', name:'extracted_frames/', count:'3,410 张', dateText:'2026-07-26 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_h3', name:'deduplicated/', count:'3,105 张', dateText:'2026-07-26 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+      { key:'labeled_h3', name:'labeled/', count:'3,105 张', dateText:'2026-07-27 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
+      { key:'train_h3', name:'train/', count:'2,174 张 + 标签', dateText:'2026-07-28 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
+      { key:'val_h3', name:'val/', count:'931 张 + 标签', dateText:'2026-07-28 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
+    ]},
+
+    // ── 区域入侵检测 ──
+    { project:'区域入侵检测', batch:'上传批次_20260722', batchDate:'2026-07-22', status:'已完成', statusClass:'tag-success', children: [
+      { key:'raw_videos_z1', name:'files/', count:'5 个文件', dateText:'2026-07-22 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_z1', name:'extracted_frames/', count:'1,840 张', dateText:'2026-07-23 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+      { key:'deduplicated_z1', name:'deduplicated/', count:'1,692 张', dateText:'2026-07-23 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+      { key:'labeled_z1', name:'labeled/', count:'1,692 张', dateText:'2026-07-25 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
+      { key:'train_z1', name:'train/', count:'1,184 张 + 标签', dateText:'2026-07-26 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
+      { key:'val_z1', name:'val/', count:'508 张 + 标签', dateText:'2026-07-26 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
+    ]},
+    { project:'区域入侵检测', batch:'上传批次_20260728', batchDate:'2026-07-28', status:'已抽帧', statusClass:'tag-extract', children: [
+      { key:'raw_videos_z2', name:'files/', count:'10 个文件', dateText:'2026-07-28 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+      { key:'extracted_z2', name:'extracted_frames/', count:'4,500 张', dateText:'2026-07-28 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+    ]},
+  ];
+
+  var pipeStatus = {};
+  DEMO.forEach(function(b) {
+    if (b.status === '审核中') {
+      var dk = b.children.find(function(c) { return c.key.indexOf('deduplicated') === 0; });
+      if (dk) pipeStatus['p' + dk.key.replace('deduplicated','')] = 'review';
+    }
+    if (b.status === '标注中') {
+      var dk2 = b.children.find(function(c) { return c.key.indexOf('deduplicated') === 0; });
+      if (dk2) pipeStatus['p' + dk2.key.replace('deduplicated','')] = 'in_progress';
+    }
+  });
+  localStorage.setItem('pipeline_annotation_status', JSON.stringify(pipeStatus));
+  localStorage.setItem(dsKey, JSON.stringify(DEMO));
+}
+
+// ==================== BATCH ANALYSIS ====================
+function analyzeBatch(batch) {
+  var keys = batch.children.map(function(c) { return c.key; });
+  var has = {
+    files:      keys.some(function(k) { return k.indexOf('raw_videos') === 0; }),
+    extracted:  keys.some(function(k) { return k.indexOf('extracted') === 0; }),
+    dedup:      keys.some(function(k) { return k.indexOf('deduplicated') === 0; }),
+    labeled:    keys.some(function(k) { return k.indexOf('labeled') === 0; }),
+    train:      keys.some(function(k) { return k.indexOf('train') === 0; }),
+    val:        keys.some(function(k) { return k.indexOf('val') === 0; }),
+  };
+
+  var dedupChild = batch.children.find(function(c) { return c.key.indexOf('deduplicated') === 0; });
+  var annoStatus = '';
+  if (dedupChild) {
+    var suffix = dedupChild.key.replace('deduplicated','') || '_01';
+    try {
+      var ps = JSON.parse(localStorage.getItem('pipeline_annotation_status')) || {};
+      annoStatus = ps['p' + suffix] || '';
+    } catch(e) {}
+  }
+
+  var stage, stageClass;
+  if (has.train && has.val)              { stage = '已完成'; stageClass = 'stage-done'; }
+  else if (has.labeled)                  { stage = '已标注'; stageClass = 'stage-labeled'; }
+  else if (annoStatus === 'review')      { stage = '审核中'; stageClass = 'stage-review'; }
+  else if (annoStatus === 'in_progress') { stage = '标注中'; stageClass = 'stage-annotating'; }
+  else if (has.dedup && !has.labeled)    { stage = '已去重'; stageClass = 'stage-dedup'; }
+  else if (has.extracted && !has.dedup)  { stage = '已抽帧'; stageClass = 'stage-extract'; }
+  else                                    { stage = '原始数据'; stageClass = 'stage-raw'; }
+
+  var imgCount = '—';
+  var countChild = batch.children.find(function(c) { return c.key.indexOf('deduplicated') === 0; })
+               || batch.children.find(function(c) { return c.key.indexOf('extracted') === 0; });
+  if (countChild) {
+    var match = countChild.count.match(/(\d[\d,]*)/);
+    if (match) imgCount = parseInt(match[1].replace(/,/g,'')).toLocaleString() + ' 张';
+  }
+
+  return { stage:stage, stageClass:stageClass, imgCount:imgCount };
+}
+
+// ==================== LOAD & RENDER ====================
+function loadAllBatches() {
+  var datasets = [];
+  try { datasets = JSON.parse(localStorage.getItem('platform_datasets')) || []; } catch(e) {}
+  allBatches = [];
+  datasets.forEach(function(b) {
+    var info = analyzeBatch(b);
+    var source = b._source ? ('来自 ' + b._source) : '手动上传';
+
+    allBatches.push({
+      id: b.project + '|||' + b.batch,
+      project: b.project,
+      batch: b.batch,
+      batchDate: b.batchDate,
+      stage: info.stage,
+      stageClass: info.stageClass,
+      imgCount: info.imgCount,
+      source: source,
+    });
+  });
+  allBatches.sort(function(a, b) {
+    return b.batchDate.localeCompare(a.batchDate);
+  });
+}
+
+function getProjectColor(name) {
+  var colors = ['#1890ff','#fa8c16','#722ed1','#52c41a','#eb2f96','#13c2c2'];
+  var hash = 0;
+  for (var i = 0; i < name.length; i++) hash = ((hash << 5) - hash) + name.charCodeAt(i);
+  return colors[Math.abs(hash) % colors.length];
+}
+
+function renderTable() {
+  var query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+  var body = document.getElementById('tableBody');
+  var empty = document.getElementById('emptyState');
+
+  // Apply project filter
+  var activeFilters = Object.keys(selectedProjFilter);
+  var filtered = allBatches;
+  if (activeFilters.length > 0) {
+    filtered = allBatches.filter(function(b) {
+      return selectedProjFilter[b.project];
+    });
+  }
+  if (query) {
+    filtered = filtered.filter(function(b) {
+      return b.batch.toLowerCase().indexOf(query) >= 0
+          || b.project.toLowerCase().indexOf(query) >= 0
+          || b.stage.indexOf(query) >= 0;
+    });
+  }
+
+  document.getElementById('hintCount').textContent = '共 ' + allBatches.length + ' 个批次'
+    + (query || activeFilters.length > 0 ? '，筛选后 ' + filtered.length + ' 个' : '');
+
+  if (filtered.length === 0) {
+    body.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  var html = '';
+  filtered.forEach(function(b) {
+    var isSel = selectedBatches[b.id];
+    var color = getProjectColor(b.project);
+    var idEsc = b.id.replace(/'/g, "\\'");
+    html += '<tr class="' + (isSel ? 'selected' : '') + '" onclick="toggleRow(this, \'' + idEsc + '\')">' +
+      '<td style="text-align:center;" onclick="event.stopPropagation();"><input type="checkbox" ' + (isSel ? 'checked' : '') + ' onchange="toggleBatch(\'' + idEsc + '\', this.checked)"></td>' +
+      '<td><div class="batch-name">' + b.batch + '</div></td>' +
+      '<td><span class="project-tag"><span class="p-dot" style="background:' + color + ';"></span>' + b.project + '</span></td>' +
+      '<td><span class="stage-badge ' + b.stageClass + '">' + b.stage + '</span></td>' +
+      '<td><span class="source-tag' + (b.source === '手动上传' ? ' source-upload' : ' source-copy') + '">' + b.source + '</span></td>' +
+      '<td><span class="img-count">' + b.imgCount + '</span></td>' +
+      '<td><span class="batch-date">' + b.batchDate + '</span></td>' +
+    '</tr>';
+  });
+  body.innerHTML = html;
+  document.getElementById('selectAll').checked = filtered.length > 0 && filtered.every(function(b) { return selectedBatches[b.id]; });
+  updateCopyBtn();
+}
+
+function toggleRow(tr, id) {
+  var cb = tr.querySelector('input[type="checkbox"]');
+  if (cb) { cb.checked = !cb.checked; toggleBatch(id, cb.checked); }
+}
+
+function toggleBatch(id, checked) {
+  if (checked) selectedBatches[id] = true;
+  else delete selectedBatches[id];
+  renderTable();
+}
+
+function toggleSelectAll() {
+  var query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+  var activeFilters = Object.keys(selectedProjFilter);
+  var filtered = allBatches;
+  if (activeFilters.length > 0) filtered = filtered.filter(function(b) { return selectedProjFilter[b.project]; });
+  if (query) filtered = filtered.filter(function(b) {
+    return b.batch.toLowerCase().indexOf(query) >= 0 || b.project.toLowerCase().indexOf(query) >= 0 || b.stage.indexOf(query) >= 0;
+  });
+  var allSel = document.getElementById('selectAll').checked;
+  filtered.forEach(function(b) {
+    if (allSel) selectedBatches[b.id] = true;
+    else delete selectedBatches[b.id];
+  });
+  renderTable();
+}
+
+function clearSelection() {
+  selectedBatches = {};
+  renderTable();
+}
+
+function updateCopyBtn() {
+  document.getElementById('btnCopy').disabled = Object.keys(selectedBatches).length === 0;
+}
+
+// ==================== PROJECT FILTER ====================
+function toggleProjFilter() {
+  document.getElementById('projFilter').classList.toggle('open');
+  renderProjFilterOptions();
+}
+
+function renderProjFilterOptions() {
+  var drop = document.getElementById('projFilterDrop');
+  var projects = [];
+  allBatches.forEach(function(b) {
+    if (projects.indexOf(b.project) < 0) projects.push(b.project);
+  });
+  var html = '';
+  projects.forEach(function(p) {
+    html += '<label class="pf-option" onclick="event.stopPropagation();">' +
+      '<input type="checkbox" value="' + p + '" ' + (selectedProjFilter[p] ? 'checked' : '') + ' onchange="onProjFilterToggle(\'' + p + '\', this.checked)">' +
+      p + '</label>';
+  });
+  drop.innerHTML = html;
+}
+
+function onProjFilterToggle(proj, checked) {
+  if (checked) selectedProjFilter[proj] = true;
+  else delete selectedProjFilter[proj];
+  updateProjFilterText();
+  renderTable();
+}
+
+function updateProjFilterText() {
+  var sel = Object.keys(selectedProjFilter);
+  var el = document.getElementById('projFilterText');
+  if (sel.length === 0) {
+    el.textContent = '全部算法';
+    el.classList.add('pf-placeholder');
+  } else if (sel.length <= 2) {
+    el.textContent = sel.join('，');
+    el.classList.remove('pf-placeholder');
+  } else {
+    el.textContent = '已选 ' + sel.length + ' 个算法';
+    el.classList.remove('pf-placeholder');
+  }
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.proj-filter')) {
+    document.getElementById('projFilter').classList.remove('open');
+  }
+});
+
+// ==================== COPY MODAL ====================
+function openCopyModal() {
+  var selIds = Object.keys(selectedBatches);
+  if (selIds.length === 0) { showToast('请先勾选要复制的批次'); return; }
+  copyTargetProjects = {};
+  document.getElementById('copyModalCount').textContent = selIds.length;
+
+  // Build project list
+  var srcProjects = {};
+  selIds.forEach(function(id) { srcProjects[id.split('|||')[0]] = true; });
+
+  var projects = [];
+  var datasets = [];
+  try { datasets = JSON.parse(localStorage.getItem('platform_datasets')) || []; } catch(e) {}
+  datasets.forEach(function(b) { if (projects.indexOf(b.project) < 0) projects.push(b.project); });
+  try {
+    var pp = JSON.parse(localStorage.getItem('personal_projects')) || [];
+    pp.forEach(function(p) { if (projects.indexOf(p.name) < 0) projects.push(p.name); });
+    var pl = JSON.parse(localStorage.getItem('project_list')) || [];
+    pl.forEach(function(p) { if (projects.indexOf(p.name) < 0) projects.push(p.name); });
+  } catch(e) {}
+  projects.sort();
+
+  var html = '';
+  projects.forEach(function(p) {
+    html += '<div class="copy-project-item" id="cpItem_' + p.replace(/[^a-zA-Z0-9一-龥]/g,'_') + '" onclick="toggleCopyTarget(\'' + p + '\')">' +
+      '<div class="cp-checkbox"></div>' +
+      '<span class="cp-name">' + p + '</span>' +
+      (srcProjects[p] ? '<span class="cp-hint">来源项目</span>' : '') +
+    '</div>';
+  });
+  document.getElementById('copyModalProjects').innerHTML = html;
+  document.getElementById('copyModalBtn').disabled = true;
+  document.getElementById('copyModal').style.display = 'flex';
+}
+
+function toggleCopyTarget(project) {
+  if (copyTargetProjects[project]) {
+    delete copyTargetProjects[project];
+  } else {
+    copyTargetProjects[project] = true;
+  }
+  // Update visual
+  var targetItem = document.getElementById('cpItem_' + project.replace(/[^a-zA-Z0-9一-龥]/g,'_'));
+  if (targetItem) targetItem.classList.toggle('selected');
+  document.getElementById('copyModalBtn').disabled = Object.keys(copyTargetProjects).length === 0;
+}
+
+function closeCopyModal() {
+  document.getElementById('copyModal').style.display = 'none';
+}
+
+function executeCopy() {
+  var targets = Object.keys(copyTargetProjects);
+  if (targets.length === 0) { showToast('请选择目标项目'); return; }
+  var selIds = Object.keys(selectedBatches);
+  if (selIds.length === 0) return;
+
+  var datasets = [];
+  try { datasets = JSON.parse(localStorage.getItem('platform_datasets')) || []; } catch(e) {}
+
+  var totalCopied = 0;
+  targets.forEach(function(target) {
+    // Check no batch comes from the target
+    var invalid = selIds.some(function(id) { return id.split('|||')[0] === target; });
+    if (invalid) return;
+
+    selIds.forEach(function(id) {
+      var parts = id.split('|||');
+      var srcProject = parts[0];
+      var batchName = parts.slice(1).join('|||');
+
+      var srcBatch = null;
+      for (var i = 0; i < datasets.length; i++) {
+        if (datasets[i].project === srcProject && datasets[i].batch === batchName) {
+          srcBatch = datasets[i]; break;
+        }
+      }
+      if (!srcBatch) return;
+
+      var batchDisplayName = srcBatch._displayName || srcBatch.batch;
+      if (datasets.some(function(d) { return d.project === target && d.batch === batchDisplayName && d._source === srcProject; })) return;
+
+      var newChildren = JSON.parse(JSON.stringify(srcBatch.children));
+      var suffix = Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+      newChildren.forEach(function(c, ci) {
+        c.key = c.key.replace(/_[a-z]*\d*$/, '') + '_' + suffix + '_' + ci;
+      });
+
+      datasets.push({
+        project: target,
+        batch: batchDisplayName,
+        _source: srcProject,
+        _displayName: batchDisplayName,
+        batchDate: srcBatch.batchDate,
+        status: srcBatch.status,
+        statusClass: srcBatch.statusClass,
+        children: newChildren,
+      });
+      totalCopied++;
+    });
+  });
+
+  if (totalCopied === 0) { showToast('所选批次已存在于目标项目中'); return; }
+
+  localStorage.setItem('platform_datasets', JSON.stringify(datasets));
+
+  var targetNames = targets.join('、');
+  var banner = document.getElementById('copyBanner');
+  document.getElementById('copyBannerTarget').textContent = targetNames;
+  banner.classList.add('show');
+  setTimeout(function() { banner.classList.remove('show'); }, 4000);
+
+  closeCopyModal();
+  clearSelection();
+  loadAllBatches();
+  renderTable();
+  showToast('已复制 ' + totalCopied + ' 个批次到「' + targetNames + '」');
+}
+
+// ==================== INIT ====================
+(function() {
+  var user = getUser();
+  if (!user) { location.href = 'login.html'; return; }
+  document.getElementById('headerUserName').textContent = user.name;
+  document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
+  initDemoData();
+  loadAllBatches();
+  renderTable();
+})();
+</script>
+</body>
+</html>

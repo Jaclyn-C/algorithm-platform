@@ -1862,10 +1862,20 @@ document.addEventListener('dblclick', function(e) {
     var newName = input.value.trim() || currentName;
     var span = document.createElement('span');
     span.className = 'pipeline-name';
-    span.setAttribute('data-id', input.dataset.id || '');
+    span.setAttribute('data-id', newName);
     span.title = '双击可修改名称';
     span.textContent = newName;
     input.replaceWith(span);
+    // Persist to DATASETS → localStorage → sync with 数据集总览
+    if (newName !== currentName) {
+      for (var i = 0; i < DATASETS.length; i++) {
+        if (DATASETS[i].batch === currentName) {
+          DATASETS[i].batch = newName;
+          saveDatasets();
+          break;
+        }
+      }
+    }
   }
   input.addEventListener('blur', finish);
   input.addEventListener('keydown', function(ev) { if (ev.key === 'Enter') finish(); });
