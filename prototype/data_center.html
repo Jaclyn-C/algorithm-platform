@@ -64,6 +64,7 @@
   .dataset-card .ds-name { font-weight: 600; font-size: 12px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .dataset-card .ds-count { font-size: 11px; color: var(--text-secondary); }
   .dataset-card .ds-date { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+  .dataset-card .ds-labels { font-size: 9px; color: var(--primary); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .dataset-card .ds-badge { position: absolute; top: 8px; right: 8px; font-size: 9px; padding: 1px 6px; border-radius: 8px; }
   .ds-badge.done { background: #f6ffed; color: var(--success); }
   .ds-badge.processing { background: #fff7e6; color: var(--warning); }
@@ -539,6 +540,7 @@
           <select id="extractMode" class="form-control" onchange="toggleExtractMode()">
             <option value="interval">按帧间隔</option>
             <option value="time">按时间间隔</option>
+            <option value="fixed">按固定帧数</option>
           </select>
         </div>
         <div class="form-group" id="groupFrames">
@@ -849,6 +851,10 @@ function toggleExtractMode() {
     label.textContent = '秒间隔';
     input.value = '5';
     hint.textContent = '每 5 秒抽取 1 帧';
+  } else if (mode === 'fixed') {
+    label.textContent = '目标总帧数';
+    input.value = '1000';
+    hint.textContent = '无论视频多长，均匀采样出指定帧数';
   } else {
     label.textContent = '帧间隔';
     input.value = '30';
@@ -863,6 +869,17 @@ function executeExtract() {
   const stats = document.getElementById('extractStats');
   const result = document.getElementById('extractResult');
   const btn = document.getElementById('btnExtract');
+  const mode = document.getElementById('extractMode').value;
+  const frameVal = parseInt(document.getElementById('frameInterval').value) || 30;
+
+  var extractedCount;
+  if (mode === 'fixed') {
+    extractedCount = frameVal;
+  } else if (mode === 'time') {
+    extractedCount = 1248; // demo value
+  } else {
+    extractedCount = 1248; // demo value
+  }
 
   result.style.display = 'none';
   progress.style.display = 'block';
@@ -878,12 +895,12 @@ function executeExtract() {
       clearInterval(interval);
       fill.style.width = '100%';
       stats.textContent = '完成';
-      detail.textContent = '已处理: 3/3 个视频, 已提取: 1,248 帧';
+      detail.textContent = '已处理: 3/3 个视频, 已提取: ' + extractedCount.toLocaleString() + ' 帧';
       btn.disabled = false;
       btn.textContent = '重新执行';
       // Add extracted_frames/ dataset to the same batch
       var now = new Date();
-      addDatasetToBatch(currentExtractKey, 'extracted_frames/', '1,248 张', now.toISOString().slice(0,10) + ' 生成', 'raw', '▣', '已处理', 'done');
+      addDatasetToBatch(currentExtractKey, 'extracted_frames/', extractedCount.toLocaleString() + ' 张', now.toISOString().slice(0,10) + ' 生成', 'raw', '▣', '已处理', 'done');
       showExtractResult();
     } else {
       fill.style.width = Math.round(pct) + '%';
@@ -1367,20 +1384,20 @@ var DEFAULT_DATASETS = [
   { project:'保安服检测', batch:'上传批次_20260628', batchDate:'2026-06-28', status:'已完成', statusClass:'tag-success', children: [
     { key:'raw_videos', name:'files/', count:'4 个文件', dateText:'2026-06-28 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
     { key:'extracted', name:'extracted_frames/', count:'1,248 张', dateText:'2026-06-29 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-    { key:'deduplicated', name:'deduplicated/', count:'1,102 张', dateText:'2026-06-30 生成', icon:'dedup', iconGlyph:'▦', badge:'已标注', badgeClass:'done' },
-    { key:'labeled', name:'labeled/', count:'1,102 张', dateText:'2026-07-02 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
-    { key:'train', name:'train/', count:'771 张 + 标签', dateText:'2026-07-03 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
-    { key:'val', name:'val/', count:'331 张 + 标签', dateText:'2026-07-03 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
+    { key:'deduplicated', name:'deduplicated/', count:'1,102 张', dateText:'2026-06-30 生成', icon:'dedup', iconGlyph:'▦', badge:'已标注', badgeClass:'done', labels:'警察, 保安, 工人, 车辆, 安全帽' },
+    { key:'labeled', name:'labeled/', count:'1,102 张', dateText:'2026-07-02 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done', labels:'警察, 保安, 工人, 车辆, 安全帽' },
+    { key:'train', name:'train/', count:'771 张 + 标签', dateText:'2026-07-03 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done', labels:'警察, 保安, 工人, 车辆, 安全帽' },
+    { key:'val', name:'val/', count:'331 张 + 标签', dateText:'2026-07-03 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done', labels:'警察, 保安, 工人, 车辆, 安全帽' },
   ]},
   { project:'烟火检测', batch:'上传批次_20260701', batchDate:'2026-07-01', status:'标注中', statusClass:'tag-processing', children: [
     { key:'raw_videos_02', name:'files/', count:'3 个文件', dateText:'2026-07-01 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
     { key:'extracted_02', name:'extracted_frames/', count:'920 张', dateText:'2026-07-01 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-    { key:'deduplicated_02', name:'deduplicated/', count:'856 张', dateText:'2026-07-02 生成', icon:'dedup', iconGlyph:'▦', badge:'标注中 47/200', badgeClass:'processing', badgeId:'dedupBadge02' },
+    { key:'deduplicated_02', name:'deduplicated/', count:'856 张', dateText:'2026-07-02 生成', icon:'dedup', iconGlyph:'▦', badge:'标注中 47/200', badgeClass:'processing', badgeId:'dedupBadge02', labels:'火焰, 烟雾, 火花' },
   ]},
   { project:'安全帽检测', batch:'上传批次_20260702', batchDate:'2026-07-02', status:'未标注', statusClass:'tag-default', children: [
     { key:'raw_videos_03', name:'files/', count:'6 个文件', dateText:'2026-07-02 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
     { key:'extracted_03', name:'extracted_frames/', count:'1,650 张', dateText:'2026-07-03 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-    { key:'deduplicated_03', name:'deduplicated/', count:'1,517 张', dateText:'2026-07-03 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done', badgeId:'dedupBadge03' },
+    { key:'deduplicated_03', name:'deduplicated/', count:'1,517 张', dateText:'2026-07-03 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done', badgeId:'dedupBadge03', labels:'安全帽, 人员' },
   ]}
 ];
 
@@ -1472,6 +1489,7 @@ function renderDsGrid() {
         '<div class="ds-name">' + d.name + '</div>' +
         '<div class="ds-count">' + d.count + '</div>' +
         '<div class="ds-date">' + d.dateText + '</div>' +
+        (d.labels ? '<div class="ds-labels" title="' + d.labels + '">' + d.labels + '</div>' : '') +
         '<div class="ds-badge ' + d.badgeClass + '"' + (d.badgeId ? ' id="' + d.badgeId + '"' : '') + '>' + d.badge + '</div>' +
       '</div>';
     }
