@@ -26,6 +26,15 @@
   .param-section-body { padding: 14px 16px; }
   .param-section.collapsed .param-section-body { display: none; }
 
+  .aug-body-wrap { position: relative; }
+  .aug-item-disabled-overlay { position: absolute; inset: 0; background: rgba(250,250,250,0.75); z-index: 10; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+  .aug-item-disabled-overlay .ado-text { font-size: 13px; color: var(--text-muted); font-weight: 500; padding: 12px 24px; background: #fff; border: 1px dashed #d9d9d9; border-radius: 8px; }
+  .aug-grid-3.dimmed { opacity: 0.25; pointer-events: none; }
+
+  /* ===== Section reset button ===== */
+  .ps-reset-btn { font-size: 10px; color: var(--text-muted); cursor: pointer; padding: 2px 8px; border: 1px solid #d9d9d9; border-radius: 3px; background: #fff; transition: var(--transition); white-space: nowrap; margin-left: auto; }
+  .ps-reset-btn:hover { color: var(--primary); border-color: var(--primary); background: var(--primary-light); }
+
   .form-section { margin-bottom: 12px; }
   .form-section:last-child { margin-bottom: 0; }
   .form-section-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
@@ -244,6 +253,7 @@
               <span class="ps-arrow">▼</span>
               <span class="ps-title">基础训练参数</span>
               <span class="ps-hint">epochs / batch / imgsz / GPU / 优化器 / lr0 / patience</span>
+              <button class="ps-reset-btn" onclick="event.stopPropagation();resetBasicParams()">还原默认</button>
             </div>
             <div class="param-section-body">
               <div class="aug-grid-3">
@@ -284,14 +294,25 @@
           </div>
 
           <!-- ===== SECTION 2: 数据增强参数 ===== -->
-          <div class="param-section collapsed" id="sec2">
+          <div class="param-section" id="sec2">
             <div class="param-section-header" onclick="toggleSection('sec2')">
               <span class="ps-arrow">▼</span>
               <span class="ps-title">数据增强参数</span>
               <span class="ps-hint">应对光照 / 角度 / 遮挡等场景变化，提升模型泛化性</span>
+              <label class="toggle" style="margin-left:8px;vertical-align:middle;" onclick="event.stopPropagation()">
+                <input type="checkbox" id="augMaster" checked onchange="toggleAugPanel()">
+                <span class="slider"></span>
+              </label>
+              <span style="font-size:11px;color:var(--text-muted);margin-left:4px;" id="augMasterLabel">已开启</span>
+              <button class="ps-reset-btn" onclick="event.stopPropagation();resetAugParams()">还原默认</button>
             </div>
             <div class="param-section-body">
-              <div class="aug-grid-3" id="augGrid">
+              <div class="aug-body-wrap">
+                <div class="aug-item-disabled-overlay" id="augDisabledOverlay" style="display:none;">
+                  <div class="ado-text">数据增强已关闭，所有增强参数不生效</div>
+                </div>
+                <div class="aug-grid-3" id="augGrid">
+
                 <div class="aug-item">
                   <div class="aug-label">hsv_h <span class="aug-code">色调</span></div>
                   <div class="aug-control"><input type="range" id="aug_hsv_h" min="0" max="10" value="1" step="0.5" oninput="document.getElementById('v_hsv_h').textContent=(this.value/100).toFixed(3)"><span class="aug-val" id="v_hsv_h">0.015</span></div>
@@ -337,6 +358,8 @@
                   <div class="aug-control"><input type="number" id="aug_close_mosaic" value="10" min="0"></div>
                 </div>
             </div>
+            </div>
+            </div>
           </div>
 
           <!-- ===== SECTION 3: 辅助调优参数 ===== -->
@@ -345,9 +368,19 @@
               <span class="ps-arrow">▼</span>
               <span class="ps-title">辅助调优参数</span>
               <span class="ps-hint">针对特定使用场景的精细化调节</span>
+              <label class="toggle" style="margin-left:8px;vertical-align:middle;" onclick="event.stopPropagation()">
+                <input type="checkbox" id="tuneMaster" checked onchange="toggleTunePanel()">
+                <span class="slider"></span>
+              </label>
+              <span style="font-size:11px;color:var(--text-muted);margin-left:4px;" id="tuneMasterLabel">已开启</span>
+              <button class="ps-reset-btn" onclick="event.stopPropagation();resetTuneParams()">还原默认</button>
             </div>
             <div class="param-section-body">
-              <div class="aug-grid-3">
+              <div class="aug-body-wrap">
+                <div class="aug-item-disabled-overlay" id="tuneDisabledOverlay" style="display:none;">
+                  <div class="ado-text">辅助调优已关闭，所有调优参数不生效</div>
+                </div>
+                <div class="aug-grid-3" id="tuneGrid">
                 <div class="aug-item">
                   <div class="aug-label">box <span class="aug-code">坐标框 loss 权重</span></div>
                   <div class="aug-control"><input type="number" id="boxLoss" value="7.5" step="0.1"></div>
@@ -393,6 +426,7 @@
                   <div class="aug-control"><input type="number" id="workers" value="8" min="0"></div>
                 </div>
               </div>
+            </div>
             </div>
           </div>
 
@@ -534,6 +568,85 @@ function buildDsOptions() {
   }
 
   dsAllOptions = [{ type: 'train', options: trainOpts }, { type: 'val', options: valOpts }];
+}
+
+function toggleAugPanel() {
+  var master = document.getElementById('augMaster').checked;
+  var overlay = document.getElementById('augDisabledOverlay');
+  var grid = document.getElementById('augGrid');
+  var label = document.getElementById('augMasterLabel');
+  if (master) {
+    overlay.style.display = 'none';
+    grid.classList.remove('dimmed');
+    label.textContent = '已开启';
+  } else {
+    overlay.style.display = 'flex';
+    grid.classList.add('dimmed');
+    label.textContent = '已关闭';
+  }
+}
+
+function toggleTunePanel() {
+  var master = document.getElementById('tuneMaster').checked;
+  var overlay = document.getElementById('tuneDisabledOverlay');
+  var grid = document.getElementById('tuneGrid');
+  var label = document.getElementById('tuneMasterLabel');
+  if (master) {
+    overlay.style.display = 'none';
+    grid.classList.remove('dimmed');
+    label.textContent = '已开启';
+  } else {
+    overlay.style.display = 'flex';
+    grid.classList.add('dimmed');
+    label.textContent = '已关闭';
+  }
+}
+
+function resetBasicParams() {
+  document.getElementById('epochs').value = 300;
+  document.getElementById('batch').value = 16;
+  document.getElementById('imgsz').value = 640;
+  document.getElementById('device').value = '0';
+  document.getElementById('optimizer').value = 'AdamW';
+  document.getElementById('lr0').value = 0.001;
+  document.getElementById('patience').value = 100;
+  document.getElementById('cache').checked = false;
+  updateTaskName();
+  showToast('基础训练参数已恢复默认');
+}
+
+function resetAugParams() {
+  document.getElementById('aug_hsv_h').value = 1; document.getElementById('v_hsv_h').textContent = '0.015';
+  document.getElementById('aug_hsv_s').value = 70; document.getElementById('v_hsv_s').textContent = '0.70';
+  document.getElementById('aug_hsv_v').value = 40; document.getElementById('v_hsv_v').textContent = '0.40';
+  document.getElementById('aug_degrees').value = 0; document.getElementById('v_degrees').textContent = '0';
+  document.getElementById('aug_translate').value = 10; document.getElementById('v_translate').textContent = '0.10';
+  document.getElementById('aug_scale').value = 50; document.getElementById('v_scale').textContent = '0.50';
+  document.getElementById('aug_fliplr').value = 50; document.getElementById('v_fliplr').textContent = '0.50';
+  document.getElementById('aug_erasing').value = 0; document.getElementById('v_erasing').textContent = '0.00';
+  document.getElementById('aug_mixup').value = 0; document.getElementById('v_mixup').textContent = '0.00';
+  document.getElementById('aug_mosaic').value = 100; document.getElementById('v_mosaic').textContent = '1.00';
+  document.getElementById('aug_close_mosaic').value = 15;
+  document.getElementById('augMaster').checked = true;
+  toggleAugPanel();
+  showToast('数据增强参数已恢复默认');
+}
+
+function resetTuneParams() {
+  document.getElementById('boxLoss').value = 7.5;
+  document.getElementById('clsLoss').value = 0.5;
+  document.getElementById('dflLoss').value = 1.5;
+  document.getElementById('weightDecay').value = 0.0005;
+  document.getElementById('cos_lr').checked = false;
+  document.getElementById('momentum').value = 0.937;
+  document.getElementById('warmup_epochs').value = 3;
+  document.getElementById('freeze').value = 0;
+  document.getElementById('multiScale').checked = false;
+  document.getElementById('amp').checked = true;
+  document.getElementById('workers').value = 8;
+  document.getElementById('tuneMaster').checked = true;
+  toggleTunePanel();
+  showToast('辅助调优参数已恢复默认');
 }
 
 function toggleDsDropdown() {
