@@ -500,7 +500,7 @@
         <div class="flex gap-8" id="datasetModalActions"></div>
       </div>
       <!-- File list / thumbnail grid area -->
-      <div id="datasetModalGridArea">
+      <div id="datasetModalContentArea" style="width:100%;">
         <div class="img-grid" id="datasetModalGrid" style="max-height:400px;"></div>
       </div>
     </div>
@@ -1051,12 +1051,37 @@ function closeDedupModal() {
 
 // ==================== MOCK FILE DATA ====================
 var MOCK_FILES = {
-  // 数据源 1
   raw_videos: [
     { name: 'A11-2F-通道1_20260628_0800-1200.mp4', size: '1.82 GB', type: 'video', duration: '4h 00m', resolution: '1920×1080', fps: 25 },
     { name: 'A11-2F-通道2_20260628_0800-1200.mp4', size: '1.75 GB', type: 'video', duration: '4h 00m', resolution: '1920×1080', fps: 25 },
     { name: 'A21-停车场-东_20260628_0800-1200.mp4', size: '1.63 GB', type: 'video', duration: '4h 00m', resolution: '1920×1080', fps: 25 },
     { name: 'screenshot_20260628_143021.jpg', size: '3.2 MB', type: 'image', resolution: '3840×2160' },
+  ],
+  raw_videos_b4: [
+    { name: 'A11-2F-通道1_20260718_1000-1200.mp4', size: '1.10 GB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'A11-2F-通道2_20260718_1000-1200.mp4', size: '1.05 GB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'A21-停车场-东_20260718_1400-1600.mp4', size: '982 MB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+  ],
+  raw_videos_b2: [
+    { name: '保安服-夜间场景_20260710.mp4', size: '2.34 GB', type: 'video', duration: '6h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '保安服-雨天场景_20260710.mp4', size: '1.88 GB', type: 'video', duration: '4h 30m', resolution: '1920×1080', fps: 25 },
+  ],
+  raw_videos_b5: [
+    { name: 'A05-1F-入口_20260725_0800-1000.mp4', size: '1.20 GB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'A05-2F-走廊_20260725_0800-1000.mp4', size: '1.15 GB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'A06-1F-入口_20260725_1000-1200.mp4', size: '1.08 GB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'A06-2F-走廊_20260725_1000-1200.mp4', size: '980 MB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'snapshot_20260725_0930.jpg', size: '4.5 MB', type: 'image', resolution: '4032×3024' },
+  ],
+  raw_videos_b3: [
+    { name: '保安服-多人遮挡_20260722_0800.mp4', size: '1.45 GB', type: 'video', duration: '3h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '保安服-远距离_20260722_1000.mp4', size: '1.32 GB', type: 'video', duration: '2h 30m', resolution: '1920×1080', fps: 25 },
+    { name: '保安服-侧角度_20260722_1400.mp4', size: '980 MB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '保安服-背光场景_20260722_1600.mp4', size: '1.10 GB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+    { name: 'capture_20260722_0845.jpg', size: '3.6 MB', type: 'image', resolution: '3840×2160' },
+    { name: 'capture_20260722_1030.jpg', size: '4.1 MB', type: 'image', resolution: '3840×2160' },
+    { name: 'capture_20260722_1420.jpg', size: '3.8 MB', type: 'image', resolution: '3840×2160' },
+    { name: 'capture_20260722_1630.jpg', size: '2.9 MB', type: 'image', resolution: '3840×2160' },
   ],
   raw_videos_02: [
     { name: 'A05-1F-入口_20260701_1200-1400.mp4', size: '980 MB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
@@ -1071,6 +1096,99 @@ var MOCK_FILES = {
     { name: 'capture_20260702_1123.jpg', size: '2.8 MB', type: 'image', resolution: '2048×1536' },
     { name: 'capture_20260702_1520.jpg', size: '3.1 MB', type: 'image', resolution: '2048×1536' },
   ],
+  raw_videos_f1: [
+    { name: '厂房-焊接区_20260705_0800.mp4', size: '1.80 GB', type: 'video', duration: '4h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '厂房-通道_20260705_0800.mp4', size: '1.65 GB', type: 'video', duration: '4h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '厂房-出口_20260705_0800.mp4', size: '1.50 GB', type: 'video', duration: '4h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '火灾报警器_20260705.jpg', size: '2.4 MB', type: 'image', resolution: '3000×2000' },
+    { name: '灭火器区域_20260705.jpg', size: '2.1 MB', type: 'image', resolution: '3000×2000' },
+  ],
+  raw_videos_f2: [
+    { name: '厂房-夜间_20260701_2000.mp4', size: '2.10 GB', type: 'video', duration: '5h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '烟雾测试_20260701.mp4', size: '450 MB', type: 'video', duration: '1h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '火花检测区_20260701.jpg', size: '3.5 MB', type: 'image', resolution: '3000×2000' },
+  ],
+  raw_videos_f5: [
+    { name: '烟火-逆光场景_20260715.mp4', size: '1.60 GB', type: 'video', duration: '3h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '烟雾-稀薄场景_20260715.mp4', size: '1.20 GB', type: 'video', duration: '2h 30m', resolution: '1920×1080', fps: 25 },
+  ],
+  raw_videos_f4: [
+    { name: '厂房A-通道1_20260720_0800.mp4', size: '1.55 GB', type: 'video', duration: '3h 30m', resolution: '1920×1080', fps: 25 },
+    { name: '厂房A-通道2_20260720_0800.mp4', size: '1.48 GB', type: 'video', duration: '3h 30m', resolution: '1920×1080', fps: 25 },
+    { name: '厂房B-通道1_20260720_0800.mp4', size: '1.62 GB', type: 'video', duration: '3h 30m', resolution: '1920×1080', fps: 25 },
+    { name: '厂房B-通道2_20260720_0800.mp4', size: '1.35 GB', type: 'video', duration: '3h 30m', resolution: '1920×1080', fps: 25 },
+    { name: '消防设施1_20260720.jpg', size: '2.8 MB', type: 'image', resolution: '4000×3000' },
+    { name: '消防设施2_20260720.jpg', size: '3.0 MB', type: 'image', resolution: '4000×3000' },
+  ],
+  raw_videos_f3: [
+    { name: '烟火-近距离_20260712_1000.mp4', size: '1.30 GB', type: 'video', duration: '2h 30m', resolution: '1920×1080', fps: 25 },
+    { name: '火焰-不同角度_20260712_1200.mp4', size: '1.25 GB', type: 'video', duration: '2h 30m', resolution: '1920×1080', fps: 25 },
+    { name: '烟雾-浓烟_20260712_1400.mp4', size: '890 MB', type: 'video', duration: '2h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '火花-焊接_20260712.jpg', size: '2.2 MB', type: 'image', resolution: '3500×2500' },
+  ],
+  raw_videos_h1: [
+    { name: '工地-1F入口_20260725_0700.mp4', size: '1.92 GB', type: 'video', duration: '4h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '工地-2F走廊_20260725_0700.mp4', size: '1.88 GB', type: 'video', duration: '4h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '工地-3F平台_20260725_0700.mp4', size: '1.75 GB', type: 'video', duration: '4h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '工地-外围_20260725_0700.mp4', size: '1.60 GB', type: 'video', duration: '4h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '安全帽-各类型_20260725_01.jpg', size: '5.2 MB', type: 'image', resolution: '4800×3200' },
+    { name: '安全帽-各类型_20260725_02.jpg', size: '5.0 MB', type: 'image', resolution: '4800×3200' },
+    { name: '安全帽-未佩戴_20260725_01.jpg', size: '4.8 MB', type: 'image', resolution: '4800×3200' },
+    { name: '安全帽-未佩戴_20260725_02.jpg', size: '4.5 MB', type: 'image', resolution: '4800×3200' },
+  ],
+  raw_videos_h2: [
+    { name: '车间-1F_20260702_0800.mp4', size: '1.80 GB', type: 'video', duration: '4h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '车间-2F_20260702_0800.mp4', size: '1.70 GB', type: 'video', duration: '4h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '车间-违规_20260702_01.jpg', size: '4.5 MB', type: 'image', resolution: '4000×3000' },
+    { name: '车间-违规_20260702_02.jpg', size: '4.2 MB', type: 'image', resolution: '4000×3000' },
+    { name: '车间-合规_20260702_01.jpg', size: '3.8 MB', type: 'image', resolution: '4000×3000' },
+    { name: '车间-合规_20260702_02.jpg', size: '3.5 MB', type: 'image', resolution: '4000×3000' },
+  ],
+  raw_videos_h3: [
+    { name: '仓储-通道_20260715_0800.mp4', size: '1.50 GB', type: 'video', duration: '3h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '仓储-入口_20260715_0800.mp4', size: '1.40 GB', type: 'video', duration: '3h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '安全帽-仓储_20260715.jpg', size: '3.0 MB', type: 'image', resolution: '3500×2500' },
+  ],
+  raw_videos_h4: [
+    { name: '工地A区-通道1_20260728.mp4', size: '1.60 GB', type: 'video', duration: '3h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '工地A区-通道2_20260728.mp4', size: '1.55 GB', type: 'video', duration: '3h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '工地B区-通道1_20260728.mp4', size: '1.50 GB', type: 'video', duration: '3h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '工地B区-通道2_20260728.mp4', size: '1.45 GB', type: 'video', duration: '3h 00m', resolution: '1920×1080', fps: 25 },
+    { name: '工地C区-入口_20260728.mp4', size: '1.30 GB', type: 'video', duration: '2h 30m', resolution: '1920×1080', fps: 25 },
+    { name: '工地C区-出口_20260728.mp4', size: '1.25 GB', type: 'video', duration: '2h 30m', resolution: '1920×1080', fps: 25 },
+    { name: '安全帽-抽查1_20260728.jpg', size: '3.5 MB', type: 'image', resolution: '4000×3000' },
+    { name: '安全帽-抽查2_20260728.jpg', size: '3.2 MB', type: 'image', resolution: '4000×3000' },
+    { name: '安全帽-抽查3_20260728.jpg', size: '3.8 MB', type: 'image', resolution: '4000×3000' },
+    { name: '安全帽-抽查4_20260728.jpg', size: '3.0 MB', type: 'image', resolution: '4000×3000' },
+    { name: '安全帽-抽查5_20260728.jpg', size: '3.4 MB', type: 'image', resolution: '4000×3000' },
+    { name: '安全帽-抽查6_20260728.jpg', size: '2.9 MB', type: 'image', resolution: '4000×3000' },
+  ],
+  raw_videos_h5: [
+    { name: '办公区-入口_20260708_0800.mp4', size: '1.20 GB', type: 'video', duration: '2h 30m', resolution: '1920×1080', fps: 25 },
+    { name: '办公区-走廊_20260708_0800.mp4', size: '1.15 GB', type: 'video', duration: '2h 30m', resolution: '1920×1080', fps: 25 },
+    { name: '访客-未戴帽_20260708_01.jpg', size: '2.8 MB', type: 'image', resolution: '3000×2000' },
+    { name: '访客-未戴帽_20260708_02.jpg', size: '2.5 MB', type: 'image', resolution: '3000×2000' },
+  ],
+};
+
+var MOCK_DEDUP_RESULTS = {
+  deduplicated: { orig: 1248, after: 1102, removed: 146, rate: '11.7%' },
+  deduplicated_02: { orig: 920, after: 856, removed: 64, rate: '7.0%' },
+  deduplicated_03: { orig: 1650, after: 1517, removed: 133, rate: '8.1%' },
+  deduplicated_b4: { orig: 980, after: 910, removed: 70, rate: '7.1%' },
+  deduplicated_b2: { orig: 540, after: 495, removed: 45, rate: '8.3%' },
+  deduplicated_b5: { orig: 1180, after: 1120, removed: 60, rate: '5.1%' },
+  deduplicated_b3: { orig: 1650, after: 1480, removed: 170, rate: '10.3%' },
+  deduplicated_f1: { orig: 1250, after: 1180, removed: 70, rate: '5.6%' },
+  deduplicated_f2: { orig: 780, after: 720, removed: 60, rate: '7.7%' },
+  deduplicated_f5: { orig: 560, after: 530, removed: 30, rate: '5.4%' },
+  deduplicated_f4: { orig: 1620, after: 1490, removed: 130, rate: '8.0%' },
+  deduplicated_f3: { orig: 1050, after: 980, removed: 70, rate: '6.7%' },
+  deduplicated_h1: { orig: 2200, after: 1980, removed: 220, rate: '10.0%' },
+  deduplicated_h2: { orig: 1650, after: 1520, removed: 130, rate: '7.9%' },
+  deduplicated_h3: { orig: 820, after: 770, removed: 50, rate: '6.1%' },
+  deduplicated_h4: { orig: 3200, after: 2880, removed: 320, rate: '10.0%' },
+  deduplicated_h5: { orig: 1050, after: 980, removed: 70, rate: '6.7%' },
 };
 
 // ==================== DATASET MANAGEMENT ====================
@@ -1079,23 +1197,24 @@ function openDataset(type) {
   var title = document.getElementById('datasetModalTitle');
   var stats = document.getElementById('datasetModalStats');
   var grid = document.getElementById('datasetModalGrid');
+  var contentArea = document.getElementById('datasetModalContentArea');
 
   var info = {
     // 数据源 1 — 已完成
     raw_videos: { title: '上传批次_20260628 files/ — 原始文件', count: '4 个文件（3 个视频 + 1 张图片）', imgs: 0 },
     extracted: { title: '上传批次_20260628 extracted_frames/ — 抽帧结果', count: '1,248 张图片 · 4 个子文件夹', imgs: 24 },
-    deduplicated: { title: '上传批次_20260628 deduplicated/ — 去重后图片', count: '1,102 张图片 · 已去重 11.7% · 已标注', imgs: 24 },
+    deduplicated: { title: '上传批次_20260628 deduplicated/ — 去重后图片', count: '原始: 1,248 张 → 去重后: 1,102 张 · 移除: 146 张 · 去重率: 11.7%', imgs: 0 },
     labeled: { title: '上传批次_20260628 labeled/ — 标注完成（YOLO格式）', count: '1,102 张图片 · images/ + labels/ + data.yaml', imgs: 24 },
     train: { title: '上传批次_20260628 train/ — 训练集（YOLO格式）', count: '771 张图片 + 标签', imgs: 18 },
     val: { title: '上传批次_20260628 val/ — 验证集（YOLO格式）', count: '331 张图片 + 标签', imgs: 8 },
     // 数据源 2 — 标注中
     raw_videos_02: { title: '上传批次_20260701 files/ — 原始文件', count: '3 个文件（2 个视频 + 1 张图片）', imgs: 0 },
     extracted_02: { title: '上传批次_20260701 extracted_frames/ — 抽帧结果', count: '920 张图片 · 3 个子文件夹', imgs: 20 },
-    deduplicated_02: { title: '上传批次_20260701 deduplicated/ — 去重后图片', count: '856 张图片 · 已去重 12.3% · 标注中 (47/200)', imgs: 20 },
+    deduplicated_02: { title: '上传批次_20260701 deduplicated/ — 去重后图片', count: '原始: 920 张 → 去重后: 856 张 · 移除: 64 张 · 去重率: 7.0%', imgs: 0 },
     // 数据源 3 — 未标注
     raw_videos_03: { title: '上传批次_20260702 files/ — 原始文件', count: '6 个文件（4 个视频 + 2 张图片）', imgs: 0 },
     extracted_03: { title: '上传批次_20260702 extracted_frames/ — 抽帧结果', count: '1,650 张图片 · 6 个子文件夹', imgs: 24 },
-    deduplicated_03: { title: '上传批次_20260702 deduplicated/ — 去重后图片', count: '1,517 张图片 · 已去重 9.5% · 未标注', imgs: 24 },
+    deduplicated_03: { title: '上传批次_20260702 deduplicated/ — 去重后图片', count: '原始: 1,650 张 → 去重后: 1,517 张 · 移除: 133 张 · 去重率: 8.1%', imgs: 0 },
   };
 
   var d = info[type];
@@ -1107,7 +1226,7 @@ function openDataset(type) {
         d = {
           title: DATASETS[bi].batch + ' ' + child.name + ' — ' + (child.name === 'files/' ? '原始文件' : ''),
           count: child.count,
-          imgs: child.name === 'files/' ? 0 : 12
+          imgs: (child.name === 'files/' || child.name === 'deduplicated/') ? 0 : 12
         };
         break;
       }
@@ -1200,11 +1319,53 @@ function openDataset(type) {
     });
 
     html += '</tbody></table>';
-    document.getElementById('datasetModalContent').style.width = '900px';
-    grid.innerHTML = html;
+    document.getElementById('datasetModalContent').style.width = '920px';
+    contentArea.innerHTML = html;
+  } else if (type.indexOf('deduplicated') === 0) {
+    // ── deduplicated/ : show dedup result statistics ──
+    var dedupResult = MOCK_DEDUP_RESULTS[type];
+    if (!dedupResult) {
+      // Fallback: parse from count string
+      var countStr = d.count || '';
+      var nums = countStr.match(/[\d,]+/g);
+      if (nums && nums.length >= 1) {
+        var orig = parseInt(nums[0].replace(/,/g, '')) || 0;
+        var after = nums.length >= 2 ? parseInt(nums[1].replace(/,/g, '')) || 0 : 0;
+        var removed = Math.max(0, orig - after);
+        var rate = orig > 0 ? (removed / orig * 100).toFixed(1) + '%' : '0%';
+        dedupResult = { orig: orig, after: after, removed: removed, rate: rate };
+      } else {
+        dedupResult = { orig: 0, after: 0, removed: 0, rate: '0%' };
+      }
+    }
+    var orig = dedupResult.orig;
+    var after = dedupResult.after;
+    var removed = dedupResult.removed;
+    var rate = dedupResult.rate;
+    document.getElementById('datasetModalContent').style.width = '';
+    var html =
+      '<table class="table" style="margin:0;width:100%;">' +
+        '<thead><tr>' +
+          '<th style="width:15%;">指标</th>' +
+          '<th style="width:21%;">原始图片数</th>' +
+          '<th style="width:22%;">去重后图片数</th>' +
+          '<th style="width:22%;">移除重复图片</th>' +
+          '<th style="width:20%;">去重率</th>' +
+        '</tr></thead>' +
+        '<tbody><tr>' +
+          '<td>数值</td>' +
+          '<td style="font-weight:600;">' + orig.toLocaleString() + '</td>' +
+          '<td style="font-weight:600;color:#52c41a;">' + after.toLocaleString() + '</td>' +
+          '<td style="font-weight:600;color:#ff4d4f;">' + removed.toLocaleString() + '</td>' +
+          '<td style="font-weight:600;color:#1890ff;">' + rate + '</td>' +
+        '</tr></tbody>' +
+      '</table>';
+    contentArea.innerHTML = html;
   } else if (d.imgs > 0) {
     // ── Image datasets: thumbnail grid ──
     document.getElementById('datasetModalContent').style.width = '800px';
+    contentArea.innerHTML = '<div class="img-grid" id="datasetModalGrid" style="max-height:400px;"></div>';
+    grid = document.getElementById('datasetModalGrid');
     var html = '';
     for (var i = 0; i < d.imgs; i++) {
       var frameName = type + '_' + String(i + 1).padStart(3, '0') + '.jpg';
@@ -1215,8 +1376,7 @@ function openDataset(type) {
     }
     grid.innerHTML = html;
   } else {
-    document.getElementById('datasetModalContent').style.width = '800px';
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">暂无数据</div>';
+    contentArea.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">暂无数据</div>';
   }
 }
 
@@ -1224,7 +1384,6 @@ function closeDatasetModal() {
   document.getElementById('datasetModal').style.display = 'none';
 }
 
-// ==================== LIGHTBOX ====================
 function previewFile(dsType, fileIdx) {
   var files = MOCK_FILES[dsType];
   if (!files) return;
