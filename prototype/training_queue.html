@@ -15,10 +15,10 @@
   .stat-card .stat-value { font-size: 22px; font-weight: 700; }
   .stat-card .stat-label { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
 
-  .queue-table { width: 100%; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--card-shadow); overflow: hidden; }
+  .queue-table { width: 100%; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--card-shadow); overflow-x: auto; }
   .queue-table table { width: 100%; border-collapse: collapse; }
   .queue-table th { background: #fafafa; padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; }
-  .queue-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .queue-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   .queue-table tr:last-child td { border-bottom: none; }
   .queue-table tbody tr { transition: var(--transition); }
   .queue-table tbody tr:hover { background: #fafafa; }
@@ -260,11 +260,13 @@ function renderQueue() {
 
     var pct = "";
     if (t.status === "running" || t.status === "paused")
-      pct = "<div class=mini-bar><div class=mini-bar-track><div class=mini-bar-fill "+(BAR_COLORS[t.status]||"c-blue")+" style=width:"+t.progress+"%></div></div><span class=mini-bar-pct>"+t.progress+"%</span></div>";
+      pct = "<span style=font-weight:600;>"+t.progress+"%</span>";
     else if (t.status === "completed")
-      pct = "<div class=mini-bar><div class=mini-bar-track><div class=mini-bar-fill c-green style=width:100%></div></div><span class=mini-bar-pct style=color:var(--success)>100%</span></div>";
+      pct = "<span style=font-weight:600;color:var(--success);>100%</span>";
     else if (t.status === "stopped")
-      pct = "<div class=mini-bar><div class=mini-bar-track><div class=mini-bar-fill c-red style=width:"+t.progress+"%></div></div><span class=mini-bar-pct>"+t.progress+"%</span></div>";
+      pct = "<span style=font-weight:600;color:var(--danger);>"+t.progress+"%</span>";
+    else if (t.status === "queued")
+      pct = "—";
 
     var meta = "";
     if (t.status === "running") meta = "预计剩余 "+(t.eta||"—");
@@ -282,9 +284,9 @@ function renderQueue() {
     if (t.status !== "queued") acts += (acts?"<span class=act-sep>·</span>":"")+a("detail","act-link")+"详情</span>";
 
     var nameDisplay = t.name || (t.project + "-" + t.model.replace(".pt",""));
-    rows += "<tr><td><span class=task-name>"+nameDisplay+"<span>"+t.project+" · "+t.model+" "+t.version+"</span></span></td><td style=font-size:11px;color:var(--text-muted)>"+t.config+"</td><td><span class=\"badge "+b[1]+"\"><span class=\"blip "+b[2]+"\"></span>"+b[0]+pos+"</span></td><td style=width:160px>"+pct+"</td><td style=font-size:11px;color:var(--text-secondary)>"+meta+"</td><td style=white-space:nowrap>"+acts+"</td></tr>";
+    rows += "<tr><td style=font-size:11px;>"+t.project+"</td><td><span class=task-name>"+nameDisplay+"</span></td><td style=font-size:11px;color:var(--text-muted)>"+t.config+"</td><td><span class=\"badge "+b[1]+"\"><span class=\"blip "+b[2]+"\"></span>"+b[0]+pos+"</span></td><td style=width:46px>"+pct+"</td><td style=width:120px;font-size:11px;color:var(--text-secondary)>"+meta+"</td><td style=whiteSpace:nowrap>"+acts+"</td></tr>";
   }
-  table.innerHTML = "<table><thead><tr><th>算法 / 模型</th><th>配置</th><th>状态</th><th style=width:160px>进度</th><th>信息</th><th style=width:140px>操作</th></tr></thead><tbody>"+rows+"</tbody></table>";
+  table.innerHTML = "<table style=table-layout:fixed;width:100%;><thead><tr><th style=width:80px>算法名称</th><th>模型名</th><th style=width:130px>配置</th><th style=width:70px>状态</th><th style=width:46px>进度</th><th style=width:120px>信息</th><th style=width:154px>操作</th></tr></thead><tbody>"+rows+"</tbody></table>";
 }
 
 // ── Event delegation on queue table ──

@@ -133,7 +133,7 @@
               <th style="width:50px;">#</th>
               <th>算法名称</th>
               <th style="width:130px;">训练时间</th>
-              <th>模型名</th>
+              <th>任务名称</th>
               <th style="width:90px;">版本号</th>
               <th style="width:80px;">mAP@50</th>
               <th style="width:80px;">训练阶段</th>
@@ -217,13 +217,13 @@ function saveDefaultModels() {
   if (!localStorage.getItem(MODELS_KEY)) {
     // These are the ALL_MODELS array defaults — save them on first access
     var defaults = [
-      { id: 1, project: '保安服检测', time: '2026-07-02 15:30', model: 'best.pt', version: 'v1.3.0', epochs: 800, mAP50: '0.872', mAP5095: '0.651', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
-      { id: 2, project: '保安服检测', time: '2026-06-28 09:15', model: 'best.pt', version: 'v1.2.0', epochs: 500, mAP50: '0.851', mAP5095: '0.624', inUse: false, pretrained: 'yolo11m.pt', size: '12.7 MB', notes: '检测精度略有下降', stage: '已完成' },
-      { id: 3, project: '保安服检测', time: '2026-06-20 14:00', model: 'last.pt', version: 'v1.1.0', epochs: 500, mAP50: '0.813', mAP5095: '0.587', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
-      { id: 4, project: '烟火检测', time: '2026-07-05 10:20', model: 'best.pt', version: 'v2.0.0', epochs: 1000, mAP50: '0.918', mAP5095: '0.734', inUse: false, pretrained: 'yolo11m.pt', size: '12.9 MB', notes: '误报率偏高，需调整阈值', stage: '训练中' },
-      { id: 5, project: '烟火检测', time: '2026-06-30 16:45', model: 'best.pt', version: 'v1.0.0', epochs: 600, mAP50: '0.886', mAP5095: '0.691', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
-      { id: 6, project: '安全帽检测', time: '2026-07-08 11:00', model: 'best.pt', version: 'v1.0.0', epochs: 800, mAP50: '0.835', mAP5095: '0.612', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
-      { id: 7, project: '安全帽检测', time: '2026-06-20 14:00', model: 'best.pt', version: 'v0.5.0', epochs: 500, mAP50: '0.784', mAP5095: '0.543', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
+      { id: 1, project: '保安服检测', time: '2026-07-02 15:30', taskName: '保安服检测-yolo11m-800e-16b-best.pt', model: 'best.pt', version: 'v1.3.0', epochs: 800, mAP50: '0.872', mAP5095: '0.651', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+      { id: 2, project: '保安服检测', time: '2026-06-28 09:15', taskName: '保安服检测-yolo11m-500e-32b-best.pt', model: 'best.pt', version: 'v1.2.0', epochs: 500, mAP50: '0.851', mAP5095: '0.624', inUse: false, pretrained: 'yolo11m.pt', size: '12.7 MB', notes: '检测精度略有下降', stage: '已完成' },
+      { id: 3, project: '保安服检测', time: '2026-06-20 14:00', taskName: '保安服检测-yolo11m-500e-32b-last.pt', model: 'last.pt', version: 'v1.1.0', epochs: 500, mAP50: '0.813', mAP5095: '0.587', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
+      { id: 4, project: '烟火检测', time: '2026-07-05 10:20', taskName: '烟火检测-夜间优化版-best.pt', model: 'best.pt', version: 'v2.0.0', epochs: 1000, mAP50: '0.918', mAP5095: '0.734', inUse: false, pretrained: 'yolo11m.pt', size: '12.9 MB', notes: '误报率偏高，需调整阈值', stage: '训练中' },
+      { id: 5, project: '烟火检测', time: '2026-06-30 16:45', taskName: '烟火检测-yolo11m-600e-16b-best.pt', model: 'best.pt', version: 'v1.0.0', epochs: 600, mAP50: '0.886', mAP5095: '0.691', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+      { id: 6, project: '安全帽检测', time: '2026-07-08 11:00', taskName: '安全帽检测-yolo11m-800e-16b-best.pt', model: 'best.pt', version: 'v1.0.0', epochs: 800, mAP50: '0.835', mAP5095: '0.612', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+      { id: 7, project: '安全帽检测', time: '2026-06-20 14:00', taskName: '安全帽检测-yolo11n-500e-16b-best.pt', model: 'best.pt', version: 'v0.5.0', epochs: 500, mAP50: '0.784', mAP5095: '0.543', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
     ];
     localStorage.setItem(MODELS_KEY, JSON.stringify(defaults));
   }
@@ -231,13 +231,13 @@ function saveDefaultModels() {
 function saveModels() { try { localStorage.setItem(MODELS_KEY, JSON.stringify(ALL_MODELS)); } catch(e) {} }
 
 const ALL_MODELS = loadModels() || [
-  { id: 1, project: '保安服检测', time: '2026-07-02 15:30', model: 'best.pt', version: 'v1.3.0', epochs: 800, mAP50: '0.872', mAP5095: '0.651', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
-  { id: 2, project: '保安服检测', time: '2026-06-28 09:15', model: 'best.pt', version: 'v1.2.0', epochs: 500, mAP50: '0.851', mAP5095: '0.624', inUse: false, pretrained: 'yolo11m.pt', size: '12.7 MB', notes: '检测精度略有下降', stage: '已完成' },
-  { id: 3, project: '保安服检测', time: '2026-06-20 14:00', model: 'last.pt', version: 'v1.1.0', epochs: 500, mAP50: '0.813', mAP5095: '0.587', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
-  { id: 4, project: '烟火检测', time: '2026-07-05 10:20', model: 'best.pt', version: 'v2.0.0', epochs: 1000, mAP50: '0.918', mAP5095: '0.734', inUse: false, pretrained: 'yolo11m.pt', size: '12.9 MB', notes: '误报率偏高，需调整阈值', stage: '训练中' },
-  { id: 5, project: '烟火检测', time: '2026-06-30 16:45', model: 'best.pt', version: 'v1.0.0', epochs: 600, mAP50: '0.886', mAP5095: '0.691', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
-  { id: 6, project: '安全帽检测', time: '2026-07-08 11:00', model: 'best.pt', version: 'v1.0.0', epochs: 800, mAP50: '0.835', mAP5095: '0.612', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
-  { id: 7, project: '安全帽检测', time: '2026-06-20 14:00', model: 'best.pt', version: 'v0.5.0', epochs: 500, mAP50: '0.784', mAP5095: '0.543', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
+  { id: 1, project: '保安服检测', time: '2026-07-02 15:30', taskName: '保安服检测-yolo11m-800e-16b-best.pt', model: 'best.pt', version: 'v1.3.0', epochs: 800, mAP50: '0.872', mAP5095: '0.651', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+  { id: 2, project: '保安服检测', time: '2026-06-28 09:15', taskName: '保安服检测-yolo11m-500e-32b-best.pt', model: 'best.pt', version: 'v1.2.0', epochs: 500, mAP50: '0.851', mAP5095: '0.624', inUse: false, pretrained: 'yolo11m.pt', size: '12.7 MB', notes: '检测精度略有下降', stage: '已完成' },
+  { id: 3, project: '保安服检测', time: '2026-06-20 14:00', taskName: '保安服检测-yolo11m-500e-32b-last.pt', model: 'last.pt', version: 'v1.1.0', epochs: 500, mAP50: '0.813', mAP5095: '0.587', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
+  { id: 4, project: '烟火检测', time: '2026-07-05 10:20', taskName: '烟火检测-夜间优化版-best.pt', model: 'best.pt', version: 'v2.0.0', epochs: 1000, mAP50: '0.918', mAP5095: '0.734', inUse: false, pretrained: 'yolo11m.pt', size: '12.9 MB', notes: '误报率偏高，需调整阈值', stage: '训练中' },
+  { id: 5, project: '烟火检测', time: '2026-06-30 16:45', taskName: '烟火检测-yolo11m-600e-16b-best.pt', model: 'best.pt', version: 'v1.0.0', epochs: 600, mAP50: '0.886', mAP5095: '0.691', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+  { id: 6, project: '安全帽检测', time: '2026-07-08 11:00', taskName: '安全帽检测-yolo11m-800e-16b-best.pt', model: 'best.pt', version: 'v1.0.0', epochs: 800, mAP50: '0.835', mAP5095: '0.612', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+  { id: 7, project: '安全帽检测', time: '2026-06-20 14:00', taskName: '安全帽检测-yolo11n-500e-16b-best.pt', model: 'best.pt', version: 'v0.5.0', epochs: 500, mAP50: '0.784', mAP5095: '0.543', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
 ];
 
 // ── Render table ──
@@ -294,8 +294,7 @@ function renderModelTable() {
       '<td style="font-weight:500;">' + m.project + '</td>' +
       '<td>' + (m.time || '<span class="text-muted">—</span>') + '</td>' +
       '<td>' +
-        '<div style="font-weight:600;">' + m.model + '</div>' +
-        '<div style="font-size:11px;color:var(--text-muted);">' + (m.pretrained || '导入模型') + ' · ' + (m.size || '—') + '</div>' +
+        '<span style="font-weight:600;">' + (m.taskName || (m.project + '-' + m.model)) + '</span>' +
       '</td>' +
       '<td><span style="color:var(--primary);font-weight:600;">' + m.version + '</span></td>' +
       '<td style="color:var(--success);font-weight:600;">' + (m.mAP50 || '<span class="text-muted">—</span>') + '</td>' +
