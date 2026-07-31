@@ -315,43 +315,43 @@
 
                 <div class="aug-item">
                   <div class="aug-label">hsv_h <span class="aug-code">色调</span></div>
-                  <div class="aug-control"><input type="range" id="aug_hsv_h" min="0" max="10" value="1" step="0.5" oninput="document.getElementById('v_hsv_h').textContent=(this.value/100).toFixed(3)"><span class="aug-val" id="v_hsv_h">0.015</span></div>
+                  <div class="aug-control"><input type="number" id="aug_hsv_h" value="0.015" step="0.001" min="0" max="1"></div>
                 </div>
                 <div class="aug-item">
                   <div class="aug-label">hsv_s <span class="aug-code">饱和度</span></div>
-                  <div class="aug-control"><input type="range" id="aug_hsv_s" min="0" max="100" value="70" step="1" oninput="document.getElementById('v_hsv_s').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_hsv_s">0.70</span></div>
+                  <div class="aug-control"><input type="number" id="aug_hsv_s" value="0.70" step="0.01" min="0" max="1"></div>
                 </div>
                 <div class="aug-item">
                   <div class="aug-label">hsv_v <span class="aug-code">明度</span></div>
-                  <div class="aug-control"><input type="range" id="aug_hsv_v" min="0" max="100" value="40" step="1" oninput="document.getElementById('v_hsv_v').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_hsv_v">0.40</span></div>
+                  <div class="aug-control"><input type="number" id="aug_hsv_v" value="0.40" step="0.01" min="0" max="1"></div>
                 </div>
                 <div class="aug-item">
                   <div class="aug-label">degrees <span class="aug-code">旋转角度</span></div>
-                  <div class="aug-control"><input type="range" id="aug_degrees" min="0" max="180" value="10" step="1" oninput="document.getElementById('v_degrees').textContent=this.value"><span class="aug-val" id="v_degrees">10</span></div>
+                  <div class="aug-control"><input type="number" id="aug_degrees" value="0.0" step="1" min="0" max="180"></div>
                 </div>
                 <div class="aug-item">
                   <div class="aug-label">translate <span class="aug-code">平移</span></div>
-                  <div class="aug-control"><input type="range" id="aug_translate" min="0" max="50" value="10" step="1" oninput="document.getElementById('v_translate').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_translate">0.10</span></div>
+                  <div class="aug-control"><input type="number" id="aug_translate" value="0.10" step="0.01" min="0" max="1"></div>
                 </div>
                 <div class="aug-item">
                   <div class="aug-label">scale <span class="aug-code">缩放</span></div>
-                  <div class="aug-control"><input type="range" id="aug_scale" min="0" max="90" value="50" step="1" oninput="document.getElementById('v_scale').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_scale">0.50</span></div>
+                  <div class="aug-control"><input type="number" id="aug_scale" value="0.50" step="0.01" min="0" max="1"></div>
                 </div>
                 <div class="aug-item">
                   <div class="aug-label">fliplr <span class="aug-code">水平翻转</span></div>
-                  <div class="aug-control"><input type="range" id="aug_fliplr" min="0" max="100" value="50" step="5" oninput="document.getElementById('v_fliplr').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_fliplr">0.50</span></div>
+                  <div class="aug-control"><input type="number" id="aug_fliplr" value="0.50" step="0.05" min="0" max="1"></div>
                 </div>
                 <div class="aug-item">
                   <div class="aug-label">erasing <span class="aug-code">随机擦除</span></div>
-                  <div class="aug-control"><input type="range" id="aug_erasing" min="0" max="100" value="40" step="5" oninput="document.getElementById('v_erasing').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_erasing">0.40</span></div>
+                  <div class="aug-control"><input type="number" id="aug_erasing" value="0.40" step="0.05" min="0" max="1"></div>
                 </div>
                 <div class="aug-item">
                   <div class="aug-label">mixup <span class="aug-code">MixUp 增强</span></div>
-                  <div class="aug-control"><input type="range" id="aug_mixup" min="0" max="100" value="15" step="5" oninput="document.getElementById('v_mixup').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_mixup">0.15</span></div>
+                  <div class="aug-control"><input type="number" id="aug_mixup" value="0.0" step="0.05" min="0" max="1"></div>
                 </div>
                 <div class="aug-item">
                   <div class="aug-label">mosaic <span class="aug-code">Mosaic 增强</span></div>
-                  <div class="aug-control"><input type="range" id="aug_mosaic" min="0" max="100" value="50" step="5" oninput="document.getElementById('v_mosaic').textContent=(this.value/100).toFixed(2)"><span class="aug-val" id="v_mosaic">0.50</span></div>
+                  <div class="aug-control"><input type="number" id="aug_mosaic" value="1.0" step="0.05" min="0" max="1"></div>
                 </div>
                 <div class="aug-item">
                   <div class="aug-label">close_mosaic <span class="aug-code">关闭 mosaic 轮数</span></div>
@@ -616,16 +616,16 @@ function resetBasicParams() {
 }
 
 function resetAugParams() {
-  document.getElementById('aug_hsv_h').value = 1; document.getElementById('v_hsv_h').textContent = '0.015';
-  document.getElementById('aug_hsv_s').value = 70; document.getElementById('v_hsv_s').textContent = '0.70';
-  document.getElementById('aug_hsv_v').value = 40; document.getElementById('v_hsv_v').textContent = '0.40';
-  document.getElementById('aug_degrees').value = 0; document.getElementById('v_degrees').textContent = '0';
-  document.getElementById('aug_translate').value = 10; document.getElementById('v_translate').textContent = '0.10';
-  document.getElementById('aug_scale').value = 50; document.getElementById('v_scale').textContent = '0.50';
-  document.getElementById('aug_fliplr').value = 50; document.getElementById('v_fliplr').textContent = '0.50';
-  document.getElementById('aug_erasing').value = 0; document.getElementById('v_erasing').textContent = '0.00';
-  document.getElementById('aug_mixup').value = 0; document.getElementById('v_mixup').textContent = '0.00';
-  document.getElementById('aug_mosaic').value = 100; document.getElementById('v_mosaic').textContent = '1.00';
+  document.getElementById('aug_hsv_h').value = 0.015;
+  document.getElementById('aug_hsv_s').value = 0.70;
+  document.getElementById('aug_hsv_v').value = 0.40;
+  document.getElementById('aug_degrees').value = 0.0;
+  document.getElementById('aug_translate').value = 0.10;
+  document.getElementById('aug_scale').value = 0.50;
+  document.getElementById('aug_fliplr').value = 0.50;
+  document.getElementById('aug_erasing').value = 0.40;
+  document.getElementById('aug_mixup').value = 0.0;
+  document.getElementById('aug_mosaic').value = 1.0;
   document.getElementById('aug_close_mosaic').value = 15;
   document.getElementById('augMaster').checked = true;
   toggleAugPanel();
