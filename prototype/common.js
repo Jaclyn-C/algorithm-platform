@@ -45,13 +45,16 @@ document.addEventListener('click', function(e) {
 
 /* ----- Sidebar collapse (handled by inline script in each page) ----- */
 
-/* ----- Task Type ----- */
-function getCurrentTaskType() {
-  return localStorage.getItem('current_task_type') || 'detection';
+/* ----- Task Type (per-algorithm, not global) ----- */
+/* 模型任务随算法项目存储（taskType: 'detection' | 'segment'），不再使用全局值 */
+function getTaskTypeLabel(taskType) {
+  return (taskType === 'segment') ? '分割' : '目标检测';
 }
-function onTaskTypeChange(sel) {
-  localStorage.setItem('current_task_type', sel.value);
-  checkParkAndTask(true);
+function getTaskTypeTag(taskType) {
+  var t = taskType || 'detection';
+  var seg = '<span class="tag" style="background:#f9f0ff;color:#722ed1;margin-left:6px;">分割</span>';
+  var det = '<span class="tag" style="background:#f6ffed;color:#52c41a;margin-left:6px;">目标检测</span>';
+  return (t === 'segment') ? seg : det;
 }
 
 /* ----- Park / Campus ----- */
@@ -60,11 +63,6 @@ function onParkChange(sel) {
   checkParkAndTask(true);
 }
 setTimeout(function initHeaderSelectors() {
-  var tsel = document.getElementById('headerTaskType');
-  if (tsel) {
-    var current = localStorage.getItem('current_task_type');
-    if (current) tsel.value = current;
-  }
   var psel = document.getElementById('headerPark');
   if (psel) {
     var park = localStorage.getItem('current_park');
@@ -73,11 +71,10 @@ setTimeout(function initHeaderSelectors() {
   checkParkAndTask();
 }, 0);
 
-/* ----- Check if park + task are selected, show prompt if not ----- */
+/* ----- Check if park is selected, show prompt if not ----- */
 function checkParkAndTask(fromUser) {
   var park = localStorage.getItem('current_park');
-  var task = localStorage.getItem('current_task_type');
-  var ready = !!(park && task);
+  var ready = !!park;
   var promptEl = document.getElementById('setupPrompt');
   var sidebarEl = document.querySelector('.sidebar');
   var mainEl = document.querySelector('.content');

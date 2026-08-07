@@ -89,16 +89,6 @@
           <option value="vietnam">越南</option>
         </select>
       </div>
-<div class="task-type-select">
-        <span class="ts-label">模型任务</span>
-        <select id="headerTaskType" onchange="onTaskTypeChange(this)">
-          <option value="">— 请选择任务 —</option>
-          <option value="detection">目标检测（YOLO）</option>
-          <option value="pose" disabled>姿态估计 — 规划中</option>
-          <option value="segment" disabled>实例分割 — 规划中</option>
-          <option value="embedding" disabled>文本嵌入 — 规划中</option>
-        </select>
-      </div>
             
 
       <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
@@ -113,8 +103,8 @@
   </header>
     <div class="setup-prompt" id="setupPrompt">
       <div class="sp-card">
-        <div class="sp-title">请选择园区和模型任务</div>
-        <div class="sp-desc">在顶部 <span class="sp-highlight">园区</span> 和 <span class="sp-highlight">模型任务</span> 下拉框中做出选择<br>即可进入工作区</div>
+        <div class="sp-title">请选择园区</div>
+        <div class="sp-desc">在顶部 <span class="sp-highlight">园区</span> 下拉框中选择园区<br>即可进入工作区</div>
       </div>
     </div>
 
@@ -146,6 +136,13 @@
         <label>算法名称</label>
         <input type="text" id="newProjectName" placeholder="请输入算法名称" style="width:100%;" onkeydown="if(event.key==='Enter')createProject()">
       </div>
+      <div class="form-group" style="margin-top:12px;">
+        <label>模型任务</label>
+        <select id="newProjectTaskType" style="width:100%;padding:7px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);">
+          <option value="detection" selected>目标检测（YOLO）</option>
+          <option value="segment">分割模型</option>
+        </select>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-default btn-sm" onclick="closeNewProjectModal()">取消</button>
@@ -168,6 +165,13 @@
       <div class="form-group" style="margin-bottom:12px;">
         <label>算法名称</label>
         <input type="text" id="editProjectName" style="width:100%;padding:7px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);">
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>模型任务（创建时锁定，不可修改）</label>
+        <select id="editProjectTaskType" disabled style="width:100%;padding:7px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);background:#f5f5f5;color:var(--text-secondary);">
+          <option value="detection">目标检测（YOLO）</option>
+          <option value="segment">分割模型</option>
+        </select>
       </div>
       <div class="form-group" style="margin-bottom:12px;">
         <label>共享到团队</label>
@@ -444,7 +448,7 @@ function renderProjects() {
       '<div class="p-header">' +
         '<div class="p-icon" style="background:linear-gradient(135deg,' + getCardColor(p.id) + ');">' + p.name.charAt(0) + '</div>' +
         '<div>' +
-          '<div class="p-name">' + p.name + shareLabel + '</div>' +
+          '<div class="p-name">' + p.name + shareLabel + getTaskTypeTag(p.taskType) + '</div>' +
           '<div class="p-date">创建于 ' + p.createdAt + '</div>' +
         '</div>' +
         stageTag +
@@ -499,6 +503,7 @@ function openEditProjectModal(id) {
   if (!p) return;
   document.getElementById('editProjectId').value = id;
   document.getElementById('editProjectName').value = p.name;
+  document.getElementById('editProjectTaskType').value = (p.taskType === 'segment') ? 'segment' : 'detection';
   // Populate team dropdown
   var sel = document.getElementById('editProjectTeam');
   sel.innerHTML = '<option value="">— 不共享（仅个人） —</option>';
@@ -573,7 +578,7 @@ function saveEditProject() {
     project._shared = true;
     project.teamId = teamId;
     // Add to team project list (or update)
-    team.push({ id: id, name: name, createdAt: project.createdAt, teamId: teamId, _fromPersonal: true });
+    team.push({ id: id, name: name, createdAt: project.createdAt, teamId: teamId, _fromPersonal: true, taskType: project.taskType || 'detection' });
     localStorage.setItem('project_list', JSON.stringify(team));
     showToast('「' + name + '」已共享');
   } else {
@@ -595,14 +600,16 @@ function showNewProjectModal() {
 function closeNewProjectModal() {
   document.getElementById('newProjectModal').style.display = 'none';
   document.getElementById('newProjectName').value = '';
+  document.getElementById('newProjectTaskType').value = 'detection';
 }
 
 function createProject() {
   var name = document.getElementById('newProjectName').value.trim();
   if (!name) { showToast('请输入算法名称'); return; }
+  var taskType = document.getElementById('newProjectTaskType').value || 'detection';
   var projects = getPersonalProjects();
   var id = 'my_' + Date.now();
-  projects.push({ id: id, name: name, createdAt: new Date().toISOString().slice(0,10) });
+  projects.push({ id: id, name: name, createdAt: new Date().toISOString().slice(0,10), taskType: taskType });
   savePersonalProjects(projects);
   localStorage.setItem('current_project', id);
   location.href = 'data_center.html';
