@@ -422,7 +422,7 @@
       </div>
       <div class="info-card">
         <span style="color:var(--text-secondary);">已标注</span>
-        <strong style="color:var(--primary);">47 / 200</strong>
+        <strong style="color:var(--primary);">3 / 10</strong>
       </div>
       <div class="info-card">
         <span style="color:var(--text-secondary);">本图标注框</span>
@@ -466,7 +466,7 @@
         <div class="canvas-footer">
           <div class="nav-group">
             <button class="btn btn-default btn-sm" id="btnPrev" onclick="prevImage()">◀ 上一张</button>
-            <span class="nav-counter">当前：<strong id="currentIdx">23</strong> / <span id="totalIdx">200</span></span>
+            <span class="nav-counter">当前：<strong id="currentIdx">1</strong> / <span id="totalIdx">10</span></span>
             <button class="btn btn-default btn-sm" id="btnNext" onclick="nextImage()">下一张 ▶</button>
           </div>
           <div class="nav-group">
@@ -1857,14 +1857,18 @@ function prevImage() {
 
 function nextImage() {
   saveCurrentAnnotations();
-  currentImageIdx++;
-  loadImage(currentImageIdx);
-  checkAllDone();
+  if (currentImageIdx < TOTAL_IMAGES) {
+    currentImageIdx++;
+    loadImage(currentImageIdx);
+    checkAllDone();
+  } else {
+    document.getElementById('btnFinishAnnotation').style.display = 'inline-flex';
+  }
 }
 
 // ── SHARED STATE (localStorage) ──
 const STORAGE_KEY = 'annotation_status_security';
-const TOTAL_IMAGES = 200;
+const TOTAL_IMAGES = 10;
 
 function syncProgress() {
   try {
@@ -1913,6 +1917,11 @@ function getAnnotationStatus() {
 
 function submitImage() {
   saveCurrentAnnotations();
+  if (currentImageIdx >= TOTAL_IMAGES) {
+    document.getElementById('btnFinishAnnotation').style.display = 'inline-flex';
+    showToast('已标注全部 ' + TOTAL_IMAGES + ' 张图片，请点击「完成标注」结束任务');
+    return;
+  }
   currentImageIdx++;
   showToast('标注已提交！跳转下一张');
   loadImage(currentImageIdx);
@@ -1935,7 +1944,7 @@ function loadImage(idx) {
   document.getElementById('totalIdx').textContent = TOTAL_IMAGES;
   regions = [];
   selectedRegionId = null;
-  if (idx === 23) {
+  if (idx === 5) {
     loadPreAnnotations();
   }
   updateDetailPanel();
