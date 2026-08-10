@@ -484,7 +484,7 @@ var DSKEY = 'dc_datasets';
 var media = [];
 var datasets = [];
 var currentVideo = null;      // media item being previewed
-var currentDsIdx = -1;        // index into datasets for the open viewer
+var currentDsId = null;         // id of dataset currently open in viewer
 var viewerMode = 'normal';    // 'normal' | 'dedup'
 
 // ---------- storage ----------
@@ -498,46 +498,7 @@ function saveMedia() {
 function loadDs() { try { datasets = JSON.parse(localStorage.getItem(DSKEY)) || []; } catch(e) { datasets = []; } }
 function saveDs() { try { localStorage.setItem(DSKEY, JSON.stringify(datasets)); } catch(e) {} }
 
-function genImages(prefix, n) {
-  var arr = [];
-  for (var i = 0; i < n; i++) {
-    arr.push({ id: prefix + '_' + (i + 1), name: prefix + '_' + String(i + 1).padStart(3, '0') + '.jpg', hue: (i * 23) % 360, dup: false, tag: null });
-  }
-  return arr;
-}
-
-function ensureSeed() {
-  if (media.length === 0) {
-    media = [
-      { id: 'vid_1', name: '保安服_路段A.mp4', size: '412 MB', duration: '00:15:32', resolution: '1920×1080', fps: 30 },
-      { id: 'vid_2', name: '烟火_厂区夜间.mp4', size: '286 MB', duration: '00:09:45', resolution: '1920×1080', fps: 25 },
-      { id: 'vid_3', name: '安全帽_车间.mp4', size: '198 MB', duration: '00:06:20', resolution: '1280×720', fps: 30 }
-    ];
-    saveMedia();
-  }
-  function mk(id, name, vid, date, stage, total, dupN, ratio) {
-    var imgs = genImages(id, total);
-    for (var k = 0; k < dupN && k < imgs.length; k++) imgs[k].dup = true;
-    if (ratio != null) {
-      var trainN = Math.round(imgs.length * ratio / 10);
-      imgs.forEach(function(i, idx){ i.tag = idx < trainN ? 'train' : 'val'; });
-    }
-    return { id: id, name: name, videoName: vid, createdAt: date, extract: { mode: 'interval', interval: 30, quality: 85 }, stage: stage, splitRatio: ratio != null ? ratio : null, imgs: imgs };
-  }
-  var seeds = [
-    mk('ds_1', '保安服抽样', '保安服_路段A.mp4', '2026-08-02', 'deduped', 24, 6),
-    mk('ds_2', '烟火夜间帧', '烟火_厂区夜间.mp4', '2026-08-05', 'extracted', 20, 0),
-    mk('ds_3', '安全帽车间抽样', '安全帽_车间.mp4', '2026-08-06', 'annotating', 28, 5),
-    mk('ds_4', '保安服_日间补录', '保安服_路段A.mp4', '2026-08-07', 'review', 18, 3),
-    mk('ds_5', '烟火_厂区全景', '烟火_厂区夜间.mp4', '2026-08-08', 'annotated', 32, 6),
-    mk('ds_6', '安全帽_车间B区', '安全帽_车间.mp4', '2026-08-09', 'split', 30, 4, 7)
-  ];
-  var changed = false;
-  seeds.forEach(function(s){
-    if (!datasets.find(function(d){ return d.id === s.id; })) { datasets.push(s); changed = true; }
-  });
-  if (changed) saveDs();
-}
+// 数据集/媒体种子由 common.js 的 ensureDcSeed() 统一生成（与数据集总览共享）
 
 // ---------- file helpers ----------
 function isVideoFile(f) {
@@ -669,6 +630,8 @@ function executeExtract() {
         createdAt: new Date().toISOString().slice(0, 10),
         extract: { mode: mode, interval: interval, quality: quality },
         stage: 'extracted', splitRatio: null,
+        project: localStorage.getItem('current_project') || '',
+        uploader: (getUser() || {}).name || '—',
         imgs: genImages('ds_' + Date.now(), count)
       };
       datasets.unshift(ds);
@@ -706,6 +669,8 @@ function handleImgSetUpload(files) {
     extract: { mode: 'upload', interval: 0, quality: 85 },
     stage: 'extracted',
     splitRatio: null,
+    project: localStorage.getItem('current_project') || '',
+    uploader: (getUser() || {}).name || '—',
     imgs: imgs
   };
   datasets.unshift(ds);
@@ -720,23 +685,24 @@ function stageBadge(stage) {
   return m[stage] || ['已抽帧','stage-extracted'];
 }
 function renderDsCards() {
+  var pid = localStorage.getItem('current_project') || '';
+  var visible = datasets.filter(function(d){ return d.project === pid; });
   var q = (document.getElementById('dsSearch').value || '').trim().toLowerCase();
-  var list = datasets.filter(function(d){ return !q || d.name.toLowerCase().indexOf(q) >= 0; });
-  document.getElementById('dsCountLabel').textContent = '共 ' + datasets.length + ' 个数据集';
+  var list = visible.filter(function(d){ return !q || d.name.toLowerCase().indexOf(q) >= 0; });
+  document.getElementById('dsCountLabel').textContent = '共 ' + visible.length + ' 个数据集';
   var box = document.getElementById('dsCardGrid');
   if (list.length === 0) {
-    box.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">' + (datasets.length === 0 ? '暂无数据集，请从媒体库抽帧生成' : '没有匹配的数据集') + '</div>';
+    box.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">' + (visible.length === 0 ? '当前项目暂无数据集，请从媒体库抽帧或上传图集' : '没有匹配的数据集') + '</div>';
     return;
   }
   box.innerHTML = list.map(function(d){
-    var idx = datasets.indexOf(d);
-    var kept = d.imgs.filter(function(i){ return !i.dup; }).length;
     var b = stageBadge(d.stage);
-    return '<div class="ds-card" onclick="openDatasetViewer(' + idx + ')">' +
+    var idEsc = d.id.replace(/'/g, "\\'");
+    return '<div class="ds-card" onclick="openDatasetViewer(\'' + idEsc + '\')">' +
       '<div class="dc-icon">🖼</div>' +
       '<div class="dc-title">' + d.name + '</div>' +
       '<div class="dc-row">来源视频：' + (d.videoName || '—') + '</div>' +
-      '<div class="dc-row">图片：' + d.imgs.length + ' 张' + (d.stage !== 'extracted' ? '（保留 ' + kept + '）' : '') + '</div>' +
+      '<div class="dc-row">图片：' + d.imgs.length + ' 张</div>' +
       '<div class="dc-row">创建：' + (d.createdAt || '') + '</div>' +
       '<span class="dc-stage ' + b[1] + '">' + b[0] + '</span>' +
     '</div>';
@@ -744,10 +710,11 @@ function renderDsCards() {
 }
 
 // ==================== DATASET VIEWER ====================
-function openDatasetViewer(idx) {
-  currentDsIdx = idx;
-  viewerMode = datasets[idx].stage === 'split' ? 'split' : 'normal';
-  var d = datasets[idx];
+function openDatasetViewer(id) {
+  var d = datasets.find(function(x){ return x.id === id; });
+  if (!d) return;
+  currentDsId = id;
+  viewerMode = d.stage === 'split' ? 'split' : 'normal';
   document.getElementById('datasetModalTitle').textContent = d.name;
   document.getElementById('dsListScreen').style.display = 'none';
   document.getElementById('dsViewerScreen').style.display = '';
@@ -757,7 +724,7 @@ function openDatasetViewer(idx) {
 function closeDatasetModal() {
   document.getElementById('dsViewerScreen').style.display = 'none';
   document.getElementById('dsListScreen').style.display = '';
-  currentDsIdx = -1;
+  currentDsId = null;
   window.scrollTo(0, 0);
 }
 
@@ -795,7 +762,7 @@ function editDsTitle() {
     if (e.key === 'Escape') { input.value = oldName; input.blur(); }
   });
 }
-function curDs() { return currentDsIdx >= 0 ? datasets[currentDsIdx] : null; }
+function curDs() { return currentDsId ? datasets.find(function(x){ return x.id === currentDsId; }) : null; }
 
 function renderViewer() {
   var d = curDs(); if (!d) return;
@@ -1128,7 +1095,7 @@ function startAutoAnno() {
     closeAutoAnnoModal();
     btn.textContent = '开始自动标注'; btn.disabled = false;
     var d = curDs();
-    if (d) { d.stage = 'review'; saveDs(); renderDsCards(); if (currentDsIdx >= 0) renderViewer(); }
+    if (d) { d.stage = 'review'; saveDs(); renderDsCards(); if (currentDsId) renderViewer(); }
     showToast('自动标注完成：已标注 ' + (d ? d.imgs.filter(function(i){return !i.dup;}).length : 0) + ' 张图片，等待人工审核');
   }, 1800);
 }
@@ -1190,7 +1157,7 @@ function confirmSplit() {
   saveDs();
   closeSplitModal();
   renderDsCards();
-  if (currentDsIdx >= 0) { viewerMode = 'split'; renderViewer(); }
+  if (currentDsId) { viewerMode = 'split'; renderViewer(); }
   showToast('已完成 YOLO 划分：train ' + d.imgs.filter(function(i){return i.tag==='train';}).length + ' / val ' + d.imgs.filter(function(i){return i.tag==='val';}).length);
 }
 
@@ -1207,7 +1174,7 @@ function confirmSplit() {
   document.getElementById('sidebarHomeLink').href = (project.indexOf('my_') === 0) ? 'my_projects.html' : 'projects.html';
   document.getElementById('sidebarLogoText').textContent = getProjectName(project);
 
-  loadMedia(); loadDs(); ensureSeed();
+  ensureDcSeed(); loadMedia(); loadDs();
   // 标注/审核完成回传：对应数据集置"已标注"（人工标注无"待审核"；自动标注经审核后亦到此）
   try {
     var pending = JSON.parse(localStorage.getItem('dc_pending_anno') || 'null');

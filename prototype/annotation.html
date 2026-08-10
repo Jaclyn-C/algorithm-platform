@@ -684,18 +684,40 @@ function thumbnailSVG(imgId, idx) {
   );
 }
 
-// ── Populate dataset dropdown ──
+// ── 把 dc_datasets 的数据集（按阶段）映射为标注总览所需的统计信息 ──
+function dcToAnnoInfo(d) {
+  var total = d.imgs.filter(function(i){ return !i.dup; }).length;
+  var annotated = 0, autoTotal = 0, unreviewed = 0;
+  if (d.stage === 'annotating') {
+    annotated = Math.floor(total * 0.4);                       // 人工标注进行中
+  } else if (d.stage === 'review') {
+    autoTotal = total;                                          // 自动标注完成
+    unreviewed = Math.floor(total * 0.6);                       // 待人工审核
+    annotated = total - unreviewed;
+  } else if (d.stage === 'annotated' || d.stage === 'split') {
+    annotated = total;                                          // 全部已标注
+  }
+  return { key: d.id, name: d.name, total: total, annotated: annotated, autoTotal: autoTotal, unreviewed: unreviewed, pipeline: '' };
+}
+
+// ── Populate dataset dropdown（读取 dc_datasets，仅当前项目） ──
 function populateDatasetDropdown() {
-  const project = getCurrentProject();
-  const datasets = DATASET_REGISTRY[project] || [];
-  const sel = document.getElementById('overviewDataset');
+  if (typeof ensureDcSeed === 'function') ensureDcSeed();
+  var pid = localStorage.getItem('current_project') || '';
+  var all = [];
+  try { all = JSON.parse(localStorage.getItem('dc_datasets')) || []; } catch(e) {}
+  var list = all.filter(function(d){ return d.project === pid; });
+  var sel = document.getElementById('overviewDataset');
   sel.innerHTML = '<option value="">— 选择数据集 —</option>' +
-    datasets.map(d => '<option value="' + d.key + '">' + d.name + ' (' + d.total + ' 张)</option>').join('');
+    list.map(function(d){
+      var n = d.imgs.filter(function(i){ return !i.dup; }).length;
+      return '<option value="' + d.id + '">' + d.name + ' (' + n + ' 张)</option>';
+    }).join('');
 }
 
 // ── Dataset change ──
 function onDatasetChange() {
-  const key = document.getElementById('overviewDataset').value;
+  var key = document.getElementById('overviewDataset').value;
   if (!key) {
     showOverviewEmpty();
     return;
@@ -703,10 +725,11 @@ function onDatasetChange() {
   overviewState.currentDatasetKey = key;
   document.getElementById('overviewStatusFilter').value = 'all';
 
-  const project = getCurrentProject();
-  const datasets = DATASET_REGISTRY[project] || [];
-  const dsInfo = datasets.find(d => d.key === key);
-  if (!dsInfo) return;
+  var all = [];
+  try { all = JSON.parse(localStorage.getItem('dc_datasets')) || []; } catch(e) {}
+  var d = all.find(function(x){ return x.id === key; });
+  if (!d) return;
+  var dsInfo = dcToAnnoInfo(d);
 
   overviewState.currentDsInfo = dsInfo;
   overviewState.images = generateMockImages(dsInfo);

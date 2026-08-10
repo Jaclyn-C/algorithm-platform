@@ -159,12 +159,11 @@
         <thead>
           <tr>
             <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll()" title="全选"></th>
-            <th>名称</th>
             <th>算法项目</th>
-            <th>流水线阶段</th>
-            <th>数据集来源</th>
+            <th>名称</th>
             <th>数据量（图片数）</th>
             <th>上传日期</th>
+            <th>上传者</th>
           </tr>
         </thead>
         <tbody id="tableBody">
@@ -362,25 +361,27 @@ function analyzeBatch(batch) {
 // ==================== LOAD & RENDER ====================
 function loadAllBatches() {
   var datasets = [];
-  try { datasets = JSON.parse(localStorage.getItem('platform_datasets')) || []; } catch(e) {}
+  try { datasets = JSON.parse(localStorage.getItem('dc_datasets')) || []; } catch(e) {}
+  var stageMap = { extracted:['已抽帧','tag-warning'], deduped:['已去重','tag-dedup'], annotating:['标注中','tag-processing'], review:['待审核','tag-review'], annotated:['已标注','tag-success'], split:['已划分','tag-success'] };
   allBatches = [];
-  datasets.forEach(function(b) {
-    var info = analyzeBatch(b);
-    var source = b._source ? ('来自 ' + b._source) : '手动上传';
-
+  datasets.forEach(function(d) {
+    if (!d.project) return;   // 仅展示有项目归属的数据集
+    var st = stageMap[d.stage] || ['已抽帧','tag-warning'];
+    var kept = d.imgs.filter(function(i){ return !i.dup; }).length;
     allBatches.push({
-      id: b.project + '|||' + b.batch,
-      project: b.project,
-      batch: b.batch,
-      batchDate: b.batchDate,
-      stage: info.stage,
-      stageClass: info.stageClass,
-      imgCount: info.imgCount,
-      source: source,
+      id: d.id,
+      project: getProjectName(d.project),
+      batch: d.name,
+      batchDate: d.createdAt || '',
+      stage: st[0],
+      stageClass: st[1],
+      imgCount: (d.stage === 'extracted' ? d.imgs.length : kept) + ' 张',
+      source: (d.videoName && d.videoName !== '（直接上传）') ? ('来自视频 ' + d.videoName) : '手动上传',
+      uploader: d.uploader || '—'
     });
   });
   allBatches.sort(function(a, b) {
-    return b.batchDate.localeCompare(a.batchDate);
+    return (b.batchDate || '').localeCompare(a.batchDate || '');
   });
 }
 
@@ -407,8 +408,7 @@ function renderTable() {
   if (query) {
     filtered = filtered.filter(function(b) {
       return b.batch.toLowerCase().indexOf(query) >= 0
-          || b.project.toLowerCase().indexOf(query) >= 0
-          || b.stage.indexOf(query) >= 0;
+          || b.project.toLowerCase().indexOf(query) >= 0;
     });
   }
 
@@ -429,12 +429,11 @@ function renderTable() {
     var idEsc = b.id.replace(/'/g, "\\'");
     html += '<tr class="' + (isSel ? 'selected' : '') + '" onclick="toggleRow(this, \'' + idEsc + '\')">' +
       '<td style="text-align:center;" onclick="event.stopPropagation();"><input type="checkbox" ' + (isSel ? 'checked' : '') + ' onchange="toggleBatch(\'' + idEsc + '\', this.checked)"></td>' +
-      '<td><div class="batch-name">' + b.batch + '</div></td>' +
       '<td><span class="project-tag"><span class="p-dot" style="background:' + color + ';"></span>' + b.project + '</span></td>' +
-      '<td><span class="stage-badge ' + b.stageClass + '">' + b.stage + '</span></td>' +
-      '<td><span class="source-tag' + (b.source === '手动上传' ? ' source-upload' : ' source-copy') + '">' + b.source + '</span></td>' +
+      '<td><div class="batch-name">' + b.batch + '</div></td>' +
       '<td><span class="img-count">' + b.imgCount + '</span></td>' +
       '<td><span class="batch-date">' + b.batchDate + '</span></td>' +
+      '<td><span>' + (b.uploader || '—') + '</span></td>' +
     '</tr>';
   });
   body.innerHTML = html;
@@ -459,7 +458,7 @@ function toggleSelectAll() {
   var filtered = allBatches;
   if (activeFilters.length > 0) filtered = filtered.filter(function(b) { return selectedProjFilter[b.project]; });
   if (query) filtered = filtered.filter(function(b) {
-    return b.batch.toLowerCase().indexOf(query) >= 0 || b.project.toLowerCase().indexOf(query) >= 0 || b.stage.indexOf(query) >= 0;
+    return b.batch.toLowerCase().indexOf(query) >= 0 || b.project.toLowerCase().indexOf(query) >= 0;
   });
   var allSel = document.getElementById('selectAll').checked;
   filtered.forEach(function(b) {
@@ -580,71 +579,33 @@ function closeCopyModal() {
 }
 
 function executeCopy() {
-  var targets = Object.keys(copyTargetProjects);
-  if (targets.length === 0) { showToast('请选择目标项目'); return; }
   var selIds = Object.keys(selectedBatches);
   if (selIds.length === 0) return;
-
   var datasets = [];
-  try { datasets = JSON.parse(localStorage.getItem('platform_datasets')) || []; } catch(e) {}
-
+  try { datasets = JSON.parse(localStorage.getItem('dc_datasets')) || []; } catch(e) {}
   var totalCopied = 0;
-  targets.forEach(function(target) {
-    // Check no batch comes from the target
-    var invalid = selIds.some(function(id) { return id.split('|||')[0] === target; });
-    if (invalid) return;
-
-    selIds.forEach(function(id) {
-      var parts = id.split('|||');
-      var srcProject = parts[0];
-      var batchName = parts.slice(1).join('|||');
-
-      var srcBatch = null;
-      for (var i = 0; i < datasets.length; i++) {
-        if (datasets[i].project === srcProject && datasets[i].batch === batchName) {
-          srcBatch = datasets[i]; break;
-        }
-      }
-      if (!srcBatch) return;
-
-      var batchDisplayName = srcBatch._displayName || srcBatch.batch;
-      if (datasets.some(function(d) { return d.project === target && d.batch === batchDisplayName && d._source === srcProject; })) return;
-
-      var newChildren = JSON.parse(JSON.stringify(srcBatch.children));
-      var suffix = Date.now() + '_' + Math.random().toString(36).slice(2, 6);
-      newChildren.forEach(function(c, ci) {
-        c.key = c.key.replace(/_[a-z]*\d*$/, '') + '_' + suffix + '_' + ci;
-      });
-
-      datasets.push({
-        project: target,
-        batch: batchDisplayName,
-        _source: srcProject,
-        _displayName: batchDisplayName,
-        batchDate: srcBatch.batchDate,
-        status: srcBatch.status,
-        statusClass: srcBatch.statusClass,
-        children: newChildren,
-      });
-      totalCopied++;
-    });
+  selIds.forEach(function(id) {
+    var src = datasets.find(function(d){ return d.id === id; });
+    if (!src) return;
+    var copy = JSON.parse(JSON.stringify(src));
+    copy.id = 'ds_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+    copy.name = src.name + '（副本）';
+    copy.createdAt = new Date().toISOString().slice(0, 10);
+    copy.imgs.forEach(function(im, idx){ im.id = copy.id + '_' + (idx + 1); });
+    datasets.push(copy);
+    totalCopied++;
   });
-
-  if (totalCopied === 0) { showToast('所选批次已存在于目标项目中'); return; }
-
-  localStorage.setItem('platform_datasets', JSON.stringify(datasets));
-
-  var targetNames = targets.join('、');
+  if (totalCopied === 0) { showToast('复制失败'); return; }
+  localStorage.setItem('dc_datasets', JSON.stringify(datasets));
   var banner = document.getElementById('copyBanner');
-  document.getElementById('copyBannerTarget').textContent = targetNames;
+  document.getElementById('copyBannerTarget').textContent = '当前数据集列表';
   banner.classList.add('show');
   setTimeout(function() { banner.classList.remove('show'); }, 4000);
-
   closeCopyModal();
   clearSelection();
   loadAllBatches();
   renderTable();
-  showToast('已复制 ' + totalCopied + ' 个批次到「' + targetNames + '」');
+  showToast('已复制 ' + totalCopied + ' 个数据集');
 }
 
 // ==================== INIT ====================
@@ -653,7 +614,7 @@ function executeCopy() {
   if (!user) { location.href = 'login.html'; return; }
   document.getElementById('headerUserName').textContent = user.name;
   document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
-  initDemoData();
+  ensureDcSeed();
   loadAllBatches();
   renderTable();
 })();
