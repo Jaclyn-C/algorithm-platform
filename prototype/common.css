@@ -124,20 +124,6 @@ body {
 .task-type-select select:focus { border-color: var(--primary); outline: none; }
 .task-type-select .ts-label { white-space: nowrap; }
 
-/* Park Selector (in header) */
-.park-select { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); }
-.park-select select { padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 11px; font-family: var(--font); background: #fff; color: var(--text); cursor: pointer; }
-.park-select select:focus { border-color: var(--primary); outline: none; }
-.park-select .ps-label { white-space: nowrap; }
-
-/* Setup Prompt (shown until park + task are selected) */
-.setup-prompt { display: flex; flex: 1; align-items: center; justify-content: center; }
-.setup-prompt .sp-card { text-align: center; background: var(--card-bg); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 60px 80px; max-width: 520px; }
-.setup-prompt .sp-icon { font-size: 48px; margin-bottom: 16px; }
-.setup-prompt .sp-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
-.setup-prompt .sp-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
-.setup-prompt .sp-highlight { color: var(--primary); font-weight: 600; }
-
 /* User Menu */
 .user-menu        { position: relative; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 .user-dropdown    { position: absolute; top: 38px; right: 0; background: #fff; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 130px; z-index: 999; display: none; }

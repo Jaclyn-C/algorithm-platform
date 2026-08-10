@@ -80,7 +80,7 @@
   </div>
 
   <nav class="sidebar-nav">
-    <div class="sidebar-group" id="sidebarTopHome"><a class="sidebar-item" id="sidebarHomeLink" href="my_projects.html" data-icon="🏠">首页</a></div>
+    <div class="sidebar-group" id="sidebarTopHome"><a class="sidebar-item" id="sidebarHomeLink" href="projects.html" data-icon="🏠">首页</a></div>
     <div class="sidebar-group" id="sidebarProjectGroup" style="display:none;">
       <div class="sidebar-group-title" style="font-size:13px;color:#fff;font-weight:600;text-transform:none;opacity:1;display:none;" id="sidebarProjectName"></div>
     </div>
@@ -100,17 +100,9 @@
 <div class="main">
   <header class="header">
     <div class="breadcrumb">
-      <a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>模型评估</span>
+      <a href="projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>模型评估</span>
     </div>
     <div class="header-actions">
-            <div class="park-select">
-        <span class="ps-label">园区</span>
-        <select id="headerPark" onchange="onParkChange(this)">
-          <option value="">— 请选择园区 —</option>
-          <option value="ganzhou">赣州</option>
-          <option value="vietnam">越南</option>
-        </select>
-      </div>
             
 
       <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
@@ -123,12 +115,6 @@
       </div>
     </div>
   </header>
-    <div class="setup-prompt" id="setupPrompt">
-      <div class="sp-card">
-        <div class="sp-title">请选择园区</div>
-        <div class="sp-desc">在顶部 <span class="sp-highlight">园区</span> 下拉框中选择园区<br>即可进入工作区</div>
-      </div>
-    </div>
 
 
   <div class="content">
@@ -424,7 +410,7 @@ function deleteEvalRow(btn) {
   document.getElementById('headerUserName').textContent = user.name;
   document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
 
-  var project = localStorage.getItem('current_project'); if (!project) { location.href = 'projects.html'; return; } document.getElementById("sidebarProjectGroup").style.display = "block"; document.getElementById("sidebarSubPages").style.display = "block"; document.getElementById("sidebarHomeLink").href = (project.indexOf("my_") === 0) ? "my_projects.html" : "projects.html";
+  var project = localStorage.getItem('current_project'); if (!project) { location.href = 'projects.html'; return; } document.getElementById("sidebarProjectGroup").style.display = "block"; document.getElementById("sidebarSubPages").style.display = "block"; document.getElementById("sidebarHomeLink").href = (project.indexOf("my_") === 0) ? "projects.html" : "projects.html";
   document.getElementById('sidebarLogoText').textContent = getProjectName(project);
 })();
 </script>

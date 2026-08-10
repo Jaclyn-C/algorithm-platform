@@ -299,7 +299,7 @@
   </div>
   
   <nav class="sidebar-nav">
-    <div class="sidebar-group" id="sidebarTopHome"><a class="sidebar-item" id="sidebarHomeLink" href="my_projects.html" data-icon="🏠">首页</a></div>
+    <div class="sidebar-group" id="sidebarTopHome"><a class="sidebar-item" id="sidebarHomeLink" href="projects.html" data-icon="🏠">首页</a></div>
     <div class="sidebar-group" id="sidebarProjectGroup" style="display:none;">
       <div class="sidebar-group-title" style="font-size:13px;color:#fff;font-weight:600;text-transform:none;opacity:1;display:none;" id="sidebarProjectName"></div>
     </div>
@@ -322,18 +322,10 @@
   <!-- Header -->
   <header class="header">
     <div class="breadcrumb" id="breadcrumb">
-      <a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>数据标注</span>
+      <a href="projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>数据标注</span>
     </div>
     <div class="header-actions">
       <button class="btn btn-default btn-sm" id="btnBackToOverview" style="display:none;" onclick="backToOverview()">返回数据标注总览</button>
-            <div class="park-select">
-        <span class="ps-label">园区</span>
-        <select id="headerPark" onchange="onParkChange(this)">
-          <option value="">— 请选择园区 —</option>
-          <option value="ganzhou">赣州</option>
-          <option value="vietnam">越南</option>
-        </select>
-      </div>
             
 
       <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
@@ -346,13 +338,6 @@
       </div>
     </div>
   </header>
-    <div class="setup-prompt" id="setupPrompt">
-      <div class="sp-card">
-        <div class="sp-icon">🌐</div>
-        <div class="sp-title">请选择园区</div>
-        <div class="sp-desc">在顶部 <span class="sp-highlight">园区</span> 下拉框中选择园区<br>即可进入工作区</div>
-      </div>
-    </div>
 
 
   <!-- Content -->
@@ -1127,7 +1112,7 @@ function updateBreadcrumb(mode, dsKey) {
   var bc = document.getElementById('breadcrumb');
   var project = getCurrentProject();
   if (mode === 'overview') {
-    bc.innerHTML = '<a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>数据标注总览</span>';
+    bc.innerHTML = '<a href="projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>数据标注总览</span>';
   } else {
     var dsName = '';
     if (dsKey) {
@@ -1135,7 +1120,7 @@ function updateBreadcrumb(mode, dsKey) {
       var found = dss.find(function(d) { return d.key === dsKey; });
       if (found) dsName = found.name.split(' ')[0];
     }
-    bc.innerHTML = '<a href="my_projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span>' +
+    bc.innerHTML = '<a href="projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span>' +
       '<a href="javascript:void(0)" onclick="backToOverview()" style="color:var(--text-secondary);text-decoration:none;">数据标注总览</a> <span class="sep">›</span>' +
       '<span>数据标注 — ' + (dsName || '标注任务') + '</span>';
   }
@@ -2017,7 +2002,7 @@ function getCurrentProject() { return localStorage.getItem('current_project') ||
 
   var project = getCurrentProject();
   if (!project) { location.href = 'projects.html'; return; }
-  document.getElementById("sidebarProjectGroup").style.display = "block"; document.getElementById("sidebarSubPages").style.display = "block"; document.getElementById("sidebarHomeLink").href = (project.indexOf("my_") === 0) ? "my_projects.html" : "projects.html";
+  document.getElementById("sidebarProjectGroup").style.display = "block"; document.getElementById("sidebarSubPages").style.display = "block"; document.getElementById("sidebarHomeLink").href = (project.indexOf("my_") === 0) ? "projects.html" : "projects.html";
   document.getElementById('sidebarLogoText').textContent = getProjectName(project);
 
   // Decide which view to show

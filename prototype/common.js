@@ -57,46 +57,7 @@ function getTaskTypeTag(taskType) {
   return (t === 'segment') ? seg : det;
 }
 
-/* ----- Park / Campus ----- */
-function onParkChange(sel) {
-  localStorage.setItem('current_park', sel.value);
-  checkParkAndTask(true);
-}
-setTimeout(function initHeaderSelectors() {
-  var psel = document.getElementById('headerPark');
-  if (psel) {
-    var park = localStorage.getItem('current_park');
-    if (park) psel.value = park;
-  }
-  checkParkAndTask();
-}, 0);
-
-/* ----- Check if park is selected, show prompt if not ----- */
-function checkParkAndTask(fromUser) {
-  var park = localStorage.getItem('current_park');
-  var ready = !!park;
-  var promptEl = document.getElementById('setupPrompt');
-  var sidebarEl = document.querySelector('.sidebar');
-  var mainEl = document.querySelector('.content');
-  var breadcrumb = document.querySelector('.header .breadcrumb');
-
-  if (!ready) {
-    // Not ready: show prompt, hide everything
-    if (promptEl) promptEl.style.display = 'flex';
-    if (mainEl) mainEl.style.display = 'none';
-    if (sidebarEl) {
-      sidebarEl.querySelectorAll('.sidebar-group').forEach(function(g) { g.style.display = 'none'; });
-    }
-    if (breadcrumb) breadcrumb.style.display = 'none';
-  } else if (fromUser) {
-    // User just made the last selection — reload to apply
-    location.reload();
-  } else {
-    // Init: both already selected, just hide prompt
-    if (promptEl) promptEl.style.display = 'none';
-  }
-  return ready;
-}
+/* 园区选择已移除（原 onParkChange / checkParkAndTask / setupPrompt 门禁）*/
 
 function toggleSidebar() {
   var s = document.querySelector('.sidebar');
