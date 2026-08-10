@@ -110,11 +110,9 @@
   .stage-annotated { background: #f9f0ff; color: #722ed1; }
   .stage-split { background: #f6ffed; color: #52c41a; }
 
-  /* ===== NEW: Dataset Viewer (large modal) ===== */
-  .viewer-modal { width: 1100px; max-width: 96vw; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
-  .viewer-modal .modal-body { padding: 14px 20px; display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+  /* ===== NEW: Dataset Viewer (整页) ===== */
   .viewer-toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-  .viewer-body { flex: 1; overflow: auto; min-height: 360px; }
+  .viewer-body { min-height: 360px; }
   .viewer-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
 
   /* ===== NEW: Dedup 64-split ===== */
@@ -205,6 +203,8 @@
   </div>
 
   <div class="content">
+    <!-- ===== 列表屏 ===== -->
+    <div id="dsListScreen">
     <div class="page-header"><h2>数据中心</h2></div>
 
     <!-- ===== ① 媒体库 ===== -->
@@ -239,6 +239,25 @@
         <input type="file" id="dsImgInput" accept="image/*" multiple style="display:none;" onchange="handleImgSetUpload(this.files)">
         <div class="ds-card-grid" id="dsCardGrid"></div>
       </div>
+    </div>
+    </div><!-- /dsListScreen -->
+
+    <!-- ===== 数据集详情页（整页，承载大量图片） ===== -->
+    <div id="dsViewerScreen" style="display:none;">
+      <div class="page-header" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <a href="javascript:closeDatasetModal()" style="font-size:13px;color:var(--text-secondary);text-decoration:none;white-space:nowrap;">← 返回数据中心</a>
+        <h2 id="datasetModalTitle" style="margin:0;cursor:text;" title="双击修改名称" ondblclick="editDsTitle()">数据集</h2>
+      </div>
+      <div class="viewer-toolbar">
+        <span id="datasetModalStats" style="font-size:12px;color:var(--text-secondary);"></span>
+        <span style="flex:1;"></span>
+        <button class="btn btn-default btn-sm" onclick="runDupDetect()">重复检测</button>
+        <button class="btn btn-default btn-sm" id="btnAnnoTask" onclick="createAnnoTask()">创建标注任务</button>
+        <button class="btn btn-default btn-sm" onclick="openAutoAnnoForDs()">自动标注</button>
+        <button class="btn btn-default btn-sm" onclick="openSplitForDs()">导出 YOLO 划分</button>
+        <button class="btn btn-danger btn-sm" id="viewerDeleteBtn" style="display:none;" onclick="askDeleteSelected()">删除选中</button>
+      </div>
+      <div class="viewer-body" id="viewerBody"></div>
     </div>
   </div>
 </div>
@@ -361,25 +380,6 @@
     <div class="modal-footer">
       <button class="btn btn-default" onclick="closeSplitModal()">取消</button>
       <button class="btn btn-primary" onclick="confirmSplit()">完成划分</button>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== Dataset Viewer Modal (large) ==================== -->
-<div class="modal-overlay" id="datasetModal" style="display:none;z-index:1000;" onclick="if(event.target==this)closeDatasetModal()">
-  <div class="modal viewer-modal" id="datasetModalContent">
-    <div class="modal-header"><span id="datasetModalTitle">数据集</span><button class="modal-close" onclick="closeDatasetModal()">✕</button></div>
-    <div class="modal-body">
-      <div class="viewer-toolbar">
-        <span id="datasetModalStats" style="font-size:12px;color:var(--text-secondary);"></span>
-        <span style="flex:1;"></span>
-        <button class="btn btn-default btn-sm" onclick="runDupDetect()">重复检测</button>
-        <button class="btn btn-default btn-sm" id="btnAnnoTask" onclick="createAnnoTask()">创建标注任务</button>
-        <button class="btn btn-default btn-sm" onclick="openAutoAnnoForDs()">自动标注</button>
-        <button class="btn btn-default btn-sm" onclick="openSplitForDs()">导出 YOLO 划分</button>
-        <button class="btn btn-danger btn-sm" id="viewerDeleteBtn" style="display:none;" onclick="askDeleteSelected()">删除选中</button>
-      </div>
-      <div class="viewer-body" id="viewerBody"></div>
     </div>
   </div>
 </div>
@@ -749,10 +749,52 @@ function openDatasetViewer(idx) {
   viewerMode = datasets[idx].stage === 'split' ? 'split' : 'normal';
   var d = datasets[idx];
   document.getElementById('datasetModalTitle').textContent = d.name;
-  document.getElementById('datasetModal').style.display = 'flex';
+  document.getElementById('dsListScreen').style.display = 'none';
+  document.getElementById('dsViewerScreen').style.display = '';
   renderViewer();
+  window.scrollTo(0, 0);
 }
-function closeDatasetModal() { document.getElementById('datasetModal').style.display = 'none'; currentDsIdx = -1; }
+function closeDatasetModal() {
+  document.getElementById('dsViewerScreen').style.display = 'none';
+  document.getElementById('dsListScreen').style.display = '';
+  currentDsIdx = -1;
+  window.scrollTo(0, 0);
+}
+
+// 双击数据集名称编辑
+function editDsTitle() {
+  var d = curDs(); if (!d) return;
+  var h2 = document.getElementById('datasetModalTitle');
+  if (!h2 || h2.tagName !== 'H2') return;   // 已在编辑中则忽略
+  var oldName = d.name;
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.value = oldName;
+  input.style = 'font-size:20px;font-weight:600;padding:2px 8px;border:1px solid var(--primary);border-radius:4px;outline:none;font-family:var(--font);min-width:260px;max-width:420px;';
+  h2.replaceWith(input);
+  input.focus(); input.select();
+  function finish() {
+    var newName = input.value.trim() || oldName;
+    var newH2 = document.createElement('h2');
+    newH2.id = 'datasetModalTitle';
+    newH2.style = 'margin:0;cursor:text;';
+    newH2.title = '双击修改名称';
+    newH2.ondblclick = editDsTitle;
+    newH2.textContent = newName;
+    input.replaceWith(newH2);
+    if (newName !== oldName) {
+      d.name = newName;
+      saveDs();
+      renderDsCards();
+      showToast('数据集名称已更新');
+    }
+  }
+  input.addEventListener('blur', finish);
+  input.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') { input.value = oldName; input.blur(); }
+  });
+}
 function curDs() { return currentDsIdx >= 0 ? datasets[currentDsIdx] : null; }
 
 function renderViewer() {
