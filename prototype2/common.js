@@ -61,7 +61,6 @@ function getDefaultTags() {
 /* 算法子页面横向导航栏 */
 var ALGO_PAGES = [
   { key: 'data_center',    label: '数据中心', href: 'data_center.html',    icon: '<path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16zM3.3 7L12 12l8.7-5M12 22V12"/>' },
-  { key: 'annotation',     label: '数据标注', href: 'annotation.html',     icon: '<path d="M20.6 13.4L13.4 20.6a2 2 0 0 1-2.8 0l-7.2-7.2A2 2 0 0 1 3 12.2V5a2 2 0 0 1 2-2h7.2a2 2 0 0 1 1.4.6l7.2 7.2a2 2 0 0 1 0 2.8zM7 7h.01"/>' },
   { key: 'training',       label: '模型训练', href: 'training.html',       icon: '<path d="M6.5 6.5L17.5 17.5M3 8l2-2M21 16l-2 2M3 16l5-5M16 8l5 5M9 7l3-3 3 3M9 17l3 3 3-3"/>' },
   { key: 'evaluation',     label: '模型评估', href: 'evaluation.html',     icon: '<path d="M23 6l-9.5 9.5-5-5L1 18M17 6h6v6"/>' },
   { key: 'trial',          label: '模型推理', href: 'trial.html',          icon: '<path d="M9 3h6v5l4 8a3 3 0 0 1-2.7 4.3H7.7A3 3 0 0 1 5 16l4-8V3zM9 3h6"/>' },
