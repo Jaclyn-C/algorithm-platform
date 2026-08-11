@@ -34,6 +34,20 @@
   .form-group select, .form-group input { padding: 8px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; font-family: var(--font); background: #fff; }
   .form-group select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
   .form-hint { font-size: 10px; color: var(--text-muted); }
+
+  /* Per-algorithm permission rows */
+  .algo-perm-row { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border:1px solid var(--border); border-radius:4px; margin-bottom:6px; }
+  .algo-perm-row .apr-name { font-size:13px; font-weight:500; }
+  .algo-perm-row select { padding:5px 10px; border:1px solid #d9d9d9; border-radius:4px; font-size:12px; font-family:var(--font); background:#fff; }
+
+  /* Permission matrix reference table */
+  .perm-matrix { width:100%; font-size:11px; border-collapse:collapse; }
+  .perm-matrix th { padding:6px 8px; font-weight:600; color:var(--text-secondary); border-bottom:2px solid var(--border); text-align:center; white-space:nowrap; }
+  .perm-matrix th:first-child { text-align:left; }
+  .perm-matrix td { padding:4px 8px; border-bottom:1px solid var(--border); text-align:center; }
+  .perm-matrix td:first-child { text-align:left; color:var(--text); white-space:nowrap; }
+  .perm-matrix .pm-yes { color:#52c41a; font-weight:600; }
+  .perm-matrix .pm-no { color:#d9d9d9; }
 </style>
 </head>
 <body>
@@ -103,39 +117,47 @@
   </div>
 </div>
 
-<!-- Edit Member Modal -->
-<div class="modal-overlay" id="editMemberModal" style="display:none;" onclick="if(event.target==this)closeEditMemberModal()">
-  <div class="modal" style="width:420px;">
-    <div class="modal-header">
-      编辑成员 — <span id="editMemberName"></span>
-      <button class="modal-close" onclick="closeEditMemberModal()">✕</button>
-    </div>
+<!-- Team Manage Modal（仅团队管理：角色/转移/移除） -->
+<div class="modal-overlay" id="teamManageModal" style="display:none;z-index:1050;" onclick="if(event.target==this)closeTeamManageModal()">
+  <div class="modal" style="width:440px;">
+    <div class="modal-header">团队管理 — <span id="tmMemberName"></span><button class="modal-close" onclick="closeTeamManageModal()">✕</button></div>
     <div class="modal-body" style="padding:20px 28px;">
-      <div class="form-group" style="margin-bottom:14px;" id="editMemberRoleRow">
+      <div class="form-group" style="margin-bottom:16px;" id="tmRoleRow">
         <label>团队角色</label>
-        <select id="editMemberRole">
-          <option value="admin">管理员</option>
-          <option value="member">成员</option>
-        </select>
-        <span class="form-hint">管理员可添加成员和管理团队</span>
+        <select id="tmMemberRole"><option value="admin">管理员</option><option value="member">成员</option></select>
+        <span class="form-hint">管理员可添加/移除成员；创建者可转移身份</span>
       </div>
-      <div class="form-group" style="margin-bottom:14px;" id="editMemberPermRow">
-        <label>算法权限</label>
-        <select id="editMemberPerm">
-          <option value="write">可编辑</option>
-          <option value="read">仅查看</option>
-        </select>
-        <span class="form-hint">可编辑：可操作算法数据；仅查看：只能查看</span>
+      <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;gap:10px;" id="tmActionRow">
+        <button class="btn btn-default btn-sm" onclick="transferOwnership()" style="flex:1;" id="tmTransferBtn">转移创建者身份</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteEditMember()" style="flex:1;" id="tmRemoveBtn">从团队移除</button>
       </div>
-      <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;gap:10px;" id="editMemberTransferRow">
-        <button class="btn btn-default btn-sm" onclick="transferOwnership()" style="flex:1;" id="editMemberTransferBtn">转移创建者身份</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteEditMember()" style="flex:1;" id="editMemberRemoveBtn">从团队移除</button>
-      </div>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:6px;text-align:center;" id="editMemberTransferHint">将创建者身份转移给该成员，你将降为管理员</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:6px;text-align:center;" id="tmTransferHint">将创建者身份转移给该成员，你将降为管理员</div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-default btn-sm" onclick="closeEditMemberModal()">取消</button>
-      <button class="btn btn-primary btn-sm" id="btnSaveEditMember" onclick="saveEditMember()">保存</button>
+      <button class="btn btn-default btn-sm" onclick="closeTeamManageModal()">取消</button>
+      <button class="btn btn-primary btn-sm" onclick="saveTeamManage()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Algo Perm Modal（仅算法权限：per-algo 角色 + 矩阵参考） -->
+<div class="modal-overlay" id="algoPermModal" style="display:none;z-index:1050;" onclick="if(event.target==this)closeAlgoPermModal()">
+  <div class="modal" style="width:680px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;">
+    <div class="modal-header">算法权限 — <span id="apMemberName"></span><button class="modal-close" onclick="closeAlgoPermModal()">✕</button></div>
+    <div class="modal-body" style="padding:20px 28px;overflow-y:auto;flex:1;">
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">算法权限（按算法分别设置）</div>
+        <div id="algoPermList"></div>
+        <div id="algoPermEmpty" style="text-align:center;padding:16px;color:var(--text-muted);font-size:12px;display:none;">该团队暂无共享算法</div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">权限说明（角色-操作对照表）</div>
+        <div id="permMatrixTable" style="overflow-x:auto;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default btn-sm" onclick="closeAlgoPermModal()">取消</button>
+      <button class="btn btn-primary btn-sm" onclick="saveAlgoPerm()">保存</button>
     </div>
   </div>
 </div>
@@ -202,9 +224,50 @@ function saveTeams(teams) { localStorage.setItem(TEAMS_KEY, JSON.stringify(teams
 var currentTeamId = '';
 var currentUser = '';
 
-// ── Render team list ──
+// ==================== 算法权限常量 ====================
+var ALGO_ROLES = {
+  engineer: { label: '算法工程师', desc: '完全权限', color: '#1890ff' },
+  annotator: { label: '标注员',   desc: '数据权限', color: '#52c41a' },
+  viewer:    { label: '查看者',    desc: '仅查看',   color: '#8c8c8c' },
+  owner:     { label: '所有者',    desc: '完全含权限转移', color: '#fa8c16' }
+};
+var PERM_ACTIONS = [
+  '上传媒体库', '创建数据集', '数据集：去重/导出/删数据集',
+  '数据集：标记/审查/删图片', '模型训练参数配置', '模型推理',
+  '模型部署', '其余（查看）', '权限分配', '权限转移'
+];
+var PERM_ROLES = ['engineer', 'annotator', 'viewer', 'owner'];
+var PERM_MATRIX = [
+  [true,  true,  false, true ],  // 上传媒体库
+  [true,  true,  false, true ],  // 创建数据集
+  [true,  false, false, true ],  // 去重/导出/删
+  [true,  true,  false, true ],  // 标记/审查/删图片
+  [true,  false, false, true ],  // 训练参数配置
+  [true,  true,  true,  true ],  // 模型推理
+  [true,  false, false, true ],  // 模型部署
+  [true,  true,  true,  true ],  // 其余（查看）
+  [true,  false, false, true ],  // 权限分配
+  [false, false, false, true ]   // 权限转移
+];
+
+// 团队下的算法（project_list 中 teamId 匹配）
+function getTeamAlgorithms(teamId) {
+  var pl = [];
+  try { pl = JSON.parse(localStorage.getItem('project_list') || '[]'); } catch(e) {}
+  return pl.filter(function(p) { return p.teamId === teamId; });
+}
+// 成员在某算法上的角色（默认 viewer；旧数据按 permission 迁移）
+function getAlgoRole(member, algoId) {
+  if (member.algoPermissions) return member.algoPermissions[algoId] || 'viewer';
+  if (member.role === 'owner') return 'owner';
+  return (member.permission === 'write') ? 'engineer' : 'viewer';
+}
+
+// ── Render team list (仅当前用户所在的团队) ──
 function renderTeamList() {
-  var teams = getTeams();
+  var teams = getTeams().filter(function(t) {
+    return t.owner === currentUser || (t.members || []).some(function(m) { return m.username === currentUser; });
+  });
   var body = document.getElementById('teamListBody');
   body.innerHTML = teams.map(function(t) {
     var count = (t.members || []).length;
@@ -293,38 +356,50 @@ function renderMemberPanel() {
   var body = document.getElementById('memberBody');
   var roleLabels = { owner: '创建者', admin: '管理员', member: '成员' };
   var roleClasses = { owner: 'tag-owner', admin: 'tag-admin', member: 'tag-member' };
-  var permLabels = { write: '可编辑', read: '仅查看' };
-
   var canManage = isOwner || isAdmin;
+  var teamAlgos = getTeamAlgorithms(team.id);
   var html = '<table class="table"><thead><tr>' +
     '<th style="width:50px;">#</th>' +
     '<th>用户名</th>' +
     '<th style="width:80px;">角色</th>' +
-    '<th style="width:80px;">权限</th>' +
+    '<th style="width:130px;">算法权限</th>' +
     '<th style="width:110px;">加入时间</th>' +
-    (canManage ? '<th style="width:80px;">操作</th>' : '') +
+    (canManage ? '<th style="width:130px;">操作</th>' : '') +
     '</tr></thead><tbody>';
 
   members.forEach(function(m, i) {
-    var perm = m.permission || (m.role === 'owner' ? 'write' : 'read');
-    // 能否编辑该成员：owner 可编辑所有人（除自己），admin 只能编辑普通 member
-    var canEditThis = false;
-    if (isOwner) {
-      canEditThis = m.username !== currentUser;
-    } else if (isAdmin) {
-      canEditThis = m.role === 'member';
+    // 算法权限摘要
+    var permSummary = '—';
+    if (teamAlgos.length > 0) {
+      var roleSet = {};
+      teamAlgos.forEach(function(a) {
+        var r = getAlgoRole(m, a.id);
+        roleSet[r] = (roleSet[r] || 0) + 1;
+      });
+      var keys = Object.keys(roleSet);
+      if (keys.length === 1) permSummary = ALGO_ROLES[keys[0]].label + '（全部）';
+      else permSummary = keys.map(function(k){ return ALGO_ROLES[k].label + '×' + roleSet[k]; }).join(' · ');
     }
+    // 团队管理按钮：能否对该成员做团队管理操作
+    var canTeam = false;
+    if (isOwner) canTeam = m.username !== currentUser;
+    else if (isAdmin) canTeam = m.role === 'member';
+    // 算法权限按钮：能否对该成员设置算法权限
+    var canAlgo = false;
+    if (isOwner) canAlgo = m.username !== currentUser;
+    else if (isAdmin) canAlgo = m.role === 'member';
+
+    var btns = '';
+    if (canTeam) btns += '<button class="btn btn-text btn-sm" onclick="showTeamManageModal(\'' + m.username + '\')" style="color:var(--primary);">团队管理</button> ';
+    if (canAlgo) btns += '<button class="btn btn-text btn-sm" onclick="showAlgoPermModal(\'' + m.username + '\')" style="color:#722ed1;">算法权限</button>';
+
     html += '<tr>' +
       '<td>' + (i + 1) + '</td>' +
       '<td style="font-weight:500;">' + m.username + '</td>' +
       '<td><span class="tag ' + (roleClasses[m.role] || 'tag-member') + '">' + (roleLabels[m.role] || m.role) + '</span></td>' +
-      '<td><span class="tag" style="background:' + (perm === 'write' ? '#f6ffed' : '#f5f5f5') + ';color:' + (perm === 'write' ? '#52c41a' : '#8c8c8c') + ';">' + (permLabels[perm] || '仅查看') + '</span></td>' +
+      '<td><span style="font-size:11px;color:var(--text-secondary);">' + permSummary + '</span></td>' +
       '<td>' + (m.joinedAt || team.createdAt) + '</td>' +
-      (canManage
-        ? '<td>' + (canEditThis
-            ? '<button class="btn btn-text btn-sm" onclick="showEditMemberModal(\'' + m.username + '\')" style="color:var(--primary);">编辑</button>'
-            : '') + '</td>'
-        : '') +
+      (canManage ? '<td style="white-space:nowrap;">' + btns + '</td>' : '') +
     '</tr>';
   });
 
@@ -362,7 +437,7 @@ function addMember() {
   if (team.members.find(function(m) { return m.username === found.username; })) {
     showToast(found.username + ' 已在团队中'); return;
   }
-  team.members.push({ username: found.username, role: role, permission: 'read', joinedAt: new Date().toISOString().slice(0, 10) });
+  team.members.push({ username: found.username, role: role, algoPermissions: {}, joinedAt: new Date().toISOString().slice(0, 10) });
   saveTeams(teams);
   closeAddMemberModal();
   renderTeamList();
@@ -388,45 +463,45 @@ function executeConfirm() {
   document.getElementById('confirmModal').style.display = 'none';
 }
 
-// ── Edit member ──
+// ── Team Manage Modal（仅团队管理）──
 var editingMemberName = '';
 
-function showEditMemberModal(username) {
+function showTeamManageModal(username) {
   editingMemberName = username;
   var team = getCurrentTeam();
   if (!team) return;
   var m = (team.members || []).find(function(x) { return x.username === username; });
   if (!m) return;
-
   var isOwner = team.owner === currentUser;
-  document.getElementById('editMemberName').textContent = username;
-  document.getElementById('editMemberRole').value = m.role || 'member';
-  document.getElementById('editMemberPerm').value = m.permission || 'read';
-
-  // Clear any inline display overrides from previous calls
-  var el = document.getElementById('editMemberRoleRow');
-  el.style.removeProperty('display');
-  el = document.getElementById('editMemberPermRow');
-  el.style.removeProperty('display');
-  el = document.getElementById('editMemberTransferBtn');
-  el.style.removeProperty('display');
-  el = document.getElementById('editMemberRemoveBtn');
-  el.style.removeProperty('display');
-  el = document.getElementById('editMemberTransferHint');
-  el.style.removeProperty('display');
-  el = document.getElementById('btnSaveEditMember');
-  el.style.removeProperty('display');
-  el = document.getElementById('editMemberTransferRow');
-  el.style.removeProperty('display');
-
-  // Hide elements based on role
+  document.getElementById('tmMemberName').textContent = username;
+  document.getElementById('tmMemberRole').value = m.role || 'member';
+  // 重置显示
+  ['tmRoleRow', 'tmActionRow', 'tmTransferBtn', 'tmRemoveBtn', 'tmTransferHint'].forEach(function(id) {
+    var e = document.getElementById(id); if (e) e.style.removeProperty('display');
+  });
+  // 非创建者隐藏角色选择与转移
   if (!isOwner) {
-    document.getElementById('editMemberRoleRow').style.display = 'none';
-    document.getElementById('editMemberTransferBtn').style.display = 'none';
-    document.getElementById('editMemberTransferHint').style.display = 'none';
+    document.getElementById('tmRoleRow').style.display = 'none';
+    document.getElementById('tmTransferBtn').style.display = 'none';
+    document.getElementById('tmTransferHint').style.display = 'none';
   }
-
-  document.getElementById('editMemberModal').style.display = 'flex';
+  document.getElementById('teamManageModal').style.display = 'flex';
+}
+function closeTeamManageModal() {
+  document.getElementById('teamManageModal').style.display = 'none';
+}
+function saveTeamManage() {
+  var teams = getTeams();
+  var team = teams.find(function(t) { return t.id === currentTeamId; });
+  if (!team) return;
+  var m = (team.members || []).find(function(x) { return x.username === editingMemberName; });
+  if (!m) return;
+  if (team.owner === currentUser) m.role = document.getElementById('tmMemberRole').value;
+  saveTeams(teams);
+  closeTeamManageModal();
+  renderTeamList();
+  renderMemberPanel();
+  showToast(editingMemberName + ' 的团队角色已更新');
 }
 
 function transferOwnership() {
@@ -438,55 +513,25 @@ function transferOwnership() {
     doTransferOwnership
   );
 }
-
 function doTransferOwnership() {
   var teams = getTeams();
   var team = teams.find(function(t) { return t.id === currentTeamId; });
   if (!team) return;
-
-  // 当前创建者降为管理员
   var oldOwner = (team.members || []).find(function(x) { return x.username === currentUser; });
   if (oldOwner) { oldOwner.role = 'admin'; }
-
-  // 目标成员升为创建者
   var newOwner = (team.members || []).find(function(x) { return x.username === editingMemberName; });
-  if (newOwner) { newOwner.role = 'owner'; newOwner.permission = 'write'; }
-
+  if (newOwner) {
+    newOwner.role = 'owner';
+    var algos = getTeamAlgorithms(team.id);
+    if (!newOwner.algoPermissions) newOwner.algoPermissions = {};
+    algos.forEach(function(a) { newOwner.algoPermissions[a.id] = 'owner'; });
+  }
   team.owner = editingMemberName;
   saveTeams(teams);
-  closeEditMemberModal();
+  closeTeamManageModal();
   renderTeamList();
   renderMemberPanel();
   showToast('创建者身份已转移给 ' + editingMemberName);
-}
-
-function closeEditMemberModal() {
-  document.getElementById('editMemberModal').style.display = 'none';
-}
-
-function saveEditMember() {
-  var role = document.getElementById('editMemberRole').value;
-  var perm = document.getElementById('editMemberPerm').value;
-  var teams = getTeams();
-  var team = teams.find(function(t) { return t.id === currentTeamId; });
-  if (!team) return;
-  var m = (team.members || []).find(function(x) { return x.username === editingMemberName; });
-  if (!m) return;
-
-  var isOwner = team.owner === currentUser;
-  if (isOwner) {
-    // 创建者可以改角色和权限
-    m.role = role;
-    m.permission = perm;
-  } else {
-    // 管理员只能改成员的权限
-    m.permission = perm;
-  }
-  saveTeams(teams);
-  closeEditMemberModal();
-  renderTeamList();
-  renderMemberPanel();
-  showToast(editingMemberName + ' 的信息已更新');
 }
 
 function deleteEditMember() {
@@ -498,17 +543,88 @@ function deleteEditMember() {
     doDeleteEditMember
   );
 }
-
 function doDeleteEditMember() {
   var teams = getTeams();
   var team = teams.find(function(t) { return t.id === currentTeamId; });
   if (!team) return;
   team.members = (team.members || []).filter(function(m) { return m.username !== editingMemberName; });
   saveTeams(teams);
-  closeEditMemberModal();
+  closeTeamManageModal();
   renderTeamList();
   renderMemberPanel();
   showToast(editingMemberName + ' 已移出团队');
+}
+
+// ── Algo Perm Modal（仅算法权限）──
+function showAlgoPermModal(username) {
+  editingMemberName = username;
+  var team = getCurrentTeam();
+  if (!team) return;
+  var m = (team.members || []).find(function(x) { return x.username === username; });
+  if (!m) return;
+  document.getElementById('apMemberName').textContent = username;
+  renderAlgoPermList(m);
+  renderPermMatrix();
+  document.getElementById('algoPermModal').style.display = 'flex';
+}
+function closeAlgoPermModal() {
+  document.getElementById('algoPermModal').style.display = 'none';
+}
+function saveAlgoPerm() {
+  var teams = getTeams();
+  var team = teams.find(function(t) { return t.id === currentTeamId; });
+  if (!team) return;
+  var m = (team.members || []).find(function(x) { return x.username === editingMemberName; });
+  if (!m) return;
+  var selects = document.querySelectorAll('.algo-perm-select');
+  if (!m.algoPermissions) m.algoPermissions = {};
+  selects.forEach(function(sel) {
+    m.algoPermissions[sel.getAttribute('data-algo-id')] = sel.value;
+  });
+  saveTeams(teams);
+  closeAlgoPermModal();
+  renderMemberPanel();
+  showToast(editingMemberName + ' 的算法权限已更新');
+}
+
+// 渲染 per-algorithm 权限列表
+function renderAlgoPermList(member) {
+  var team = getCurrentTeam();
+  if (!team) return;
+  var algos = getTeamAlgorithms(team.id);
+  var box = document.getElementById('algoPermList');
+  var empty = document.getElementById('algoPermEmpty');
+  if (algos.length === 0) { box.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  box.innerHTML = algos.map(function(a) {
+    var role = getAlgoRole(member, a.id);
+    return '<div class="algo-perm-row">' +
+      '<span class="apr-name">' + escapeHTML(a.name) + '</span>' +
+      '<select class="algo-perm-select" data-algo-id="' + a.id + '">' +
+        '<option value="engineer"' + (role === 'engineer' ? ' selected' : '') + '>算法工程师（完全权限）</option>' +
+        '<option value="annotator"' + (role === 'annotator' ? ' selected' : '') + '>标注员（数据权限）</option>' +
+        '<option value="viewer"' + (role === 'viewer' ? ' selected' : '') + '>查看者（仅查看）</option>' +
+        '<option value="owner"' + (role === 'owner' ? ' selected' : '') + '>所有者</option>' +
+      '</select>' +
+    '</div>';
+  }).join('');
+}
+
+// 渲染权限矩阵参考表（固定）
+function renderPermMatrix() {
+  var html = '<table class="perm-matrix"><thead><tr><th>操作</th>';
+  PERM_ROLES.forEach(function(r) { html += '<th>' + ALGO_ROLES[r].label + '</th>'; });
+  html += '</tr></thead><tbody>';
+  PERM_ACTIONS.forEach(function(action, i) {
+    html += '<tr><td>' + action + '</td>';
+    PERM_ROLES.forEach(function(r, j) {
+      var ok = PERM_MATRIX[i][j];
+      html += '<td class="' + (ok ? 'pm-yes' : 'pm-no') + '">' + (ok ? '✓' : '✗') + '</td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('permMatrixTable').innerHTML = html;
 }
 
 function initPlatformUsers() {

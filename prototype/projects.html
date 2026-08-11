@@ -384,7 +384,7 @@ function renderAllProjects() {
   var pl = JSON.parse(localStorage.getItem('project_list') || '[]');
   var combined = [];
   personal.forEach(function(p) {
-    combined.push({ id: p.id, name: p.name, createdAt: p.createdAt, taskType: p.taskType, teamId: 'personal', _personal: true });
+    combined.push({ id: p.id, name: p.name, createdAt: p.createdAt, taskType: p.taskType, teamId: 'personal', _personal: true, _shared: p._shared, sharedTeamId: p.teamId || '' });
   });
   pl.forEach(function(p) { combined.push(p); });
 
@@ -400,9 +400,11 @@ function renderAllProjects() {
     if (team) teamName = team.name;
 
     // 标签：个人 / 个人共享
-    var shareLabel = '';
-    if (p._personal) shareLabel = '<span class="tag" style="background:#f9f0ff;color:#722ed1;margin-left:6px;">个人</span>';
-    else if (p._fromPersonal) shareLabel = '<span class="tag" style="background:#e6f7ff;color:#1890ff;margin-left:6px;">个人共享</span>';
+    // 名称旁仅显示"个人"标记（未共享的个人算法）；已共享的不在名称旁显示团队
+    var nameLabel = '';
+    if (p._personal && !(p._shared && p.sharedTeamId)) {
+      nameLabel = '<span class="tag" style="background:#f9f0ff;color:#722ed1;margin-left:6px;">个人</span>';
+    }
 
     var projStats = getProjDataStatus(p.name);
     var stageTag = '<span class="tag ' + projStats.stageClass + '" style="margin-left:auto;">' + projStats.stageLabel + '</span>';
@@ -420,7 +422,10 @@ function renderAllProjects() {
     else { iconChar = p.name.charAt(0); iconColor = getCardColor(p.id); }
     var dateExtra = isPreset ? (info.dateExtra || '') : '';
     var teamLine = '';
-    if (teamFilter === 'all' && teamName) {
+    if (p._personal && p._shared && p.sharedTeamId) {
+      var sTeam = teams.find(function(t) { return t.id === p.sharedTeamId; });
+      if (sTeam) teamLine = '<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">所属团队：' + sTeam.name + '</div>';
+    } else if (teamFilter === 'all' && teamName) {
       teamLine = '<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">' + teamName + '</div>';
     }
 
@@ -434,7 +439,7 @@ function renderAllProjects() {
       '<div class="p-header">' +
         '<div class="p-icon" style="background:linear-gradient(135deg,' + iconColor + ');">' + iconChar + '</div>' +
         '<div>' +
-          '<div class="p-name">' + p.name + shareLabel + getTaskTypeTag(p.taskType) + '</div>' +
+          '<div class="p-name">' + p.name + nameLabel + getTaskTypeTag(p.taskType) + '</div>' +
           '<div class="p-date">创建于 ' + (p.createdAt || '') + dateExtra + teamLine + '</div>' +
         '</div>' +
         stageTag +
@@ -443,7 +448,10 @@ function renderAllProjects() {
       '<div class="p-stats">' + statsHtml + '</div>' +
       '<div style="display:flex;gap:6px;justify-content:space-between;" onclick="event.stopPropagation();">' +
         '<button class="btn btn-default btn-sm" onclick="enterProject(\'' + idEsc + '\')">进入算法</button>' +
-        (canDeleteProject(p) ? '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject(\'' + idEsc + '\',\'' + nameEsc + '\')">删除</button>' : '') +
+        '<span style="display:flex;gap:6px;">' +
+          (p._personal ? '<button class="btn btn-default btn-sm" onclick="event.stopPropagation();openEditPersonalModal(\'' + idEsc + '\')">编辑</button>' : '') +
+          (canDeleteProject(p) ? '<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteProject(\'' + idEsc + '\',\'' + nameEsc + '\')">删除</button>' : '') +
+        '</span>' +
       '</div>';
     grid.appendChild(card);
   });
@@ -599,6 +607,86 @@ function createProject() {
   localStorage.setItem('current_project', id);
   location.href = 'data_center.html';
 }
+
+// ── 编辑个人算法（改名 + 共享到团队）──
+function openEditPersonalModal(id) {
+  var personal = [];
+  try { personal = JSON.parse(localStorage.getItem('personal_projects') || '[]'); } catch(e) {}
+  var p = personal.find(function(x) { return x.id === id; });
+  if (!p) return;
+  document.getElementById('editPersonalId').value = id;
+  document.getElementById('editPersonalName').value = p.name;
+  var sel = document.getElementById('editPersonalTeam');
+  sel.innerHTML = '<option value="">— 不共享（仅个人） —</option>';
+  var user = getUser();
+  var uname = user ? user.username : 'admin';
+  getTeams().forEach(function(t) {
+    if (t.owner === uname || (t.members || []).some(function(m) { return m.username === uname; })) {
+      var opt = document.createElement('option');
+      opt.value = t.id; opt.textContent = t.name;
+      sel.appendChild(opt);
+    }
+  });
+  sel.value = (p._shared && p.teamId) ? p.teamId : '';
+  document.getElementById('newTeamSection').style.display = 'none';
+  document.getElementById('newTeamName').value = '';
+  document.getElementById('btnShowNewTeam').style.display = 'inline-flex';
+  document.getElementById('editPersonalModal').style.display = 'flex';
+}
+function closeEditPersonalModal() {
+  document.getElementById('editPersonalModal').style.display = 'none';
+}
+function showNewTeamInline() {
+  document.getElementById('newTeamSection').style.display = 'block';
+  document.getElementById('btnShowNewTeam').style.display = 'none';
+  document.getElementById('newTeamName').focus();
+}
+function createNewTeamInline() {
+  var name = document.getElementById('newTeamName').value.trim();
+  if (!name) { showToast('请输入团队名称'); return; }
+  var user = getUser();
+  var username = user ? user.username : 'admin';
+  var teams = getTeams();
+  var newId = 'team_' + Date.now();
+  teams.push({ id: newId, name: name, createdAt: new Date().toISOString().slice(0, 10), owner: username,
+    members: [{ username: username, role: 'owner', algoPermissions: {}, joinedAt: new Date().toISOString().slice(0, 10) }] });
+  localStorage.setItem('platform_teams', JSON.stringify(teams));
+  var sel = document.getElementById('editPersonalTeam');
+  var opt = document.createElement('option');
+  opt.value = newId; opt.textContent = name;
+  sel.appendChild(opt);
+  sel.value = newId;
+  document.getElementById('newTeamSection').style.display = 'none';
+  document.getElementById('newTeamName').value = '';
+  document.getElementById('btnShowNewTeam').style.display = 'inline-flex';
+  showToast('团队「' + name + '」已创建');
+}
+function saveEditPersonal() {
+  var id = document.getElementById('editPersonalId').value;
+  var name = document.getElementById('editPersonalName').value.trim();
+  var teamId = document.getElementById('editPersonalTeam').value;
+  if (!name) { showToast('请输入算法名称'); return; }
+  var personal = [];
+  try { personal = JSON.parse(localStorage.getItem('personal_projects') || '[]'); } catch(e) {}
+  var p = personal.find(function(x) { return x.id === id; });
+  if (!p) return;
+  p.name = name;
+  var team = [];
+  try { team = JSON.parse(localStorage.getItem('project_list') || '[]'); } catch(e) {}
+  team = team.filter(function(x) { return x.id !== id; });
+  if (teamId) {
+    p._shared = true; p.teamId = teamId;
+    team.push({ id: id, name: name, createdAt: p.createdAt, teamId: teamId, _fromPersonal: true, taskType: p.taskType });
+    showToast('「' + name + '」已共享到团队');
+  } else {
+    p._shared = false; p.teamId = '';
+    showToast('「' + name + '」已保存');
+  }
+  localStorage.setItem('project_list', JSON.stringify(team));
+  localStorage.setItem('personal_projects', JSON.stringify(personal));
+  closeEditPersonalModal();
+  renderAllProjects();
+}
 </script>
 <div class="modal-overlay" id="deleteProjectModal" style="display:none;" onclick="if(event.target==this)closeDeleteProjectModal()">
   <div class="modal" style="width:480px;">
@@ -642,6 +730,37 @@ function createProject() {
     <div class="modal-footer"><button class="btn btn-default btn-sm" onclick="closeNewProjectModal()">取消</button><button class="btn btn-primary btn-sm" onclick="createProject()">确定</button></div>
   </div>
 </div>
+<!-- Edit Personal Algorithm Modal -->
+<div class="modal-overlay" id="editPersonalModal" style="display:none;" onclick="if(event.target==this)closeEditPersonalModal()">
+  <div class="modal" style="width:440px;">
+    <div class="modal-header">编辑算法<button class="modal-close" onclick="closeEditPersonalModal()">✕</button></div>
+    <div class="modal-body" style="padding:20px 28px;">
+      <input type="hidden" id="editPersonalId">
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>算法名称</label>
+        <input type="text" id="editPersonalName" style="width:100%;padding:7px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);">
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>共享到团队</label>
+        <select id="editPersonalTeam" style="width:100%;padding:7px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);">
+          <option value="">— 不共享（仅个人） —</option>
+        </select>
+      </div>
+      <div id="newTeamSection" style="display:none;margin-bottom:12px;">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" id="newTeamName" placeholder="输入新团队名称" style="flex:1;padding:7px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);">
+          <button class="btn btn-primary btn-sm" onclick="createNewTeamInline()">创建</button>
+        </div>
+      </div>
+      <button class="btn btn-text btn-sm" onclick="showNewTeamInline()" id="btnShowNewTeam" style="color:var(--primary);">+ 新建团队</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default btn-sm" onclick="closeEditPersonalModal()">取消</button>
+      <button class="btn btn-primary btn-sm" onclick="saveEditPersonal()">保存</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 </body>
 </html>
