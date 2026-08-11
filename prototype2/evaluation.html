@@ -6,16 +6,17 @@
 <title>算法一体化平台 — 模型评估</title>
 <link rel="stylesheet" href="common.css">
 <style>
-  .content { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 16px 20px; gap: 16px; }
-
-  .eval-layout { flex: 1; display: flex; gap: 12px; min-height: 0; }
+  .content { padding: 0; display: flex; flex-direction: column; }
+  .algo-content { flex: 1; overflow: hidden; padding: 20px 24px; display: flex; flex-direction: column; min-height: 0; gap: 16px; }
+  .eval-layout { flex: 1; display: flex; gap: 12px; min-height: 0; overflow: hidden; }
 
   .card { display: flex; flex-direction: column; }
   .card-header { flex-shrink: 0; }
   .card-body { overflow-y: auto; flex: 1; }
 
-  .config-panel { width: 330px; min-width: 330px; }
-  .result-panel { flex: 1; min-width: 0; }
+  .config-panel { width: 330px; min-width: 330px; height: 100%; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+  .result-panel { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; }
+  .result-panel .card-body { flex: 1; overflow-y: auto; }
 
   .form-section { margin-bottom: 18px; }
   .form-section:last-child { margin-bottom: 0; }
@@ -74,50 +75,41 @@
 <aside class="sidebar">
   <div class="sidebar-logo">
     <div class="logo-icon">AI</div>
-    <div class="sidebar-expand-btn" onclick="toggleSidebar()" title="展开侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
-    <div class="logo-text" id="sidebarLogoText">算法一体化平台</div>
-    <div class="sidebar-collapse-btn" onclick="toggleSidebar()" title="收起侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="10" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+    <div class="sidebar-expand-btn" onclick="toggleSidebar()"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+    <div class="logo-text">算法一体化平台</div>
+    <div class="sidebar-collapse-btn" onclick="toggleSidebar()"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="10" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
   </div>
-
   <nav class="sidebar-nav">
-    <div class="sidebar-group" id="sidebarTopHome"><a class="sidebar-item" id="sidebarHomeLink" href="projects.html" data-icon="🏠">首页</a></div>
-    <div class="sidebar-group" id="sidebarProjectGroup" style="display:none;">
-      <div class="sidebar-group-title" style="font-size:13px;color:#fff;font-weight:600;text-transform:none;opacity:1;display:none;" id="sidebarProjectName"></div>
+    <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
+      <a class="sidebar-item" href="projects.html"><svg viewBox="0 0 24 24"><path d="M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-8l-2-2H4a1 1 0 0 0-1 1z"/></svg><span>算法项目</span></a>
+      <a class="sidebar-item" href="models.html"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg><span>模型总览</span></a>
+      <a class="sidebar-item" href="datasets_overview.html"><svg viewBox="0 0 24 24"><path d="M4 6c0-1.1 3.6-2 8-2s8 .9 8 2-3.6 2-8 2-8-.9-8-2zM4 6v6c0 1.1 3.6 2 8 2s8-.9 8-2V6M4 12v6c0 1.1 3.6 2 8 2s8-.9 8-2v-6"/></svg><span>数据集总览</span></a>
+      <a class="sidebar-item" href="models_use.html"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M21 21l-4.3-4.3"/></svg><span>通用推理</span></a>
+      <a class="sidebar-item" href="training_queue.html"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>训练队列</span></a>
     </div>
-    <div class="sidebar-group" id="sidebarSubPages" style="display:none;">
-      <a class="sidebar-item" href="data_center.html" data-icon="📦">数据中心</a>
-      <a class="sidebar-item" href="annotation.html" data-icon="🏷">数据标注</a>
-      <a class="sidebar-item" href="training.html" data-icon="🏋">模型训练</a>
-      <a class="sidebar-item active" href="#" data-icon="📈">模型评估</a>
-      <a class="sidebar-item" href="trial.html" data-icon="🧪">模型推理</a>
-      <a class="sidebar-item" href="deployment.html" data-icon="🚀">模型部署</a>
+    <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
+      <a class="sidebar-item" href="team_manage.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="15" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>团队管理</span></a>
+      <a class="sidebar-item" href="profile.html"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>个人中心</span></a>
     </div>
-
   </nav>
 </aside>
-<script>(function(){var s=document.querySelector(".sidebar");if(s&&localStorage.getItem("sidebar_collapsed")==="true"){s.classList.add("collapsed")}}())</script>
+<script>(function(){var s=document.querySelector(".sidebar");if(s&&localStorage.getItem("sidebar_collapsed")==="true"){s.classList.add("collapsed")}})()</script>
 
 <div class="main">
   <header class="header">
-    <div class="breadcrumb">
-      <a href="projects.html" style="color:var(--text-secondary);text-decoration:none;">首页</a> <span class="sep">›</span> <span>模型评估</span>
-    </div>
+    <div class="breadcrumb"><a href="projects.html">首页</a> <span class="sep">›</span> <span>模型评估</span></div>
     <div class="header-actions">
-            
-
       <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
         <span style="font-size:12px;" id="headerUserName">用户</span>
-        <div id="headerUserAvatar" style="width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">U</div>
-        <div class="user-dropdown" id="userDropdown">
-          <a href="profile.html" data-icon="👤">个人中心</a>
-          <a href="#" onclick="event.stopPropagation();logout()">退出登录</a>
-        </div>
+        <div class="user-avatar" id="headerUserAvatar">U</div>
+        <div class="user-dropdown" id="userDropdown"><a href="profile.html">个人中心</a><a href="#" onclick="event.stopPropagation();logout()">退出登录</a></div>
       </div>
     </div>
   </header>
 
-
   <div class="content">
+    <div id="algoNavContainer"></div>
+    <div class="algo-content">
     <div class="page-header">
       <h2>模型评估</h2>
     </div>
@@ -125,10 +117,10 @@
     <div class="eval-layout">
 
       <!-- Left: Config + History -->
-      <div class="config-panel" style="display:flex;flex-direction:column;gap:12px;">
+      <div class="config-panel">
 
-        <!-- Config Card -->
-        <div class="card">
+        <!-- Config Card (fixed, no scroll) -->
+        <div class="card" style="flex-shrink:0;">
           <div class="card-header">评估配置</div>
           <div class="card-body">
             <div class="form-section">
@@ -144,21 +136,21 @@
             </div>
 
             <div class="form-section">
-              <div class="form-section-title">测试数据</div>
+              <div class="form-section-title">上传测试图片</div>
               <div class="form-group">
-                <div class="multi-select" id="evalDatasetWrap">
-                  <div class="ms-trigger" onclick="toggleMultiSelect('evalDatasetWrap')">
-                    <span class="ms-text" id="evalDatasetText">上传批次_20260628 val/ (331 张，YOLO 格式)</span>
-                    <span class="ms-arrow">▾</span>
-                  </div>
-                  <div class="ms-dropdown">
-                    <label class="ms-option"><input type="checkbox" value="val_01" checked onchange="updateMultiSelect('evalDatasetWrap')"> 上传批次_20260628 val/ (331 张，YOLO 格式)</label>
-                    <label class="ms-option"><input type="checkbox" value="train_01" onchange="updateMultiSelect('evalDatasetWrap')"> 上传批次_20260628 train/ (771 张，YOLO 格式)</label>
-                    <label class="ms-option"><input type="checkbox" value="val_02" onchange="updateMultiSelect('evalDatasetWrap')"> 上传批次_20260701 val/ (279 张，YOLO 格式)</label>
-                    <label class="ms-option"><input type="checkbox" value="val_03" onchange="updateMultiSelect('evalDatasetWrap')"> 上传批次_20260702 val/ (223 张，YOLO 格式)</label>
-                  </div>
+                <div id="evalUploadZone" style="border:2px dashed #d9d9d9;border-radius:6px;padding:10px;text-align:center;cursor:pointer;transition:0.2s;background:#fafafa;" onclick="document.getElementById('evalFileInput').click()">
+                  <div style="font-size:12px;color:var(--primary);">点击或拖拽上传测试图片（JPG/PNG/BMP）</div>
                 </div>
-                <span class="hint">选择已标注的测试集，计算 mAP 等指标（可多选）</span>
+                <input type="file" id="evalFileInput" accept="image/*" multiple style="display:none;" onchange="handleEvalFiles(this.files)">
+                <div id="evalFileList" style="margin-top:8px;"></div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="form-section-title">置信度阈值</div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <input type="range" id="evalConf" min="1" max="9" value="3" style="flex:1;" oninput="document.getElementById('evalConfVal').textContent=(this.value/10).toFixed(1)">
+                <span id="evalConfVal" style="font-weight:700;min-width:30px;text-align:center;">0.3</span>
               </div>
             </div>
 
@@ -166,8 +158,8 @@
           </div>
         </div>
 
-        <!-- History Card -->
-        <div class="card" style="flex:1;">
+        <!-- History Card (scrollable) -->
+        <div class="card" style="flex:1;min-height:0;display:flex;flex-direction:column;">
           <div class="card-header">评估历史</div>
           <div class="card-body" style="padding:0;">
             <table class="table">
@@ -234,6 +226,7 @@
       </div>
 
     </div>
+    </div><!-- /algo-content -->
   </div>
 </div>
 
@@ -281,11 +274,34 @@ document.addEventListener('click', function(e) {
   }
 });
 
+// ==================== EVAL FILE UPLOAD ====================
+var evalFiles = [];
+function handleEvalFiles(files) {
+  if (!files || !files.length) return;
+  for (var i = 0; i < files.length; i++) {
+    var f = files[i];
+    if (!evalFiles.find(function(x) { return x.name === f.name && x.size === f.size })) {
+      evalFiles.push(f);
+    }
+  }
+  document.getElementById('evalFileInput').value = '';
+  renderEvalFileList();
+}
+function renderEvalFileList() {
+  var box = document.getElementById('evalFileList');
+  if (!evalFiles.length) { box.innerHTML = ''; return; }
+  box.innerHTML = '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">已选 ' + evalFiles.length + ' 张</div>' + evalFiles.map(function(f, i) {
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 8px;border:1px solid var(--border);border-radius:4px;margin-bottom:4px;font-size:11px;">' +
+      '<span>' + f.name + ' (' + (f.size < 1048576 ? (f.size/1024).toFixed(0)+'KB' : (f.size/1048576).toFixed(1)+'MB') + ')</span>' +
+      '<button class="btn btn-text btn-sm" style="color:var(--danger);font-size:11px;padding:0 4px;" onclick="removeEvalFile(' + i + ')">✕</button></div>';
+  }).join('');
+}
+function removeEvalFile(i) { evalFiles.splice(i, 1); renderEvalFileList(); }
+
 // ==================== EVALUATION ====================
 function startEval() {
   if (evalRunning) return;
-  const evalDatasets = getSelectedDatasets('evalDatasetWrap');
-  if (evalDatasets.length === 0) { showToast('请选择测试数据集'); return; }
+  if (evalFiles.length === 0) { showToast('请上传测试图片'); return; }
   evalRunning = true;
 
   const model = document.getElementById('evalModel').value;
@@ -410,8 +426,8 @@ function deleteEvalRow(btn) {
   document.getElementById('headerUserName').textContent = user.name;
   document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
 
-  var project = localStorage.getItem('current_project'); if (!project) { location.href = 'projects.html'; return; } document.getElementById("sidebarProjectGroup").style.display = "block"; document.getElementById("sidebarSubPages").style.display = "block"; document.getElementById("sidebarHomeLink").href = (project.indexOf("my_") === 0) ? "projects.html" : "projects.html";
-  document.getElementById('sidebarLogoText').textContent = getProjectName(project);
+  var project = localStorage.getItem('current_project'); if (!project) { location.href = 'projects.html'; return; }
+  mountAlgoNav('evaluation', 'algoNavContainer');
 })();
 </script>
 </body>
