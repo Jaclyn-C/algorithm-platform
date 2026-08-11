@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>算法一体化平台 — 算法项目</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  .content { padding: 20px 24px; }
+  .page-header { margin-bottom: 20px; }
+  .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .project-card { background: var(--card-bg); border-radius: 8px; box-shadow: var(--card-shadow); padding: 20px; cursor: pointer; transition: var(--transition); border: 1px solid transparent; position: relative; }
+  .project-card:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(24,144,255,0.12); }
+  .pc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .pc-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .pc-name { font-size: 15px; font-weight: 700; }
+  .pc-date { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .pc-stats { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .pc-stat { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .pc-stat-label { color: var(--text-muted); min-width: 60px; }
+  .pc-stat-value { color: var(--text); font-weight: 500; }
+  .pc-stat-value.success { color: var(--success); }
+  .pc-tag { position: absolute; top: 16px; right: 16px; }
+  .pc-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .empty-state { padding: 80px 20px; text-align: center; color: var(--text-muted); }
+  .filter-bar { display: flex; gap: 8px; align-items: center; }
+  .filter-bar select, .filter-bar input { padding: 5px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; font-family: var(--font); }
+  .tag-chip { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; background: var(--primary-light); color: var(--primary); }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">AI</div>
+    <div class="sidebar-expand-btn" onclick="toggleSidebar()"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+    <div class="logo-text" id="sidebarLogoText">算法一体化平台</div>
+    <div class="sidebar-collapse-btn" onclick="toggleSidebar()"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="10" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
+      <a class="sidebar-item active" href="#">
+        <svg viewBox="0 0 24 24"><path d="M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-8l-2-2H4a1 1 0 0 0-1 1z"/></svg>
+        <span>算法项目</span>
+      </a>
+      <a class="sidebar-item" href="models.html">
+        <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>
+        <span>模型总览</span>
+      </a>
+      <a class="sidebar-item" href="datasets_overview.html">
+        <svg viewBox="0 0 24 24"><path d="M4 6c0-1.1 3.6-2 8-2s8 .9 8 2-3.6 2-8 2-8-.9-8-2zM4 6v6c0 1.1 3.6 2 8 2s8-.9 8-2V6M4 12v6c0 1.1 3.6 2 8 2s8-.9 8-2v-6"/></svg>
+        <span>数据集总览</span>
+      </a>
+      <a class="sidebar-item" href="models_use.html">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M21 21l-4.3-4.3"/></svg>
+        <span>通用推理</span>
+      </a>
+      <a class="sidebar-item" href="training_queue.html">
+        <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        <span>训练队列</span>
+      </a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
+      <a class="sidebar-item" href="team_manage.html">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="15" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        <span>团队管理</span>
+      </a>
+      <a class="sidebar-item" href="profile.html">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>个人中心</span>
+      </a>
+    </div>
+  </nav>
+</aside>
+<script>(function(){var s=document.querySelector(".sidebar");if(s&&localStorage.getItem("sidebar_collapsed")==="true"){s.classList.add("collapsed")}})()</script>
+
+<div class="main">
+  <header class="header">
+    <div class="breadcrumb"><a href="projects.html">首页</a> <span class="sep">›</span> <span>算法项目</span></div>
+    <div class="header-actions">
+      <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
+        <span style="font-size:12px;" id="headerUserName">用户</span>
+        <div class="user-avatar" id="headerUserAvatar">U</div>
+        <div class="user-dropdown" id="userDropdown">
+          <a href="profile.html">个人中心</a>
+          <a href="#" onclick="event.stopPropagation();logout()">退出登录</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-header">
+      <h2>算法项目</h2>
+      <div class="filter-bar">
+        <input type="text" id="searchInput" placeholder="搜索算法名称..." oninput="renderProjects()" style="width:180px;">
+        <select id="filterTaskType" onchange="renderProjects()">
+          <option value="">全部类型</option>
+          <option value="detection">目标检测</option>
+          <option value="segment">分割模型</option>
+        </select>
+        <select id="filterTag" onchange="renderProjects()">
+          <option value="">全部标签</option>
+        </select>
+        <button class="btn btn-primary" onclick="showNewModal()">+ 新建算法</button>
+      </div>
+    </div>
+
+    <div class="project-grid" id="projectGrid"></div>
+  </div>
+</div>
+
+<!-- New Algorithm Modal -->
+<div class="modal-overlay" id="newModal" style="display:none;" onclick="if(event.target==this)closeNewModal()">
+  <div class="modal" style="width:440px;">
+    <div class="modal-header">新建算法<button class="modal-close" onclick="closeNewModal()">✕</button></div>
+    <div class="modal-body" style="padding:20px 28px;">
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>算法名称</label>
+        <input type="text" id="newName" placeholder="请输入算法名称" style="width:100%;" onkeydown="if(event.key==='Enter')createProject()">
+      </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>标签（可选）</label>
+        <select id="newTag" style="width:100%;">
+          <option value="">— 不选标签 —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>模型任务</label>
+        <select id="newTaskType" style="width:100%;">
+          <option value="detection">目标检测（YOLO）</option>
+          <option value="segment">分割模型</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default btn-sm" onclick="closeNewModal()">取消</button>
+      <button class="btn btn-primary btn-sm" onclick="createProject()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal" style="display:none;" onclick="if(event.target==this)closeEditModal()">
+  <div class="modal" style="width:440px;">
+    <div class="modal-header">编辑算法<button class="modal-close" onclick="closeEditModal()">✕</button></div>
+    <div class="modal-body" style="padding:20px 28px;">
+      <input type="hidden" id="editId">
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>算法名称</label>
+        <input type="text" id="editName" style="width:100%;">
+      </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label>标签</label>
+        <select id="editTag" style="width:100%;">
+          <option value="">— 不选标签 —</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default btn-sm" onclick="closeEditModal()">取消</button>
+      <button class="btn btn-primary btn-sm" onclick="saveEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal-overlay" id="deleteModal" style="display:none;" onclick="if(event.target==this)closeDeleteModal()">
+  <div class="modal" style="width:460px;">
+    <div class="modal-header">确认删除<button class="modal-close" onclick="closeDeleteModal()">✕</button></div>
+    <div class="modal-body" style="padding:20px 28px;">
+      <p style="font-size:13px;margin-bottom:12px;">确定要删除算法「<strong id="deleteName"></strong>」吗？此操作不可撤销。</p>
+      <p style="font-size:12px;color:var(--text-muted);">将删除该算法下的全部数据集、标注、模型和部署记录。</p>
+      <div style="margin-top:12px;">
+        <label style="font-size:12px;color:var(--text-secondary);">请输入算法名称确认：</label>
+        <input type="text" id="deleteConfirm" style="width:100%;margin-top:4px;padding:7px 10px;border:1px solid #d9d9d9;border-radius:4px;" oninput="checkDeleteConfirm()">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default btn-sm" onclick="closeDeleteModal()">取消</button>
+      <button class="btn btn-danger btn-sm" id="btnDelete" disabled onclick="executeDelete()">确认删除</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="common.js"></script>
+<script>
+var KEY = 'personal_projects';
+
+function getProjects() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch(e) { return []; } }
+function saveProjects(arr) { localStorage.setItem(KEY, JSON.stringify(arr)); }
+
+var ICON_COLORS = ['#1890ff,#36cfc9','#fa8c16,#f5222d','#722ed1,#eb2f96','#52c41a,#13c2c2','#2f54eb,#a0d911'];
+function getColor(id) { var h = 0; for (var i = 0; i < id.length; i++) h = id.charCodeAt(i) + h; return ICON_COLORS[Math.abs(h) % ICON_COLORS.length]; }
+
+function getLatestModel(projectName) {
+  var models = [];
+  try { models = JSON.parse(localStorage.getItem('platform_models')) || []; } catch(e) {}
+  var projModels = models.filter(function(m) { return m.project === projectName; });
+  if (projModels.length === 0) return null;
+  var inUse = projModels.find(function(m) { return m.inUse; });
+  if (inUse) return inUse;
+  projModels.sort(function(a, b) { return (b.mAP50 || '0').localeCompare(a.mAP50 || '0'); });
+  return projModels[0];
+}
+
+function getDatasetCount(projectName) {
+  var ds = [];
+  try { ds = JSON.parse(localStorage.getItem('dc_datasets')) || []; } catch(e) {}
+  return ds.filter(function(d) { return d.project === projectName; }).length;
+}
+
+function populateTagFilter() {
+  var tags = getTags();
+  var sel = document.getElementById('filterTag');
+  sel.innerHTML = '<option value="">全部标签</option>';
+  tags.forEach(function(t) {
+    var opt = document.createElement('option');
+    opt.value = t; opt.textContent = t;
+    sel.appendChild(opt);
+  });
+}
+
+function populateTagSelects() {
+  var tags = getTags();
+  var html = '<option value="">— 不选标签 —</option>';
+  tags.forEach(function(t) { html += '<option value="' + t + '">' + t + '</option>'; });
+  document.getElementById('newTag').innerHTML = html;
+  document.getElementById('editTag').innerHTML = html;
+}
+
+function renderProjects() {
+  var projects = getProjects();
+  var currentUsername = (getUser() || {}).username || '';
+  var q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+  var ft = document.getElementById('filterTaskType').value;
+  var fg = document.getElementById('filterTag').value;
+  var list = projects.filter(function(p) {
+    if (q && p.name.toLowerCase().indexOf(q) < 0) return false;
+    if (ft && p.taskType !== ft) return false;
+    if (fg && p.tag !== fg) return false;
+    return true;
+  });
+  var grid = document.getElementById('projectGrid');
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="empty-state">' + (projects.length === 0 ? '还没有算法项目，点击上方「+ 新建算法」创建' : '没有匹配的算法') + '</div>';
+    return;
+  }
+  grid.innerHTML = list.map(function(p) {
+    var idx = projects.indexOf(p);
+    var color = getColor(p.id);
+    var isOwner = (p.owner === currentUsername);
+    var model = getLatestModel(p.name);
+    var dsCount = getDatasetCount(p.name);
+    var modelStr = model ? (model.model + ' ' + model.version) : '<span style="color:var(--text-muted);">暂无</span>';
+    var mapStr = model && model.mAP50 ? '<span style="color:var(--success);font-weight:600;">' + model.mAP50 + '</span>' : '<span style="color:var(--text-muted);">—</span>';
+    var tagHtml = p.tag ? '<span class="tag-chip pc-tag">' + p.tag + '</span>' : '';
+    return '<div class="project-card" onclick="enterProject(' + idx + ')">' +
+      tagHtml +
+      '<div class="pc-header">' +
+        '<div class="pc-icon" style="background:linear-gradient(135deg,' + color + ');">' + p.name.charAt(0) + '</div>' +
+        '<div>' +
+          '<div class="pc-name">' + p.name + getTaskTypeTag(p.taskType) + '</div>' +
+          '<div class="pc-date">创建于 ' + (p.createdAt || '') + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="pc-stats">' +
+        '<div class="pc-stat"><span class="pc-stat-label">模型</span><span class="pc-stat-value">' + modelStr + '</span></div>' +
+        '<div class="pc-stat"><span class="pc-stat-label">mAP@50</span><span class="pc-stat-value">' + mapStr + '</span></div>' +
+        '<div class="pc-stat"><span class="pc-stat-label">数据集</span><span class="pc-stat-value">' + (dsCount > 0 ? dsCount + ' 个' : '<span style="color:var(--text-muted);">暂无</span>') + '</span></div>' +
+      '</div>' +
+      '<div class="pc-actions" onclick="event.stopPropagation();">' +
+        (isOwner ? '<button class="btn btn-default btn-sm" onclick="openEditModal(' + idx + ')">编辑</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="openDeleteModal(' + idx + ')">删除</button>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function enterProject(idx) {
+  var projects = getProjects();
+  var p = projects[idx];
+  if (!p) return;
+  localStorage.setItem('current_project', p.id);
+  location.href = 'data_center.html';
+}
+
+function showNewModal() {
+  populateTagSelects();
+  document.getElementById('newName').value = '';
+  document.getElementById('newTag').value = '';
+  document.getElementById('newTaskType').value = 'detection';
+  document.getElementById('newModal').style.display = 'flex';
+  setTimeout(function(){ document.getElementById('newName').focus(); }, 50);
+}
+function closeNewModal() { document.getElementById('newModal').style.display = 'none'; }
+
+function createProject() {
+  var name = document.getElementById('newName').value.trim();
+  if (!name) { showToast('请输入算法名称'); return; }
+  var tag = document.getElementById('newTag').value;
+  var taskType = document.getElementById('newTaskType').value;
+  var projects = getProjects();
+  var id = 'my_' + Date.now();
+  projects.unshift({ id: id, name: name, tag: tag, taskType: taskType, createdAt: new Date().toISOString().slice(0,10), owner: (getUser()||{}).username || '' });
+  saveProjects(projects);
+  closeNewModal();
+  renderProjects();
+  populateTagFilter();
+  showToast('算法「' + name + '」已创建');
+}
+
+function openEditModal(idx) {
+  var projects = getProjects();
+  var p = projects[idx];
+  if (!p) return;
+  populateTagSelects();
+  document.getElementById('editId').value = idx;
+  document.getElementById('editName').value = p.name;
+  document.getElementById('editTag').value = p.tag || '';
+  document.getElementById('editModal').style.display = 'flex';
+}
+function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
+function saveEdit() {
+  var idx = parseInt(document.getElementById('editId').value);
+  var name = document.getElementById('editName').value.trim();
+  if (!name) { showToast('请输入算法名称'); return; }
+  var tag = document.getElementById('editTag').value;
+  var projects = getProjects();
+  if (projects[idx]) {
+    projects[idx].name = name;
+    projects[idx].tag = tag;
+    saveProjects(projects);
+  }
+  closeEditModal();
+  renderProjects();
+  showToast('已保存');
+}
+
+var deleteIdx = -1;
+function openDeleteModal(idx) {
+  var projects = getProjects();
+  var p = projects[idx];
+  if (!p) return;
+  deleteIdx = idx;
+  document.getElementById('deleteName').textContent = p.name;
+  document.getElementById('deleteConfirm').value = '';
+  document.getElementById('btnDelete').disabled = true;
+  document.getElementById('deleteModal').style.display = 'flex';
+}
+function closeDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
+function checkDeleteConfirm() {
+  var input = document.getElementById('deleteConfirm').value.trim();
+  var name = document.getElementById('deleteName').textContent;
+  document.getElementById('btnDelete').disabled = (input !== name);
+}
+function executeDelete() {
+  var projects = getProjects();
+  if (deleteIdx >= 0 && deleteIdx < projects.length) {
+    var name = projects[deleteIdx].name;
+    projects.splice(deleteIdx, 1);
+    saveProjects(projects);
+    closeDeleteModal();
+    renderProjects();
+    showToast('算法「' + name + '」已删除');
+  }
+}
+
+(function() {
+  var user = getUser();
+  if (!user) { location.href = 'login.html'; return; }
+  document.getElementById('headerUserName').textContent = user.name;
+  document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
+  // seed demo data
+  if (getProjects().length === 0) {
+    var demo = [
+      { id: 'my_1', name: '保安服检测', tag: '安防', taskType: 'detection', createdAt: '2026-07-20', owner: user.username },
+      { id: 'my_2', name: '烟火检测', tag: '安防', taskType: 'detection', createdAt: '2026-07-25', owner: user.username },
+      { id: 'my_3', name: '路面裂缝分割', tag: '交通', taskType: 'segment', createdAt: '2026-08-01', owner: user.username },
+    ];
+    saveProjects(demo);
+  }
+  populateTagFilter();
+  renderProjects();
+})();
+</script>
+</body>
+</html>
