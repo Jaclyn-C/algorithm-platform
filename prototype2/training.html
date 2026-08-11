@@ -6,7 +6,7 @@
 <title>算法一体化平台 — 模型训练</title>
 <link rel="stylesheet" href="common.css">
 <style>
-.content { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 16px 20px; gap: 16px; }
+.content { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 16px 20px; gap: 0px; }
   .train-layout { flex: 1; display: flex; gap: 12px; min-height: 0; }
   .card { display: flex; flex-direction: column; }
   .card-header { flex-shrink: 0; }
@@ -624,58 +624,31 @@ var dsValSelected = {};   // 验证数据集（右侧）独立选择状态
 var dsValInited = false;  // 仅首次默认全选可用验证集；用户清空后不再自动回填
 
 function buildDsOptions() {
-  // Ensure datasets are initialized (fallback if user hasn't visited 数据中心 or 数据集总览)
-  try {
-    var existing = JSON.parse(localStorage.getItem('platform_datasets')) || [];
-    if (existing.length === 0) {
-      var defaults = [
-        { project:'保安服检测', batch:'上传批次_20260628', batchDate:'2026-06-28', status:'已完成', statusClass:'tag-success', children: [
-          { key:'raw_videos', name:'files/', count:'4 个文件', dateText:'2026-06-28 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
-          { key:'extracted', name:'extracted_frames/', count:'1,248 张', dateText:'2026-06-29 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-          { key:'deduplicated', name:'deduplicated/', count:'1,102 张', dateText:'2026-06-30 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
-          { key:'labeled', name:'labeled/', count:'1,102 张', dateText:'2026-07-02 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
-          { key:'train', name:'train/', count:'771 张 + 标签', dateText:'2026-07-03 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
-          { key:'val', name:'val/', count:'331 张 + 标签', dateText:'2026-07-03 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
-        ]},
-        { project:'烟火检测', batch:'上传批次_20260701', batchDate:'2026-07-01', status:'标注中', statusClass:'tag-processing', children: [
-          { key:'raw_videos_02', name:'files/', count:'3 个文件', dateText:'2026-07-01 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
-          { key:'extracted_02', name:'extracted_frames/', count:'920 张', dateText:'2026-07-01 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-          { key:'deduplicated_02', name:'deduplicated/', count:'856 张', dateText:'2026-07-02 生成', icon:'dedup', iconGlyph:'▦', badge:'标注中 47/200', badgeClass:'processing' },
-        ]},
-        { project:'安全帽检测', batch:'上传批次_20260702', batchDate:'2026-07-02', status:'未标注', statusClass:'tag-default', children: [
-          { key:'raw_videos_03', name:'files/', count:'6 个文件', dateText:'2026-07-02 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
-          { key:'extracted_03', name:'extracted_frames/', count:'1,650 张', dateText:'2026-07-03 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
-          { key:'deduplicated_03', name:'deduplicated/', count:'1,517 张', dateText:'2026-07-03 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
-        ]},
-      ];
-      localStorage.setItem('platform_datasets', JSON.stringify(defaults));
-    }
-  } catch(e) {}
-
-  var datasets = [];
-  try { datasets = JSON.parse(localStorage.getItem('platform_datasets')) || []; } catch(e) {}
-  var project = getProjectName(localStorage.getItem('current_project') || '');
+  var pid = localStorage.getItem('current_project') || '';
+  var all = [];
+  try { all = JSON.parse(localStorage.getItem('dc_datasets')) || []; } catch(e) {}
+  // 只看当前项目 + 已划分(stage=split)的数据集
+  var splitDs = all.filter(function(d) { return d.project === pid && d.stage === 'split'; });
 
   var trainOpts = [], valOpts = [];
-  datasets.forEach(function(b) {
-    if (b.project !== project) return;
-    b.children.forEach(function(c) {
-      if (c.key.indexOf('train') === 0) {
-        trainOpts.push({ label: b.batch + ' train/ (' + c.count + ')', value: c.key, batch: b.batch });
-      } else if (c.key.indexOf('val') === 0) {
-        valOpts.push({ label: b.batch + ' val/ (' + c.count + ')', value: c.key, batch: b.batch });
-      }
-    });
+  splitDs.forEach(function(d) {
+    var trainCount = d.imgs.filter(function(i) { return !i.dup && i.tag === 'train'; }).length;
+    var valCount = d.imgs.filter(function(i) { return !i.dup && i.tag === 'val'; }).length;
+    if (trainCount > 0) {
+      trainOpts.push({ label: d.name + '-train (' + trainCount + ' 张)', value: d.id + '_train', batch: d.name });
+    }
+    if (valCount > 0) {
+      valOpts.push({ label: d.name + '-val (' + valCount + ' 张)', value: d.id + '_val', batch: d.name });
+    }
   });
 
-  // Default: select all trains, none val
+  // Default: select all trains
   if (Object.keys(dsSelected).length === 0) {
     trainOpts.forEach(function(o) { dsSelected[o.value] = true; });
   }
-
-  // Default: select all available val (not chosen as training) — only on first init
+  // Default: select all val
   if (!dsValInited) {
-    valOpts.forEach(function(o) { if (!dsSelected[o.value]) dsValSelected[o.value] = true; });
+    valOpts.forEach(function(o) { dsValSelected[o.value] = true; });
     dsValInited = true;
   }
 
@@ -1054,7 +1027,8 @@ function submitToQueue() {
     submittedAt: new Date().toISOString().slice(0,16).replace('T',' ')
   });
   localStorage.setItem('training_queue', JSON.stringify(queue));
-  showToast('训练任务已提交到队列！当前队列共 ' + queue.length + ' 个任务');
+  showToast('训练任务已提交到队列！');
+  setTimeout(function() { location.href = 'training_queue.html'; }, 1200);
 }
 
 // ==================== HISTORY MODAL ====================

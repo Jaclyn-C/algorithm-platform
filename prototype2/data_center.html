@@ -264,14 +264,25 @@
 </div>
 <!-- YOLO 划分 -->
 <div class="modal-overlay" id="splitModal" style="display:none;z-index:1050;" onclick="if(event.target==this)this.style.display='none'">
-  <div class="modal" style="width:900px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;">
+  <div class="modal" style="width:440px;">
     <div class="modal-header">导出 YOLO 划分<button class="modal-close" onclick="document.getElementById('splitModal').style.display='none'">✕</button></div>
-    <div style="padding:20px;overflow-y:auto;flex:1;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;"><span style="font-size:13px;font-weight:600;">训练 : 验证</span><input type="range" id="splitRatio" min="0" max="10" value="7" style="flex:1;" oninput="updateSplitLabel()"><span id="splitLabel" style="font-weight:700;min-width:50px;text-align:center;">7 : 3</span><button class="btn btn-primary btn-sm" onclick="applySplit()">应用比例</button></div>
-      <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">点击图片可在 train/val 间互转</div>
-      <div class="split-cards">
-        <div class="split-card"><div class="split-card-head"><span style="color:var(--success);">train</span><span class="text-muted" id="splitTrainCount">0</span></div><div class="img-grid" id="splitTrainGrid"></div></div>
-        <div class="split-card"><div class="split-card-head"><span style="color:#722ed1;">val</span><span class="text-muted" id="splitValCount">0</span></div><div class="img-grid" id="splitValGrid"></div></div>
+    <div style="padding:24px 28px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <span style="font-size:13px;font-weight:600;white-space:nowrap;">训练 : 验证</span>
+        <input type="range" id="splitRatio" min="0" max="10" value="7" style="flex:1;" oninput="updateSplitLabel()">
+        <span id="splitLabel" style="font-weight:700;min-width:50px;text-align:center;font-size:14px;">7 : 3</span>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <div style="flex:1;background:#f6ffed;border:1px solid #d9f7be;border-radius:6px;padding:16px;text-align:center;">
+          <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">train 训练集</div>
+          <div id="splitTrainCount" style="font-size:24px;font-weight:700;color:var(--success);">0</div>
+          <div style="font-size:10px;color:var(--text-muted);">张</div>
+        </div>
+        <div style="flex:1;background:#f9f0ff;border:1px solid #d3adf7;border-radius:6px;padding:16px;text-align:center;">
+          <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">val 验证集</div>
+          <div id="splitValCount" style="font-size:24px;font-weight:700;color:#722ed1;">0</div>
+          <div style="font-size:10px;color:var(--text-muted);">张</div>
+        </div>
       </div>
     </div>
     <div class="modal-footer"><button class="btn btn-default btn-sm" onclick="document.getElementById('splitModal').style.display='none'">取消</button><button class="btn btn-primary btn-sm" onclick="confirmSplit()">完成划分</button></div>
@@ -336,14 +347,14 @@ function editDsTitle(){var d=curDs();if(!d)return;var h2=document.getElementById
 
 function renderViewer(){var d=curDs();if(!d)return;var body=document.getElementById('viewerBody');var delBtn=document.getElementById('viewerDeleteBtn');var kept=d.imgs.filter(function(i){return!i.dup});var dupN=d.imgs.length-kept.length;var c=getAnnoCounts(d);document.getElementById('dsStats').innerHTML='共 <strong>'+kept.length+'</strong> 张 · <span style="color:var(--success);font-weight:500;">已标注 '+c.annotated+'</span> · <span style="color:#eb2f96;font-weight:500;">待审核 '+c.review+'</span> · <span style="color:var(--text-muted);">未标注 '+c.unannotated+'</span>'+(d.stage==='split'?' · train '+d.imgs.filter(function(i){return i.tag==='train'}).length+' / val '+d.imgs.filter(function(i){return i.tag==='val'}).length:'');var ab=document.getElementById('btnAnnoTask');if(ab)ab.textContent=d.stage==='review'?'审核标注':d.stage==='annotating'?'继续标注':d.stage==='annotated'?'查看标注':'创建标注任务';
 if(viewerMode==='dedup'){delBtn.style.display='inline-flex';var kl=d.imgs.filter(function(i){return!i.dup});var dl=d.imgs.filter(function(i){return i.dup});if(viewLayout==='list'){body.innerHTML='<div style="display:flex;gap:14px;height:100%;overflow:hidden;"><div style="flex:0 0 64%;display:flex;flex-direction:column;min-width:0;overflow:hidden;"><div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;flex-shrink:0;">保留（'+kl.length+'）</div><div style="flex:1;overflow:auto;"><table class="table"><thead><tr><th style="width:30px;"></th><th>图片ID</th><th>缩略图</th><th>标注状态</th><th>标注方式</th><th>作者</th></tr></thead><tbody>'+kl.map(function(i,idx){return renderListRow(i,idx,d,true)}).join('')+'</tbody></table></div></div><div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;"><div style="font-size:12px;font-weight:600;color:#ff4d4f;margin-bottom:8px;flex-shrink:0;">重复（'+dl.length+'）</div><div style="flex:1;overflow:auto;"><table class="table"><thead><tr><th style="width:30px;"></th><th>图片ID</th><th>缩略图</th><th>标注状态</th></tr></thead><tbody>'+dl.map(function(i,idx){return renderListRow(i,idx,d,true)}).join('')+'</tbody></table></div></div></div>'}else{body.innerHTML='<div class="dedup-split"><div class="dedup-col dedup-col-left"><div class="dedup-col-head"><span>保留（'+kl.length+'）</span><span style="font-weight:400;font-size:11px;color:var(--text-muted)">勾选后可删</span></div><div class="dedup-col-body"><div class="img-grid">'+kl.map(function(i){return imgCard(i,true)}).join('')+'</div></div></div><div class="dedup-col dedup-col-right"><div class="dedup-col-head"><span style="color:#ff4d4f">重复（'+dl.length+'）</span><span style="font-weight:400;font-size:11px;color:var(--text-muted)">默认选中</span></div><div class="dedup-col-body"><div class="img-grid">'+dl.map(function(i){return imgCard(i,true)}).join('')+'</div></div></div></div>'}}
-else if(viewerMode==='split'){delBtn.style.display='none';var tr=d.imgs.filter(function(i){return i.tag==='train'});var va=d.imgs.filter(function(i){return i.tag==='val'});body.innerHTML='<div class="dedup-split"><div class="dedup-col dedup-col-left"><div class="dedup-col-head"><span style="color:var(--success)">train（'+tr.length+'）</span><span style="font-weight:400;font-size:11px;color:var(--text-muted)">点击→val</span></div><div class="dedup-col-body"><div class="img-grid">'+tr.map(splitCard).join('')+'</div></div></div><div class="dedup-col dedup-col-right"><div class="dedup-col-head"><span style="color:#722ed1">val（'+va.length+'）</span><span style="font-weight:400;font-size:11px;color:var(--text-muted)">点击→train</span></div><div class="dedup-col-body"><div class="img-grid">'+va.map(splitCard).join('')+'</div></div></div></div>'}
-else{delBtn.style.display='none';var allImgs=d.stage==='extracted'?d.imgs:kept;var sl=filterByStatus(allImgs,d);if(viewLayout==='list'){body.innerHTML='<table class="table"><thead><tr><th style="width:30px;"></th><th>图片ID</th><th>处理时间</th><th>缩略图</th><th>标注状态</th><th>标注方式</th><th>作者</th><th>备注</th><th>操作</th></tr></thead><tbody>'+sl.map(function(i,idx){return renderListRow(i,idx,d,false)}).join('')+'</tbody></table>'}else{body.innerHTML='<div class="viewer-grid">'+sl.map(function(i){return imgCard(i,false)}).join('')+'</div>'}}}
+else if(viewerMode==='split'){delBtn.style.display='none';var tr=d.imgs.filter(function(i){return i.tag==='train'});var va=d.imgs.filter(function(i){return i.tag==='val'});if(viewLayout==='list'){var allSplit=tr.concat(va);body.innerHTML='<table class="table"><thead><tr><th style="width:30px;"></th><th>图片ID</th><th>处理时间</th><th>缩略图</th><th>标注状态</th><th>标注方式</th><th>数据集</th><th>作者</th><th>备注</th><th>操作</th></tr></thead><tbody>'+allSplit.map(function(i,idx){return renderListRow(i,idx,d,false)}).join('')+'</tbody></table>'}else{body.innerHTML='<div class="dedup-split"><div class="dedup-col dedup-col-left"><div class="dedup-col-head"><span style="color:var(--success)">train（'+tr.length+'）</span></div><div class="dedup-col-body"><div class="img-grid">'+tr.map(splitCard).join('')+'</div></div></div><div class="dedup-col dedup-col-right"><div class="dedup-col-head"><span style="color:#722ed1">val（'+va.length+'）</span></div><div class="dedup-col-body"><div class="img-grid">'+va.map(splitCard).join('')+'</div></div></div></div>'}}
+else{delBtn.style.display='none';var allImgs=d.stage==='extracted'?d.imgs:kept;var sl=filterByStatus(allImgs,d);if(viewLayout==='list'){body.innerHTML='<table class="table"><thead><tr><th style="width:30px;"></th><th>图片ID</th><th>处理时间</th><th>缩略图</th><th>标注状态</th><th>标注方式</th><th>数据集</th><th>作者</th><th>备注</th><th>操作</th></tr></thead><tbody>'+sl.map(function(i,idx){return renderListRow(i,idx,d,false)}).join('')+'</tbody></table>'}else{body.innerHTML='<div class="viewer-grid">'+sl.map(function(i){return imgCard(i,false)}).join('')+'</div>'}}}
 
 function imgCard(i,sel){var d=curDs();var dt=i.dup?'<span class="img-tag-dup">重复</span>':'';var badge=sel?'':getStatusBadge(i,d);var ck=sel?'<input type="checkbox" class="img-del-check" data-img="'+i.id+'" '+(i.dup?'checked':'')+' onclick="event.stopPropagation()">':'';var cl=sel?'event.stopPropagation();flipCheck(this)':'previewImg(\''+i.id+'\')';return '<div class="img-thumb" onclick="'+cl+'">'+dt+badge+ck+'<div style="width:100%;height:100%;background:hsl('+i.hue+',40%,75%);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;">'+i.name+'</div><div class="img-overlay">'+i.name+'</div></div>'}
 function flipCheck(c){var cb=c.querySelector('.img-del-check');if(cb)cb.checked=!cb.checked}
-function splitCard(i){return '<div class="img-thumb" onclick="moveSplit(\''+i.id+'\')" title="'+(i.tag==='train'?'移至val':'移至train')+'"><div style="width:100%;height:100%;background:hsl('+i.hue+',40%,75%);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;">'+i.name+'</div><div class="img-overlay">'+(i.tag==='train'?'→val':'→train')+'</div></div>'}
-function moveSplit(id){var d=curDs();if(!d)return;var i=d.imgs.find(function(x){return x.id===id});if(!i)return;i.tag=i.tag==='train'?'val':'train';saveDs();renderViewer()}
+function splitCard(i){var isTrain=i.tag==='train';return '<div class="img-thumb" onclick="previewImg(\''+i.id+'\')" style="position:relative;"><div style="width:100%;height:100%;background:hsl('+i.hue+',40%,75%);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;">'+i.name+'</div><div onclick="event.stopPropagation();moveSplit(\''+i.id+'\')" style="position:absolute;bottom:0;left:0;right:0;padding:4px 6px;font-size:10px;text-align:center;cursor:pointer;color:#fff;background:'+(isTrain?'rgba(114,46,209,0.75)':'rgba(82,196,26,0.75)')+';font-weight:600;">'+(isTrain?'→ 移至 val':'→ 移至 train')+'</div></div>'}
 function previewImg(id){var d=curDs();if(!d)return;var i=d.imgs.find(function(x){return x.id===id});if(!i)return;document.getElementById('lbInfo').innerHTML='<div style="font-size:15px;font-weight:600">'+i.name+'</div>';document.getElementById('lbPreview').innerHTML='<div style="width:100%;height:100%;background:hsl('+i.hue+',40%,70%);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-direction:column;"><div style="font-size:40px;margin-bottom:8px"><svg width="48" height="48" viewBox="0 0 24 24" stroke="#fff" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div><div>'+i.name+'</div></div>';document.getElementById('imgLightbox').style.display='flex'}
+function moveSplit(id){var d=curDs();if(!d)return;var i=d.imgs.find(function(x){return x.id===id});if(!i)return;i.tag=i.tag==='train'?'val':'train';saveDs();renderViewer()}
 
 // --- per-image annotation status ---
 function getImgStatus(i,d){
@@ -370,11 +381,13 @@ function goAnnotate(imgId){
   location.href='annotation.html#dataset='+encodeURIComponent(pid+'_'+d.id);
 }
 
+function getSetLabel(i){if(i.tag==='train')return '<span class="tag tag-success">train</span>';if(i.tag==='val')return '<span class="tag" style="background:#f9f0ff;color:#722ed1;">val</span>';return '<span class="tag tag-default">未分配</span>'}
 function renderListRow(i,idx,d,selectable){
   var ck=selectable?'<input type="checkbox" class="img-del-check" data-img="'+i.id+'" '+(i.dup?'checked':'')+'>':'';
   var thumb='<div style="width:48px;height:32px;border-radius:3px;background:hsl('+i.hue+',40%,75%);display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;overflow:hidden;">'+i.name.slice(-8)+'</div>';
   var status=getStatusLabel(i,d);
   var method=getMethodLabel(i,d);
+  var setLabel=getSetLabel(i);
   var s=getImgStatus(i,d);
   var actionText=(s==='unannotated')?'标注':'查看';
   return '<tr style="cursor:pointer;" onclick="goAnnotate(\''+i.id+'\')">'+
@@ -384,8 +397,9 @@ function renderListRow(i,idx,d,selectable){
     '<td style="width:60px;">'+thumb+'</td>'+
     '<td>'+status+'</td>'+
     '<td style="width:80px;font-size:11px;">'+method+'</td>'+
+    '<td style="width:70px;">'+setLabel+'</td>'+
     '<td style="width:70px;font-size:11px;">'+(d.uploader||'—')+'</td>'+
-    '<td style="width:100px;color:var(--text-muted);font-size:11px;">—</td>'+
+    '<td style="width:80px;color:var(--text-muted);font-size:11px;">—</td>'+
     '<td style="width:60px;" onclick="event.stopPropagation();"><button class="btn btn-text btn-sm" onclick="goAnnotate(\''+i.id+'\')" style="color:var(--primary);font-size:11px;">'+actionText+'</button></td>'+
   '</tr>';
 }
@@ -415,11 +429,10 @@ function addCustomModel(){var ver=document.getElementById('customModelVer').valu
 function startAutoAnno(){var ck=document.querySelectorAll('.anno-cat:checked');if(!ck.length){showToast('请选择类别');return}document.getElementById('autoAnnoModal').style.display='none';var d=curDs();if(d){d.stage='review';saveDs();renderDsCards();if(currentDsId)renderViewer()}showToast('自动标注完成：'+(d?d.imgs.filter(function(i){return!i.dup}).length:0)+'张，待审核')}
 
 // --- split ---
-function openSplit(){var d=curDs();if(!d)return;var r=d.splitRatio!=null?d.splitRatio:7;document.getElementById('splitRatio').value=r;updateSplitLabel();if(!d.imgs.some(function(i){return i.tag}))applySplit(true);else renderSplitGrids();document.getElementById('splitModal').style.display='flex'}
-function updateSplitLabel(){var r=parseInt(document.getElementById('splitRatio').value);document.getElementById('splitLabel').textContent=r+' : '+(10-r)}
-function applySplit(silent){var d=curDs();if(!d)return;var r=parseInt(document.getElementById('splitRatio').value);var imgs=d.imgs.slice();for(var i=imgs.length-1;i>0;i--){var j=(i*7+3)%(i+1);var t=imgs[i];imgs[i]=imgs[j];imgs[j]=t}var tn=Math.round(imgs.length*r/10);imgs.forEach(function(i,idx){i.tag=idx<tn?'train':'val'});saveDs();renderSplitGrids();if(!silent)showToast('已划分 train '+tn+' / val '+(imgs.length-tn))}
-function renderSplitGrids(){var d=curDs();if(!d)return;var tr=d.imgs.filter(function(i){return i.tag==='train'});var va=d.imgs.filter(function(i){return i.tag==='val'});document.getElementById('splitTrainCount').textContent=tr.length;document.getElementById('splitValCount').textContent=va.length;document.getElementById('splitTrainGrid').innerHTML=tr.length?tr.map(splitCard).join(''):'<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:20px;">无</div>';document.getElementById('splitValGrid').innerHTML=va.length?va.map(splitCard).join(''):'<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:20px;">无</div>'}
-function confirmSplit(){var d=curDs();if(!d)return;d.stage='split';d.splitRatio=parseInt(document.getElementById('splitRatio').value);saveDs();document.getElementById('splitModal').style.display='none';renderDsCards();if(currentDsId){viewerMode='split';renderViewer()}showToast('已完成划分')}
+function openSplit(){var d=curDs();if(!d)return;var r=d.splitRatio!=null?d.splitRatio:7;document.getElementById('splitRatio').value=r;updateSplitCounts();document.getElementById('splitModal').style.display='flex'}
+function updateSplitLabel(){var r=parseInt(document.getElementById('splitRatio').value);document.getElementById('splitLabel').textContent=r+' : '+(10-r);updateSplitCounts()}
+function updateSplitCounts(){var d=curDs();if(!d)return;var kept=d.imgs.filter(function(i){return!i.dup});var r=parseInt(document.getElementById('splitRatio').value);var trainN=Math.round(kept.length*r/10);document.getElementById('splitTrainCount').textContent=trainN;document.getElementById('splitValCount').textContent=kept.length-trainN}
+function confirmSplit(){var d=curDs();if(!d)return;var r=parseInt(document.getElementById('splitRatio').value);var kept=d.imgs.filter(function(i){return!i.dup});var imgs=kept.slice();for(var i=imgs.length-1;i>0;i--){var j=(i*7+3)%(i+1);var t=imgs[i];imgs[i]=imgs[j];imgs[j]=t}var tn=Math.round(imgs.length*r/10);imgs.forEach(function(i,idx){i.tag=idx<tn?'train':'val'});d.stage='split';d.splitRatio=r;saveDs();document.getElementById('splitModal').style.display='none';renderDsCards();if(currentDsId){viewerMode='split';renderViewer()}showToast('已完成：train '+tn+' / val '+(imgs.length-tn))}
 
 // --- seed ---
 function ensureSeed(){var pid=localStorage.getItem('current_project')||'';if(!pid)return;if(!media.length){media=[{id:'vid_1',name:'路段A监控.mp4',size:'412 MB',duration:'00:15:32',resolution:'1920×1080',fps:30},{id:'vid_2',name:'厂区夜间.mp4',size:'286 MB',duration:'00:09:45',resolution:'1920×1080',fps:25}];saveMedia()}var hasDs=datasets.some(function(d){return d.project===pid});if(!hasDs){var pn=getProjectName(pid);var pfx=pid.replace(/[^a-zA-Z0-9]/g,'').slice(0,8);[['·抽样',60,'deduped'],['·夜间片段',40,'extracted']].forEach(function(d,i){var id=pfx+'_'+(i+1);var imgs=genImages(id,d[1]);if(i===0)for(var k=0;k<15&&k<imgs.length;k++)imgs[k].dup=true;datasets.push({id:id,name:pn+d[0],videoName:media[i]?media[i].name:'视频',createdAt:'2026-08-0'+(2+i),stage:d[2],splitRatio:null,project:pid,uploader:(getUser()||{}).name||'—',imgs:imgs})});saveDs()}}
