@@ -41,30 +41,29 @@
 <aside class="sidebar">
   <div class="sidebar-logo">
     <div class="logo-icon">AI</div>
-    <div class="sidebar-expand-btn" onclick="toggleSidebar()" title="展开侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
-    <div class="logo-text" id="sidebarLogoText">算法一体化平台</div>
-    <div class="sidebar-collapse-btn" onclick="toggleSidebar()" title="收起侧边栏"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="10" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+    <div class="sidebar-expand-btn" onclick="toggleSidebar()"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+    <div class="logo-text">算法一体化平台</div>
+    <div class="sidebar-collapse-btn" onclick="toggleSidebar()"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="10" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
   </div>
-  
   <nav class="sidebar-nav">
     <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
-      <a class="sidebar-item" href="projects.html" data-icon="👥">团队算法</a>
-      <a class="sidebar-item active" href="#" data-icon="📊">模型总览</a>
-      <a class="sidebar-item" href="datasets_overview.html" data-icon="📦">数据集总览</a>
-      <a class="sidebar-item" href="models_use.html" data-icon="🔍">通用推理</a>
-      <a class="sidebar-item" href="training_queue.html" data-icon="📋">训练队列</a>
+      <a class="sidebar-item" href="projects.html"><svg viewBox="0 0 24 24"><path d="M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-8l-2-2H4a1 1 0 0 0-1 1z"/></svg><span>算法项目</span></a>
+      <a class="sidebar-item active" href="#"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg><span>模型总览</span></a>
+      <a class="sidebar-item" href="datasets_overview.html"><svg viewBox="0 0 24 24"><path d="M4 6c0-1.1 3.6-2 8-2s8 .9 8 2-3.6 2-8 2-8-.9-8-2zM4 6v6c0 1.1 3.6 2 8 2s8-.9 8-2V6M4 12v6c0 1.1 3.6 2 8 2s8-.9 8-2v-6"/></svg><span>数据集总览</span></a>
+      <a class="sidebar-item" href="models_use.html"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M21 21l-4.3-4.3"/></svg><span>通用推理</span></a>
+      <a class="sidebar-item" href="training_queue.html"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>训练队列</span></a>
     </div>
     <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
-      <a class="sidebar-item" href="team_manage.html" data-icon="⚙">团队管理</a>
-      <a class="sidebar-item" href="profile.html" data-icon="👤">个人中心</a>
+      <a class="sidebar-item" href="team_manage.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="15" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>团队管理</span></a>
+      <a class="sidebar-item" href="profile.html"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>个人中心</span></a>
     </div>
   </nav>
 </aside>
-<script>(function(){var s=document.querySelector(".sidebar");if(s&&localStorage.getItem("sidebar_collapsed")==="true"){s.classList.add("collapsed")}}())</script>
+<script>(function(){var s=document.querySelector(".sidebar");if(s&&localStorage.getItem("sidebar_collapsed")==="true"){s.classList.add("collapsed")}})()</script>
 
 <div class="main">
   <header class="header">
-    <div class="breadcrumb"><a href="projects.html" style="color:var(--text-secondary);text-decoration:none;" data-icon="🏠">首页</a> <span class="sep">›</span> <span>模型总览</span></div>
+    <div class="breadcrumb"><a href="projects.html">首页</a> <span class="sep">›</span> <span>模型总览</span></div>
     <div class="header-actions">
             
 
@@ -112,7 +111,6 @@
               <th style="width:90px;">版本号</th>
               <th style="width:80px;">mAP@50</th>
               <th style="width:80px;">训练阶段</th>
-              <th style="width:90px;">使用状态</th>
               <th>备注</th>
               <th style="width:80px;">操作</th>
             </tr>
@@ -190,15 +188,16 @@ function loadModels() {
 }
 function saveDefaultModels() {
   if (!localStorage.getItem(MODELS_KEY)) {
-    // These are the ALL_MODELS array defaults — save them on first access
     var defaults = [
-      { id: 1, project: '保安服检测', time: '2026-07-02 15:30', taskName: '保安服检测-yolo11m-800e-16b-best.pt', model: 'best.pt', version: 'v1.3.0', epochs: 800, mAP50: '0.872', mAP5095: '0.651', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
-      { id: 2, project: '保安服检测', time: '2026-06-28 09:15', taskName: '保安服检测-yolo11m-500e-32b-best.pt', model: 'best.pt', version: 'v1.2.0', epochs: 500, mAP50: '0.851', mAP5095: '0.624', inUse: false, pretrained: 'yolo11m.pt', size: '12.7 MB', notes: '检测精度略有下降', stage: '已完成' },
-      { id: 3, project: '保安服检测', time: '2026-06-20 14:00', taskName: '保安服检测-yolo11m-500e-32b-last.pt', model: 'last.pt', version: 'v1.1.0', epochs: 500, mAP50: '0.813', mAP5095: '0.587', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
-      { id: 4, project: '烟火检测', time: '2026-07-05 10:20', taskName: '烟火检测-夜间优化版-best.pt', model: 'best.pt', version: 'v2.0.0', epochs: 1000, mAP50: '0.918', mAP5095: '0.734', inUse: false, pretrained: 'yolo11m.pt', size: '12.9 MB', notes: '误报率偏高，需调整阈值', stage: '训练中' },
-      { id: 5, project: '烟火检测', time: '2026-06-30 16:45', taskName: '烟火检测-yolo11m-600e-16b-best.pt', model: 'best.pt', version: 'v1.0.0', epochs: 600, mAP50: '0.886', mAP5095: '0.691', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
-      { id: 6, project: '安全帽检测', time: '2026-07-08 11:00', taskName: '安全帽检测-yolo11m-800e-16b-best.pt', model: 'best.pt', version: 'v1.0.0', epochs: 800, mAP50: '0.835', mAP5095: '0.612', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
-      { id: 7, project: '安全帽检测', time: '2026-06-20 14:00', taskName: '安全帽检测-yolo11n-500e-16b-best.pt', model: 'best.pt', version: 'v0.5.0', epochs: 500, mAP50: '0.784', mAP5095: '0.543', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
+      { id: 1, project: '保安服检测', time: '2026-08-05 09:15', taskName: '保安服检测-yolo11l-800e-32b', model: 'best.pt', version: 'v2.0.0', epochs: 800, mAP50: '0.891', mAP5095: '0.672', inUse: true, pretrained: 'yolo11l.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+      { id: 2, project: '保安服检测', time: '2026-07-28 10:30', taskName: '保安服检测-yolo11m-600e-16b', model: 'best.pt', version: 'v1.2.0', epochs: 600, mAP50: '0.872', mAP5095: '0.651', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+      { id: 3, project: '保安服检测', time: '2026-07-20 16:00', taskName: '保安服检测-迁移学习实验', model: 'best.pt', version: 'v1.1.0', epochs: 400, mAP50: '0.845', mAP5095: '0.618', inUse: false, pretrained: 'yolo11m.pt', size: '12.7 MB', notes: '', stage: '已完成' },
+      { id: 4, project: '保安服检测', time: '2026-07-01 09:00', taskName: '保安服检测-初版基线', model: 'last.pt', version: 'v1.0.0', epochs: 200, mAP50: '0.724', mAP5095: '0.481', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
+      { id: 5, project: '烟火检测', time: '2026-08-08 15:30', taskName: '烟火检测-yolo11x-1200e-16b', model: 'best.pt', version: 'v2.0.0', epochs: 1200, mAP50: '0.931', mAP5095: '0.758', inUse: true, pretrained: 'yolo11x.pt', size: '12.9 MB', notes: '', stage: '已完成' },
+      { id: 6, project: '烟火检测', time: '2026-07-20 14:15', taskName: '烟火检测-yolo11m-1000e-16b', model: 'best.pt', version: 'v1.1.0', epochs: 1000, mAP50: '0.918', mAP5095: '0.734', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+      { id: 7, project: '烟火检测', time: '2026-07-08 09:30', taskName: '烟火检测-yolo11m-500e-16b', model: 'best.pt', version: 'v1.0.0', epochs: 500, mAP50: '0.886', mAP5095: '0.691', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+      { id: 8, project: '路面裂缝分割', time: '2026-08-07 11:00', taskName: '路面裂缝-yolo11m-seg-600e', model: 'best.pt', version: 'v1.1.0', epochs: 600, mAP50: '0.823', mAP5095: '0.601', inUse: true, pretrained: 'yolo11m-seg.pt', size: '13.2 MB', notes: '', stage: '已完成' },
+      { id: 9, project: '路面裂缝分割', time: '2026-07-28 09:00', taskName: '路面裂缝-初版基线', model: 'best.pt', version: 'v1.0.0', epochs: 300, mAP50: '0.712', mAP5095: '0.498', inUse: false, pretrained: 'yolo11n-seg.pt', size: '6.1 MB', notes: '', stage: '已完成' },
     ];
     localStorage.setItem(MODELS_KEY, JSON.stringify(defaults));
   }
@@ -206,13 +205,15 @@ function saveDefaultModels() {
 function saveModels() { try { localStorage.setItem(MODELS_KEY, JSON.stringify(ALL_MODELS)); } catch(e) {} }
 
 const ALL_MODELS = loadModels() || [
-  { id: 1, project: '保安服检测', time: '2026-07-02 15:30', taskName: '保安服检测-yolo11m-800e-16b-best.pt', model: 'best.pt', version: 'v1.3.0', epochs: 800, mAP50: '0.872', mAP5095: '0.651', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
-  { id: 2, project: '保安服检测', time: '2026-06-28 09:15', taskName: '保安服检测-yolo11m-500e-32b-best.pt', model: 'best.pt', version: 'v1.2.0', epochs: 500, mAP50: '0.851', mAP5095: '0.624', inUse: false, pretrained: 'yolo11m.pt', size: '12.7 MB', notes: '检测精度略有下降', stage: '已完成' },
-  { id: 3, project: '保安服检测', time: '2026-06-20 14:00', taskName: '保安服检测-yolo11m-500e-32b-last.pt', model: 'last.pt', version: 'v1.1.0', epochs: 500, mAP50: '0.813', mAP5095: '0.587', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
-  { id: 4, project: '烟火检测', time: '2026-07-05 10:20', taskName: '烟火检测-夜间优化版-best.pt', model: 'best.pt', version: 'v2.0.0', epochs: 1000, mAP50: '0.918', mAP5095: '0.734', inUse: false, pretrained: 'yolo11m.pt', size: '12.9 MB', notes: '误报率偏高，需调整阈值', stage: '训练中' },
-  { id: 5, project: '烟火检测', time: '2026-06-30 16:45', taskName: '烟火检测-yolo11m-600e-16b-best.pt', model: 'best.pt', version: 'v1.0.0', epochs: 600, mAP50: '0.886', mAP5095: '0.691', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
-  { id: 6, project: '安全帽检测', time: '2026-07-08 11:00', taskName: '安全帽检测-yolo11m-800e-16b-best.pt', model: 'best.pt', version: 'v1.0.0', epochs: 800, mAP50: '0.835', mAP5095: '0.612', inUse: true, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
-  { id: 7, project: '安全帽检测', time: '2026-06-20 14:00', taskName: '安全帽检测-yolo11n-500e-16b-best.pt', model: 'best.pt', version: 'v0.5.0', epochs: 500, mAP50: '0.784', mAP5095: '0.543', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
+  { id: 1, project: '保安服检测', time: '2026-08-05 09:15', taskName: '保安服检测-yolo11l-800e-32b', model: 'best.pt', version: 'v2.0.0', epochs: 800, mAP50: '0.891', mAP5095: '0.672', inUse: true, pretrained: 'yolo11l.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+  { id: 2, project: '保安服检测', time: '2026-07-28 10:30', taskName: '保安服检测-yolo11m-600e-16b', model: 'best.pt', version: 'v1.2.0', epochs: 600, mAP50: '0.872', mAP5095: '0.651', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+  { id: 3, project: '保安服检测', time: '2026-07-20 16:00', taskName: '保安服检测-迁移学习实验', model: 'best.pt', version: 'v1.1.0', epochs: 400, mAP50: '0.845', mAP5095: '0.618', inUse: false, pretrained: 'yolo11m.pt', size: '12.7 MB', notes: '', stage: '已完成' },
+  { id: 4, project: '保安服检测', time: '2026-07-01 09:00', taskName: '保安服检测-初版基线', model: 'last.pt', version: 'v1.0.0', epochs: 200, mAP50: '0.724', mAP5095: '0.481', inUse: false, pretrained: 'yolo11n.pt', size: '5.9 MB', notes: '', stage: '已终止' },
+  { id: 5, project: '烟火检测', time: '2026-08-08 15:30', taskName: '烟火检测-yolo11x-1200e-16b', model: 'best.pt', version: 'v2.0.0', epochs: 1200, mAP50: '0.931', mAP5095: '0.758', inUse: true, pretrained: 'yolo11x.pt', size: '12.9 MB', notes: '', stage: '已完成' },
+  { id: 6, project: '烟火检测', time: '2026-07-20 14:15', taskName: '烟火检测-yolo11m-1000e-16b', model: 'best.pt', version: 'v1.1.0', epochs: 1000, mAP50: '0.918', mAP5095: '0.734', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+  { id: 7, project: '烟火检测', time: '2026-07-08 09:30', taskName: '烟火检测-yolo11m-500e-16b', model: 'best.pt', version: 'v1.0.0', epochs: 500, mAP50: '0.886', mAP5095: '0.691', inUse: false, pretrained: 'yolo11m.pt', size: '12.8 MB', notes: '', stage: '已完成' },
+  { id: 8, project: '路面裂缝分割', time: '2026-08-07 11:00', taskName: '路面裂缝-yolo11m-seg-600e', model: 'best.pt', version: 'v1.1.0', epochs: 600, mAP50: '0.823', mAP5095: '0.601', inUse: true, pretrained: 'yolo11m-seg.pt', size: '13.2 MB', notes: '', stage: '已完成' },
+  { id: 9, project: '路面裂缝分割', time: '2026-07-28 09:00', taskName: '路面裂缝-初版基线', model: 'best.pt', version: 'v1.0.0', epochs: 300, mAP50: '0.712', mAP5095: '0.498', inUse: false, pretrained: 'yolo11n-seg.pt', size: '6.1 MB', notes: '', stage: '已完成' },
 ];
 
 // ── Render table ──
@@ -259,10 +260,6 @@ function renderModelTable() {
       stageTag = '<span class="text-muted">—</span>';
     }
 
-    var inUseHtml = m.inUse
-      ? '<span style="color:var(--success);"><span class="in-use-dot on"></span>使用中</span>'
-      : '<span class="text-muted"><span class="in-use-dot off"></span>—</span>';
-
     var row = '<tr>' +
       '<td><input type="checkbox" class="row-checkbox" data-modelid="' + m.id + '" onchange="updateSelectedCount()" style="accent-color:var(--primary);"></td>' +
       '<td>' + (i + 1) + '</td>' +
@@ -274,7 +271,6 @@ function renderModelTable() {
       '<td><span style="color:var(--primary);font-weight:600;">' + m.version + '</span></td>' +
       '<td style="color:var(--success);font-weight:600;">' + (m.mAP50 || '<span class="text-muted">—</span>') + '</td>' +
       '<td>' + stageTag + '</td>' +
-      '<td>' + inUseHtml + '</td>' +
       '<td><div class="ov-notes" data-modelid="' + m.id + '" ondblclick="startEditModelNotes(this)" title="双击编辑备注">' + escapeHTML(m.notes || '') + '</div></td>' +
       '<td><button class="btn btn-text btn-sm" onclick="exportModel(\'' + m.project + '\', \'' + m.version + '\')" style="color:var(--primary);">导出</button></td>' +
     '</tr>';
