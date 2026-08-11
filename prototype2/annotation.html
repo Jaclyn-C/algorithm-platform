@@ -323,7 +323,6 @@
       <a href="projects.html">首页</a> <span class="sep">›</span> <span>数据标注</span>
     </div>
     <div class="header-actions">
-      <button class="btn btn-default btn-sm" id="btnBackToOverview" style="display:none;" onclick="backToOverview()">返回数据标注总览</button>
             
 
       <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
@@ -417,6 +416,7 @@
         <button class="btn btn-default btn-sm" onclick="saveDraft()">保存草稿</button>
         <button class="btn btn-danger btn-sm" onclick="resetAnnotation()">重置标注</button>
         <button class="btn btn-primary btn-sm" onclick="finishAnnotation()" id="btnFinishAnnotation" style="display:none;">完成标注</button>
+        <button class="btn btn-default btn-sm" id="btnBackToDs" style="display:none;" onclick="backToDataset()">返回数据中心</button>
       </div>
     </div>
 
@@ -1074,7 +1074,7 @@ function switchToWorkspace(dsKey, imageIdx) {
   document.getElementById('overviewView').style.display = 'none';
   const ws = document.getElementById('workspaceView');
   ws.style.display = 'flex';
-  document.getElementById('btnBackToOverview').style.display = 'inline-flex';
+  document.getElementById('btnBackToDs').style.display = 'inline-flex';
   currentImageIdx = imageIdx || 1;
   updateBreadcrumb('workspace', dsKey);
   // Re-fit canvas after DOM layout update
@@ -1090,7 +1090,7 @@ function switchToWorkspace(dsKey, imageIdx) {
 function backToOverview() {
   document.getElementById('workspaceView').style.display = 'none';
   document.getElementById('overviewView').style.display = 'flex';
-  document.getElementById('btnBackToOverview').style.display = 'none';
+  document.getElementById('btnBackToDs').style.display = 'none';
   updateBreadcrumb('overview');
   // Refresh overview if a dataset was selected
   if (overviewState.currentDatasetKey) {
@@ -1912,10 +1912,11 @@ function resetAnnotation() {
 
 function finishAnnotation() {
   if (!confirm('确认全部标注已完成？')) return;
-  // 直接更新 dc_datasets 中对应数据集的状态和图片标注信息
+  var dsId = '';
   try {
     var pa = JSON.parse(localStorage.getItem('dc_pending_anno') || 'null');
     if (pa && pa.dsId) {
+      dsId = pa.dsId;
       var all = JSON.parse(localStorage.getItem('dc_datasets') || '[]');
       var ds = all.find(function(d) { return d.id === pa.dsId });
       if (ds) {
@@ -1927,7 +1928,13 @@ function finishAnnotation() {
     }
   } catch(e) {}
   showToast('标注任务已完成！返回数据中心...');
-  setTimeout(function() { location.href = 'data_center.html'; }, 1500);
+  setTimeout(function() { location.href = 'data_center.html#ds=' + dsId; }, 1500);
+}
+
+function backToDataset() {
+  var dsId = '';
+  try { var pa = JSON.parse(localStorage.getItem('dc_pending_anno') || 'null'); if (pa) dsId = pa.dsId || ''; } catch(e) {}
+  location.href = 'data_center.html#ds=' + dsId;
 }
 
 function getAnnotationStatus() {
@@ -2053,7 +2060,7 @@ function getCurrentProject() { return localStorage.getItem('current_project') ||
 
     document.getElementById('overviewView').style.display = 'none';
     document.getElementById('workspaceView').style.display = 'flex';
-    document.getElementById('btnBackToOverview').style.display = 'inline-flex';
+    document.getElementById('btnBackToDs').style.display = 'inline-flex';
     currentImageIdx = imgIdx;
     overviewState.currentDatasetKey = dsKey;
     updateBreadcrumb('workspace', dsKey);
@@ -2071,7 +2078,7 @@ function getCurrentProject() { return localStorage.getItem('current_project') ||
     // Show overview
     document.getElementById('overviewView').style.display = 'flex';
     document.getElementById('workspaceView').style.display = 'none';
-    document.getElementById('btnBackToOverview').style.display = 'none';
+    document.getElementById('btnBackToDs').style.display = 'none';
     updateBreadcrumb('overview');
     populateDatasetDropdown();
   }
