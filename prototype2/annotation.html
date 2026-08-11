@@ -1911,13 +1911,23 @@ function resetAnnotation() {
 }
 
 function finishAnnotation() {
-  var prev = getAnnotationStatus();
   if (!confirm('确认全部标注已完成？')) return;
-  var data = { status: 'done', done: TOTAL_IMAGES, total: TOTAL_IMAGES };
-  if (prev === 'done') data.labeled_modified = true;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  showToast(prev === 'done' ? '标注已更新，train/val 将被清除，请重新划分数据集。返回数据中心...' : '标注任务已完成！返回数据中心继续操作');
-  setTimeout(() => { location.href = 'data_center.html'; }, 1800);
+  // 直接更新 dc_datasets 中对应数据集的状态和图片标注信息
+  try {
+    var pa = JSON.parse(localStorage.getItem('dc_pending_anno') || 'null');
+    if (pa && pa.dsId) {
+      var all = JSON.parse(localStorage.getItem('dc_datasets') || '[]');
+      var ds = all.find(function(d) { return d.id === pa.dsId });
+      if (ds) {
+        ds.stage = 'annotated';
+        ds.imgs.forEach(function(img) { if (!img.dup) { img.anno = 'annotated'; img.annoMethod = '人工标注'; } });
+        localStorage.setItem('dc_datasets', JSON.stringify(all));
+      }
+      localStorage.removeItem('dc_pending_anno');
+    }
+  } catch(e) {}
+  showToast('标注任务已完成！返回数据中心...');
+  setTimeout(function() { location.href = 'data_center.html'; }, 1500);
 }
 
 function getAnnotationStatus() {

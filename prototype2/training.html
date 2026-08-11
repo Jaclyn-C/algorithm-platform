@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>算法一体化平台 — 模型训练</title>
+<link rel="stylesheet" href="common.css">
+<style>
+.content { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 16px 20px; gap: 16px; }
+  .train-layout { flex: 1; display: flex; gap: 12px; min-height: 0; }
+  .card { display: flex; flex-direction: column; }
+  .card-header { flex-shrink: 0; }
+  .card-body { overflow-y: auto; flex: 1; }
+  .config-panel { flex: 1; min-width: 0; }
+
+  /* ===== Collapsible Sections ===== */
+  .param-section { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+  .param-section:last-child { margin-bottom: 0; }
+  .param-section-header { padding: 10px 14px; background: #fafafa; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 8px; user-select: none; transition: background 0.15s; }
+  .param-section-header:hover { background: #f0f0f0; }
+  .param-section-header .ps-arrow { font-size: 10px; color: var(--text-muted); transition: transform 0.2s; }
+  .param-section-header .ps-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .param-section-header .ps-hint { font-size: 10px; color: var(--text-muted); font-weight: 400; margin-left: 6px; }
+  .param-section.collapsed .param-section-header { border-bottom: none; }
+  .param-section.collapsed .ps-arrow { transform: rotate(-90deg); }
+  .param-section-body { padding: 14px 16px; }
+  .param-section.collapsed .param-section-body { display: none; }
+
+  .aug-body-wrap { position: relative; }
+  .aug-item-disabled-overlay { position: absolute; inset: 0; background: rgba(250,250,250,0.75); z-index: 10; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+  .aug-item-disabled-overlay .ado-text { font-size: 13px; color: var(--text-muted); font-weight: 500; padding: 12px 24px; background: #fff; border: 1px dashed #d9d9d9; border-radius: 8px; }
+  .aug-grid-3.dimmed { opacity: 0.25; pointer-events: none; }
+
+  /* ===== Section reset button ===== */
+  .ps-reset-btn { font-size: 10px; color: var(--text-muted); cursor: pointer; padding: 2px 8px; border: 1px solid #d9d9d9; border-radius: 3px; background: #fff; transition: var(--transition); white-space: nowrap; margin-left: auto; }
+  .ps-reset-btn:hover { color: var(--primary); border-color: var(--primary); background: var(--primary-light); }
+
+  .form-section { margin-bottom: 12px; }
+  .form-section:last-child { margin-bottom: 0; }
+  .form-section-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+  .form-row { display: flex; gap: 12px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
+  .form-row:last-child { margin-bottom: 0; }
+  .form-group { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 120px; }
+  .form-group label { font-size: 11px; color: var(--text-secondary); }
+  .form-group input, .form-group select { padding: 5px 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; font-family: var(--font); height: 30px; box-sizing: border-box; }
+  .form-group input[type="number"] { width: 100%; }
+  .form-group .hint { font-size: 10px; color: var(--text-muted); }
+  .form-inline { display: flex; align-items: center; gap: 6px; }
+  .form-inline label { font-size: 11px; color: var(--text-secondary); white-space: nowrap; }
+  .form-inline input[type="number"] { width: 70px; }
+
+  .toggle { position: relative; display: inline-block; width: 36px; height: 20px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #d9d9d9; border-radius: 20px; transition: var(--transition); }
+  .toggle .slider::before { content: ''; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: var(--transition); }
+  .toggle input:checked + .slider { background: var(--primary); }
+  .toggle input:checked + .slider::before { transform: translateX(16px); }
+
+  /* ===== Enhanced Multi-Select Dataset ===== */
+  .multi-select { position: relative; user-select: none; }
+  .ms-trigger { display: flex; align-items: center; justify-content: space-between; padding: 5px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; background: #fff; cursor: pointer; min-height: 30px; box-sizing: border-box; }
+  .ms-trigger:hover { border-color: var(--primary); }
+  .ms-trigger .ms-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+  .ms-trigger .ms-arrow { color: var(--text-muted); font-size: 10px; margin-left: 6px; flex-shrink: 0; }
+  .multi-select.open .ms-trigger { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+  .ms-dropdown { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #d9d9d9; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; max-height: 260px; overflow-y: auto; margin-top: 2px; }
+  .multi-select.open .ms-dropdown { display: block; }
+  .ms-dropdown-toolbar { display: flex; gap: 6px; padding: 6px 8px; border-bottom: 1px solid var(--border); background: #fafafa; position: sticky; top: 0; }
+  .ms-dropdown-toolbar .ms-action { font-size: 10px; color: var(--primary); cursor: pointer; padding: 2px 6px; border-radius: 3px; border: 1px solid transparent; background: none; }
+  .ms-dropdown-toolbar .ms-action:hover { background: var(--primary-light); border-color: var(--primary); }
+  .ms-dropdown-search { padding: 5px 8px; border-bottom: 1px solid var(--border); position: sticky; top: 28px; background: #fff; }
+  .ms-dropdown-search input { width: 100%; padding: 4px 8px; border: 1px solid #d9d9d9; border-radius: 3px; font-size: 11px; font-family: var(--font); box-sizing: border-box; }
+  .ms-optgroup-label { padding: 5px 10px; font-size: 10px; font-weight: 600; color: var(--text-muted); background: #fafafa; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ms-option { display: flex; align-items: center; gap: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; transition: var(--transition); margin: 0; font-weight: 400; }
+  .ms-option:hover { background: var(--primary-light); }
+  .ms-option input[type="checkbox"] { accent-color: var(--primary); width: 14px; height: 14px; margin: 0; flex-shrink: 0; }
+  .ms-option.hidden { display: none; }
+  .ms-trigger .ms-placeholder { color: var(--text-muted); }
+
+  .aug-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+  .aug-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .aug-item { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; background: #fff; border: 1px solid var(--border); border-radius: 4px; transition: var(--transition); }
+  .aug-item:hover { border-color: var(--primary); }
+  .aug-item .aug-label { font-size: 11px; font-weight: 500; display: flex; align-items: center; gap: 4px; }
+  .aug-item .aug-label .aug-code { font-size: 9px; color: var(--text-muted); font-family: "SF Mono", Menlo, Consolas, monospace; }
+  .aug-item .aug-control { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .aug-item .aug-val { font-size: 10px; font-weight: 600; color: var(--primary); min-width: 32px; text-align: right; }
+  .aug-item input[type="range"] { width: 70px; accent-color: var(--primary); }
+  .aug-item input[type="number"] { width: 66px; padding: 3px 6px; border: 1px solid #d9d9d9; border-radius: 3px; font-size: 11px; font-family: var(--font); text-align: right; }
+  .aug-item .toggle { flex-shrink: 0; }
+
+  /* ===== Train button ===== */
+  .submit-row { padding: 12px 0 0; border-top: 1px solid var(--border); }
+
+  /* ===== Result Detail Modal (kept from before) ===== */
+  .modal { width: 700px; max-height: 85vh; overflow: auto; }
+  .result-banner { background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%); border-bottom: 1px solid #d6e4ff; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .result-banner-left { display: flex; flex-direction: column; gap: 2px; }
+  .result-banner-title { font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px; }
+  .result-banner-sub { font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; gap: 10px; }
+  .result-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+  .result-badge.done { background: #f6ffed; color: #52c41a; }
+  .result-badge.stopped { background: #fff1f0; color: #ff4d4f; }
+  .result-badge.running { background: #fff7e6; color: #fa8c16; }
+  .result-badge-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+  .result-badge.done .result-badge-dot { background: #52c41a; }
+  .result-badge.stopped .result-badge-dot { background: #ff4d4f; }
+  .result-badge.running .result-badge-dot { background: #fa8c16; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+  .result-body { padding: 14px 20px; }
+  .result-section { margin-bottom: 12px; }
+  .result-section:last-child { margin-bottom: 0; }
+  .result-section-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .result-section-title::before { content: ''; width: 3px; height: 14px; border-radius: 2px; background: var(--primary); display: inline-block; }
+  .result-metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .result-metric-card { background: #fafafa; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; text-align: center; transition: var(--transition); }
+  .result-metric-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(24,144,255,0.08); }
+  .result-metric-card .rm-value { font-size: 20px; font-weight: 700; line-height: 1.1; }
+  .result-metric-card .rm-label { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+  .result-metric-card .rm-sub { font-size: 9px; color: var(--text-muted); margin-top: 0; }
+  .rm-green { color: #52c41a; } .rm-blue { color: var(--primary); } .rm-purple { color: #722ed1; }
+  .result-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; }
+  .result-info-item { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+  .result-info-item .ri-label { color: var(--text-secondary); min-width: 56px; flex-shrink: 0; }
+  .result-info-item .ri-value { font-weight: 500; color: var(--text); }
+  .result-info-item .ri-tag { display: inline-block; padding: 1px 8px; border-radius: 3px; font-size: 11px; background: #f0f0f0; color: var(--text-secondary); margin-right: 4px; }
+  .result-chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .result-chart-card { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .result-chart-card .rc-header { padding: 6px 12px; background: #fafafa; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
+  .result-chart-card .rc-legend { display: flex; gap: 12px; margin-left: auto; }
+  .result-chart-card .rc-legend span { font-size: 10px; font-weight: 400; display: flex; align-items: center; gap: 4px; cursor: default; }
+  .result-chart-card .rc-legend span::before { content: ''; width: 12px; height: 3px; border-radius: 2px; display: inline-block; flex-shrink: 0; background: var(--lc); }
+  .result-chart-card canvas { width: 100%; height: 130px; display: block; margin: 4px 0; }
+  .result-file-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .result-file-card { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: #fafafa; cursor: pointer; transition: var(--transition); }
+  .result-file-card:hover { border-color: var(--primary); background: var(--primary-light); }
+  .result-file-card .rf-icon { width: 32px; height: 32px; border-radius: 8px; background: #e6f7ff; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .result-file-card .rf-info { flex: 1; min-width: 0; }
+  .result-file-card .rf-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .result-file-card .rf-meta { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+  .result-file-card .rf-dl { font-size: 10px; color: var(--primary); font-weight: 500; white-space: nowrap; }
+  .content { padding: 0; display: flex; flex-direction: column; }
+  .algo-content { flex: 1; overflow: hidden; padding: 20px 24px; display: flex; flex-direction: column; min-height: 0; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">AI</div>
+    <div class="sidebar-expand-btn" onclick="toggleSidebar()"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+    <div class="logo-text">算法一体化平台</div>
+    <div class="sidebar-collapse-btn" onclick="toggleSidebar()"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="10" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
+      <a class="sidebar-item" href="projects.html"><svg viewBox="0 0 24 24"><path d="M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-8l-2-2H4a1 1 0 0 0-1 1z"/></svg><span>算法项目</span></a>
+      <a class="sidebar-item" href="models.html"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg><span>模型总览</span></a>
+      <a class="sidebar-item" href="datasets_overview.html"><svg viewBox="0 0 24 24"><path d="M4 6c0-1.1 3.6-2 8-2s8 .9 8 2-3.6 2-8 2-8-.9-8-2zM4 6v6c0 1.1 3.6 2 8 2s8-.9 8-2V6M4 12v6c0 1.1 3.6 2 8 2s8-.9 8-2v-6"/></svg><span>数据集总览</span></a>
+      <a class="sidebar-item" href="models_use.html"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M21 21l-4.3-4.3"/></svg><span>通用推理</span></a>
+      <a class="sidebar-item" href="training_queue.html"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>训练队列</span></a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
+      <a class="sidebar-item" href="team_manage.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="15" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>团队管理</span></a>
+      <a class="sidebar-item" href="profile.html"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>个人中心</span></a>
+    </div>
+  </nav>
+</aside>
+<script>(function(){var s=document.querySelector(".sidebar");if(s&&localStorage.getItem("sidebar_collapsed")==="true"){s.classList.add("collapsed")}})()</script>
+
+<div class="main">
+  <header class="header">
+    <div class="breadcrumb"><a href="projects.html">首页</a> <span class="sep">›</span> <span>模型训练</span></div>
+    <div class="header-actions">
+      <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
+        <span style="font-size:12px;" id="headerUserName">用户</span>
+        <div class="user-avatar" id="headerUserAvatar">U</div>
+        <div class="user-dropdown" id="userDropdown"><a href="profile.html">个人中心</a><a href="#" onclick="event.stopPropagation();logout()">退出登录</a></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div id="algoNavContainer"></div>
+    <div class="algo-content">
+
+      <!-- ===== 历史记录视图（默认） ===== -->
+      <div id="historyView" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+        <div class="page-header" style="margin-bottom:16px;flex-shrink:0;">
+          <h2 style="font-size:18px;font-weight:600;">训练记录</h2>
+          <button class="btn btn-primary" onclick="showConfig()">+ 创建训练任务</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+          <table class="table"><thead><tr><th>时间</th><th>任务名称</th><th>模型</th><th>Epochs</th><th>mAP@50</th><th>mAP@50-95</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody id="historyTableBody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ===== 训练配置视图 ===== -->
+      <div id="configView" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+        <div class="page-header" style="margin-bottom:12px;flex-shrink:0;">
+          <button class="btn btn-default btn-sm" onclick="showHistory()">← 返回训练记录</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+          <div class="card config-panel">
+            <div class="card-header">训练配置</div>
+            <div class="card-body" style="padding:16px 20px;">
+              <!-- ===== Dataset Selection ===== -->
+          <div class="form-section">
+            <div class="form-row">
+              <div class="form-group" style="flex:1;min-width:240px;">
+                <div class="form-section-title">训练数据集</div>
+                <div class="multi-select" id="dsWrap">
+                  <div class="ms-trigger" onclick="toggleDsDropdown()">
+                    <span class="ms-text" id="dsText">上传批次_20260628 train/ (771 张)</span>
+                    <span class="ms-arrow">▾</span>
+                  </div>
+                  <div class="ms-dropdown" id="dsDrop">
+                    <div class="ms-dropdown-toolbar">
+                      <button class="ms-action" onclick="event.stopPropagation();dsSelectAll()">全选</button>
+                      <button class="ms-action" onclick="event.stopPropagation();dsClearAll()">清空</button>
+                    </div>
+                    <div class="ms-dropdown-search"><input type="text" id="dsSearch" placeholder="搜索数据集..." oninput="dsFilter()"></div>
+                    <div class="ms-optgroup-label" id="dsGroup1">▸ 训练集 train/</div>
+                    <div id="dsTrainOptions"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group" style="flex:1;min-width:240px;">
+                <div class="form-section-title">验证数据集</div>
+                <div class="multi-select" id="dsValWrap">
+                  <div class="ms-trigger" onclick="toggleValDsDropdown()">
+                    <span class="ms-text ms-placeholder" id="dsValText">— 未选择 —</span>
+                    <span class="ms-arrow">▾</span>
+                  </div>
+                  <div class="ms-dropdown" id="dsValDrop">
+                    <div class="ms-dropdown-toolbar">
+                      <button class="ms-action" onclick="event.stopPropagation();valDsSelectAll()">全选</button>
+                      <button class="ms-action" onclick="event.stopPropagation();valDsClearAll()">清空</button>
+                    </div>
+                    <div class="ms-dropdown-search"><input type="text" id="dsValSearch" placeholder="搜索验证集..." oninput="valDsFilter()"></div>
+                    <div class="ms-optgroup-label">▸ 验证集 val/</div>
+                    <div id="dsValListOptions"></div>
+                    <div id="dsValEmpty" style="display:none;padding:10px 12px;font-size:12px;color:var(--text-muted);">验证集已全部选入训练数据集</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== Task Name + Pretrained Model ===== -->
+          <div class="form-section">
+
+            <div class="form-row">
+              <div class="form-group" style="flex:2;">
+                <label>任务名称 <span style="font-size:10px;color:var(--text-muted);">选填，不填自动生成</span></label>
+                <input type="text" id="taskName" placeholder="如：保安服检测-yolo11m-800e-16b" style="padding:5px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:12px;font-family:var(--font);width:100%;">
+              </div>
+              <div class="form-group" style="flex:2;">
+                <label>预训练模型</label>
+                <div style="display:flex;gap:6px;align-items:center;">
+                  <select id="pretrainedModel" onchange="updateTaskName()" style="flex:1;">
+                    <option value="yolo11n.pt">yolo11n.pt (轻量)</option>
+                    <option value="yolo11m.pt" selected>yolo11m.pt (默认)</option>
+                    <option value="yolo11l.pt">yolo11l.pt (较大)</option>
+                    <option value="yolo11x.pt">yolo11x.pt (最大)</option>
+                  </select>
+                  <button type="button" class="btn btn-default btn-sm" onclick="openPretrainedPicker()" style="white-space:nowrap;">＋ 添加</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== SECTION 1: 基础训练参数 ===== -->
+          <div class="param-section" id="sec1">
+            <div class="param-section-header" onclick="toggleSection('sec1')">
+              <span class="ps-arrow">▼</span>
+              <span class="ps-title">基础训练参数</span>
+              <span class="ps-hint">epochs / batch / imgsz / GPU / 优化器 / lr0 / patience</span>
+              <button class="ps-reset-btn" onclick="event.stopPropagation();resetBasicParams()">还原默认</button>
+            </div>
+            <div class="param-section-body">
+              <div class="aug-grid-3">
+                <div class="aug-item">
+                  <div class="aug-label">epochs <span class="aug-code">训练轮数</span></div>
+                  <div class="aug-control"><input type="number" id="epochs" onchange="updateTaskName()" value="300" min="1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">batch <span class="aug-code">批次大小</span></div>
+                  <div class="aug-control"><input type="number" id="batch" onchange="updateTaskName()" value="16" min="1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">imgsz <span class="aug-code">输入图像尺寸</span></div>
+                  <div class="aug-control"><input type="number" id="imgsz" value="640" min="32" step="32"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">device <span class="aug-code">训练设备</span></div>
+                  <div class="aug-control"><select id="device"><option value="0" selected>GPU 0</option><option value="1">GPU 1</option><option value="cpu">CPU</option></select></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">optimizer <span class="aug-code">优化器</span></div>
+                  <div class="aug-control"><select id="optimizer"><option value="AdamW" selected>AdamW</option><option value="SGD">SGD</option><option value="Adam">Adam</option></select></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">lr0 <span class="aug-code">初始学习率</span></div>
+                  <div class="aug-control"><input type="number" id="lr0" value="0.001" step="0.0001"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">patience <span class="aug-code">早停轮数</span></div>
+                  <div class="aug-control"><input type="number" id="patience" value="100" min="0"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">cache <span class="aug-code">内存加载数据集</span></div>
+                  <div class="aug-control"><label class="toggle"><input type="checkbox" id="cache"><span class="slider"></span></label></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== SECTION 2: 数据增强参数 ===== -->
+          <div class="param-section" id="sec2">
+            <div class="param-section-header" onclick="toggleSection('sec2')">
+              <span class="ps-arrow">▼</span>
+              <span class="ps-title">数据增强参数</span>
+              <span class="ps-hint">应对光照 / 角度 / 遮挡等场景变化，提升模型泛化性</span>
+              <label class="toggle" style="margin-left:8px;vertical-align:middle;" onclick="event.stopPropagation()">
+                <input type="checkbox" id="augMaster" checked onchange="toggleAugPanel()">
+                <span class="slider"></span>
+              </label>
+              <span style="font-size:11px;color:var(--text-muted);margin-left:4px;" id="augMasterLabel">已开启</span>
+              <button class="ps-reset-btn" onclick="event.stopPropagation();resetAugParams()">还原默认</button>
+            </div>
+            <div class="param-section-body">
+              <div class="aug-body-wrap">
+                <div class="aug-item-disabled-overlay" id="augDisabledOverlay" style="display:none;">
+                  <div class="ado-text">数据增强已关闭，所有增强参数不生效</div>
+                </div>
+                <div class="aug-grid-3" id="augGrid">
+
+                <div class="aug-item">
+                  <div class="aug-label">hsv_h <span class="aug-code">色调</span></div>
+                  <div class="aug-control"><input type="number" id="aug_hsv_h" value="0.015" step="0.001" min="0" max="1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">hsv_s <span class="aug-code">饱和度</span></div>
+                  <div class="aug-control"><input type="number" id="aug_hsv_s" value="0.70" step="0.01" min="0" max="1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">hsv_v <span class="aug-code">明度</span></div>
+                  <div class="aug-control"><input type="number" id="aug_hsv_v" value="0.40" step="0.01" min="0" max="1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">degrees <span class="aug-code">旋转角度</span></div>
+                  <div class="aug-control"><input type="number" id="aug_degrees" value="0.0" step="1" min="0" max="180"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">translate <span class="aug-code">平移</span></div>
+                  <div class="aug-control"><input type="number" id="aug_translate" value="0.10" step="0.01" min="0" max="1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">scale <span class="aug-code">缩放</span></div>
+                  <div class="aug-control"><input type="number" id="aug_scale" value="0.50" step="0.01" min="0" max="1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">fliplr <span class="aug-code">水平翻转</span></div>
+                  <div class="aug-control"><input type="number" id="aug_fliplr" value="0.50" step="0.05" min="0" max="1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">erasing <span class="aug-code">随机擦除</span></div>
+                  <div class="aug-control"><input type="number" id="aug_erasing" value="0.40" step="0.05" min="0" max="1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">mixup <span class="aug-code">MixUp 增强</span></div>
+                  <div class="aug-control"><input type="number" id="aug_mixup" value="0.0" step="0.05" min="0" max="1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">mosaic <span class="aug-code">Mosaic 增强</span></div>
+                  <div class="aug-control"><input type="number" id="aug_mosaic" value="1.0" step="0.05" min="0" max="1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">close_mosaic <span class="aug-code">关闭 mosaic 轮数</span></div>
+                  <div class="aug-control"><input type="number" id="aug_close_mosaic" value="10" min="0"></div>
+                </div>
+            </div>
+            </div>
+            </div>
+          </div>
+
+          <!-- ===== SECTION 3: 辅助调优参数 ===== -->
+          <div class="param-section" id="sec3">
+            <div class="param-section-header" onclick="toggleSection('sec3')">
+              <span class="ps-arrow">▼</span>
+              <span class="ps-title">辅助调优参数</span>
+              <span class="ps-hint">针对特定使用场景的精细化调节</span>
+              <label class="toggle" style="margin-left:8px;vertical-align:middle;" onclick="event.stopPropagation()">
+                <input type="checkbox" id="tuneMaster" checked onchange="toggleTunePanel()">
+                <span class="slider"></span>
+              </label>
+              <span style="font-size:11px;color:var(--text-muted);margin-left:4px;" id="tuneMasterLabel">已开启</span>
+              <button class="ps-reset-btn" onclick="event.stopPropagation();resetTuneParams()">还原默认</button>
+            </div>
+            <div class="param-section-body">
+              <div class="aug-body-wrap">
+                <div class="aug-item-disabled-overlay" id="tuneDisabledOverlay" style="display:none;">
+                  <div class="ado-text">辅助调优已关闭，所有调优参数不生效</div>
+                </div>
+                <div class="aug-grid-3" id="tuneGrid">
+                <div class="aug-item">
+                  <div class="aug-label">box <span class="aug-code">坐标框 loss 权重</span></div>
+                  <div class="aug-control"><input type="number" id="boxLoss" value="7.5" step="0.1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">cls <span class="aug-code">分类 loss 权重</span></div>
+                  <div class="aug-control"><input type="number" id="clsLoss" value="0.5" step="0.1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">dfl <span class="aug-code">DFL loss 权重</span></div>
+                  <div class="aug-control"><input type="number" id="dflLoss" value="1.5" step="0.1"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">weight_decay <span class="aug-code">权重衰减</span></div>
+                  <div class="aug-control"><input type="number" id="weightDecay" value="0.0005" step="0.0001"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">cos_lr <span class="aug-code">余弦学习率</span></div>
+                  <div class="aug-control"><label class="toggle"><input type="checkbox" id="cos_lr"><span class="slider"></span></label></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">momentum <span class="aug-code">动量，配合 SGD</span></div>
+                  <div class="aug-control"><input type="number" id="momentum" value="0.937" step="0.001"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">warmup_epochs <span class="aug-code">预热轮数</span></div>
+                  <div class="aug-control"><input type="number" id="warmupEpochs" value="3" min="0"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">freeze <span class="aug-code">冻结层数</span></div>
+                  <div class="aug-control"><input type="number" id="freeze" value="0" min="0"></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">multi_scale <span class="aug-code">多尺度训练</span></div>
+                  <div class="aug-control"><label class="toggle"><input type="checkbox" id="multiScale"><span class="slider"></span></label></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">amp <span class="aug-code">混合精度，省显存</span></div>
+                  <div class="aug-control"><label class="toggle"><input type="checkbox" id="amp" checked><span class="slider"></span></label></div>
+                </div>
+                <div class="aug-item">
+                  <div class="aug-label">workers <span class="aug-code">数据加载线程</span></div>
+                  <div class="aug-control"><input type="number" id="workers" value="8" min="0"></div>
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <div class="submit-row">
+            <button class="btn btn-primary btn-lg" style="width:100%;" onclick="submitToQueue()" id="btnStart">提交到训练队列</button>
+          </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Training History Modal -->
+<div class="modal-overlay" id="historyModal" style="display:none;" onclick="if(event.target==this)closeHistoryModal()">
+  <div class="modal" style="width:900px;">
+    <div class="modal-header">训练历史<button class="modal-close" onclick="closeHistoryModal()">✕</button></div>
+    <div style="padding:0;">
+      <table class="table"><thead><tr><th>时间</th><th>算法</th><th>任务名称</th><th>数据集</th><th>模型</th><th>Epochs</th><th>mAP@50</th><th>状态</th><th>操作</th></tr></thead>
+      <tbody id="historyBody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- History Result Modal -->
+<div class="modal-overlay" id="resultModal" style="display:none;" onclick="if(event.target==this)closeResultModal()">
+  <div class="modal" style="width:760px;">
+    <div class="modal-header"><span id="resultModalTitle">训练结果详情</span><button class="modal-close" onclick="closeResultModal()">✕</button></div>
+    <div class="result-banner" id="resultBanner">
+      <div class="result-banner-left"><div class="result-banner-title" id="resultBannerTitle"></div><div class="result-banner-sub" id="resultBannerSub"></div></div>
+      <span class="result-badge" id="resultStatusBadge"></span>
+    </div>
+    <div class="result-body">
+      <div class="result-section"><div class="result-section-title">训练指标</div><div class="result-metrics-row" id="resultModalMetrics"></div></div>
+      <div class="result-section"><div class="result-section-title">训练配置</div><div class="result-info-grid" id="resultConfigGrid"></div></div>
+      <div class="result-section"><div class="result-section-title">训练曲线</div>
+        <div class="result-chart-row">
+          <div class="result-chart-card"><div class="rc-header">Loss<div class="rc-legend"><span style="--lc:#ff4d4f;">box</span><span style="--lc:#1890ff;">cls</span><span style="--lc:#52c41a;">dfl</span></div></div><canvas id="resultLossChart"></canvas></div>
+          <div class="result-chart-card"><div class="rc-header">mAP<div class="rc-legend"><span style="--lc:#1890ff;">mAP@50</span><span style="--lc:#52c41a;">mAP@50-95</span></div></div><canvas id="resultMapChart"></canvas></div>
+        </div>
+      </div>
+      <div class="result-section"><div class="result-section-title">模型文件</div><div class="result-file-row" id="resultFileRow"></div></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-default" onclick="closeResultModal()">关闭</button></div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmModal" style="display:none;" onclick="if(event.target===this)closeConfirmModal()">
+  <div class="modal" style="width:420px;">
+    <div class="modal-header"><span id="confirmModalTitle">确认操作</span><button class="modal-close" onclick="closeConfirmModal()">✕</button></div>
+    <div class="modal-body" style="padding:28px 32px;"><div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;" id="confirmModalMsg"></div><div style="font-size:12px;color:var(--text-secondary);line-height:1.6;" id="confirmModalHint"></div></div>
+    <div class="modal-footer"><button class="btn btn-default btn-sm" onclick="closeConfirmModal()">取消</button><button class="btn btn-danger btn-sm" onclick="executeConfirm()">确认</button></div>
+  </div>
+</div>
+
+<!-- Pretrained Model Picker Modal -->
+<div class="modal-overlay" id="pretrainedPickerModal" style="display:none;" onclick="if(event.target===this)closePretrainedPicker()">
+  <div class="modal" style="width:520px;">
+    <div class="modal-header"><span>选择预训练模型</span><button class="modal-close" onclick="closePretrainedPicker()">✕</button></div>
+    <div class="modal-body" style="padding:20px 28px;max-height:60vh;overflow-y:auto;">
+      <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">项目已训练模型（best / last）</div>
+      <div id="pretrainedProjectList" style="border:1px solid var(--border);border-radius:4px;margin-bottom:18px;"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">上传新模型（.pt）</div>
+      <div style="border:1px dashed #d9d9d9;border-radius:4px;padding:14px;">
+        <input type="file" id="pretrainedFile" accept=".pt,.pth" style="font-size:12px;width:100%;" onchange="onPretrainedFile(this)">
+        <div id="pretrainedFileInfo" style="font-size:11px;color:var(--text-muted);margin-top:6px;display:none;"></div>
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+          <input type="text" id="pretrainedUploadVersion" placeholder="版本号（选填，如 v1.0）" style="flex:1;padding:5px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:12px;font-family:var(--font);">
+          <button type="button" class="btn btn-primary btn-sm" onclick="addUploadedPretrained()">添加</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-default btn-sm" onclick="closePretrainedPicker()">关闭</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="common.js"></script>
+<script>
+
+function showHistory() {
+  document.getElementById('configView').style.display = 'none';
+  document.getElementById('historyView').style.display = 'flex';
+  renderHistoryTableInline();
+}
+function showConfig() {
+  document.getElementById('historyView').style.display = 'none';
+  document.getElementById('configView').style.display = 'flex';
+  buildDsOptions(); renderDsDropdown(); renderValDsDropdown(); updateTaskName();
+}
+
+function renderHistoryTableInline() {
+  var project = getProjectName(localStorage.getItem('current_project') || '');
+  var body = document.getElementById('historyTableBody');
+  // 动态生成当前项目的训练记录（如果还没有）
+  var rows = historyResults.filter(function(r) { return r.project === project; });
+  if (rows.length === 0) {
+    var generated = genHistoryForProject(project);
+    historyResults = historyResults.concat(generated);
+    rows = generated;
+  }
+  if (rows.length === 0) {
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted);">暂无训练记录，点击上方「创建训练任务」开始</td></tr>';
+    return;
+  }
+  body.innerHTML = rows.map(function(r) {
+    var stMap = { done: ['已完成','tag-success'], running: ['进行中','tag-processing'], stopped: ['已终止','tag-error'] };
+    var st = stMap[r.status] || ['—','tag-default'];
+    return '<tr>' +
+      '<td style="font-size:11px;">' + r.time + '</td>' +
+      '<td>' + (r.taskName || '—') + '</td>' +
+      '<td>' + r.model + '</td>' +
+      '<td>' + r.epochs + '</td>' +
+      '<td style="color:var(--success);font-weight:600;">' + (r.mAP50 === '-' ? '—' : r.mAP50) + '</td>' +
+      '<td>' + (r.mAP5095 || '—') + '</td>' +
+      '<td><span class="tag ' + st[1] + '">' + st[0] + '</span></td>' +
+      '<td><button class="btn btn-text btn-sm" onclick="viewResult(' + historyResults.indexOf(r) + ')" style="color:var(--primary);">查看</button></td>' +
+    '</tr>';
+  }).join('');
+}
+
+// ==================== HISTORY DATA ====================
+var historyResults = [];
+
+function genHistoryForProject(projectName) {
+  var templates = [
+    { taskName: projectName + '-夜间场景增强', model:'yolo11m.pt', epochs:'1000', mAP50:'-', mAP5095:'-', status:'running', days:2 },
+    { taskName: projectName + '-yolo11l-800e-32b', model:'yolo11l.pt', epochs:'800', mAP50:'0.891', mAP5095:'0.672', status:'done', days:6 },
+    { taskName: projectName + '-yolo11m-600e-16b', model:'yolo11m.pt', epochs:'600', mAP50:'0.872', mAP5095:'0.651', status:'done', days:14 },
+    { taskName: projectName + '-迁移学习实验', model:'yolo11m.pt', epochs:'400', mAP50:'0.845', mAP5095:'0.618', status:'done', days:22 },
+    { taskName: projectName + '-yolo11n-300e-16b', model:'yolo11n.pt', epochs:'300', mAP50:'0.798', mAP5095:'0.562', status:'done', days:30 },
+    { taskName: projectName + '-初版基线', model:'yolo11n.pt', epochs:'200', mAP50:'0.724', mAP5095:'0.481', status:'stopped', days:41 },
+  ];
+  var trainBase = 500 + Math.floor(Math.random() * 300);
+  var results = templates.map(function(t) {
+    var d = new Date();
+    d.setDate(d.getDate() - t.days);
+    var dateStr = d.toISOString().slice(0,10) + ' ' + (8 + Math.floor(Math.random()*8)) + ':' + String(Math.floor(Math.random()*60)).padStart(2,'0');
+    return {
+      project: projectName,
+      taskName: t.taskName,
+      time: dateStr,
+      model: t.model,
+      epochs: t.epochs,
+      train: String(trainBase),
+      val: String(Math.floor(trainBase * 0.4)),
+      mAP50: t.mAP50,
+      mAP5095: t.mAP5095,
+      status: t.status,
+      path: 'models/' + projectName.replace(/[^a-zA-Z0-9]/g,'') + '_v' + (templates.indexOf(t)+1) + '/' + (t.status==='stopped'?'last.pt':'best.pt')
+    };
+  });
+  return results;
+}
+
+// ==================== SECTION TOGGLE ====================
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+// ==================== DATASET MULTI-SELECT ====================
+var dsSelected = {};
+var dsAllOptions = [];
+var dsValSelected = {};   // 验证数据集（右侧）独立选择状态
+var dsValInited = false;  // 仅首次默认全选可用验证集；用户清空后不再自动回填
+
+function buildDsOptions() {
+  // Ensure datasets are initialized (fallback if user hasn't visited 数据中心 or 数据集总览)
+  try {
+    var existing = JSON.parse(localStorage.getItem('platform_datasets')) || [];
+    if (existing.length === 0) {
+      var defaults = [
+        { project:'保安服检测', batch:'上传批次_20260628', batchDate:'2026-06-28', status:'已完成', statusClass:'tag-success', children: [
+          { key:'raw_videos', name:'files/', count:'4 个文件', dateText:'2026-06-28 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+          { key:'extracted', name:'extracted_frames/', count:'1,248 张', dateText:'2026-06-29 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+          { key:'deduplicated', name:'deduplicated/', count:'1,102 张', dateText:'2026-06-30 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+          { key:'labeled', name:'labeled/', count:'1,102 张', dateText:'2026-07-02 标注完成', icon:'labeled', iconGlyph:'▣', badge:'已标注', badgeClass:'done' },
+          { key:'train', name:'train/', count:'771 张 + 标签', dateText:'2026-07-03 生成', icon:'train', iconGlyph:'⊞', badge:'训练集', badgeClass:'done' },
+          { key:'val', name:'val/', count:'331 张 + 标签', dateText:'2026-07-03 生成', icon:'val', iconGlyph:'◇', badge:'验证集', badgeClass:'done' },
+        ]},
+        { project:'烟火检测', batch:'上传批次_20260701', batchDate:'2026-07-01', status:'标注中', statusClass:'tag-processing', children: [
+          { key:'raw_videos_02', name:'files/', count:'3 个文件', dateText:'2026-07-01 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+          { key:'extracted_02', name:'extracted_frames/', count:'920 张', dateText:'2026-07-01 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+          { key:'deduplicated_02', name:'deduplicated/', count:'856 张', dateText:'2026-07-02 生成', icon:'dedup', iconGlyph:'▦', badge:'标注中 47/200', badgeClass:'processing' },
+        ]},
+        { project:'安全帽检测', batch:'上传批次_20260702', batchDate:'2026-07-02', status:'未标注', statusClass:'tag-default', children: [
+          { key:'raw_videos_03', name:'files/', count:'6 个文件', dateText:'2026-07-02 上传', icon:'raw', iconGlyph:'▶', badge:'原始数据', badgeClass:'done' },
+          { key:'extracted_03', name:'extracted_frames/', count:'1,650 张', dateText:'2026-07-03 生成', icon:'raw', iconGlyph:'▣', badge:'已处理', badgeClass:'done' },
+          { key:'deduplicated_03', name:'deduplicated/', count:'1,517 张', dateText:'2026-07-03 生成', icon:'dedup', iconGlyph:'▦', badge:'已去重', badgeClass:'done' },
+        ]},
+      ];
+      localStorage.setItem('platform_datasets', JSON.stringify(defaults));
+    }
+  } catch(e) {}
+
+  var datasets = [];
+  try { datasets = JSON.parse(localStorage.getItem('platform_datasets')) || []; } catch(e) {}
+  var project = getProjectName(localStorage.getItem('current_project') || '');
+
+  var trainOpts = [], valOpts = [];
+  datasets.forEach(function(b) {
+    if (b.project !== project) return;
+    b.children.forEach(function(c) {
+      if (c.key.indexOf('train') === 0) {
+        trainOpts.push({ label: b.batch + ' train/ (' + c.count + ')', value: c.key, batch: b.batch });
+      } else if (c.key.indexOf('val') === 0) {
+        valOpts.push({ label: b.batch + ' val/ (' + c.count + ')', value: c.key, batch: b.batch });
+      }
+    });
+  });
+
+  // Default: select all trains, none val
+  if (Object.keys(dsSelected).length === 0) {
+    trainOpts.forEach(function(o) { dsSelected[o.value] = true; });
+  }
+
+  // Default: select all available val (not chosen as training) — only on first init
+  if (!dsValInited) {
+    valOpts.forEach(function(o) { if (!dsSelected[o.value]) dsValSelected[o.value] = true; });
+    dsValInited = true;
+  }
+
+  dsAllOptions = [{ type: 'train', options: trainOpts }, { type: 'val', options: valOpts }];
+}
+
+function toggleAugPanel() {
+  var master = document.getElementById('augMaster').checked;
+  var overlay = document.getElementById('augDisabledOverlay');
+  var grid = document.getElementById('augGrid');
+  var label = document.getElementById('augMasterLabel');
+  if (master) {
+    overlay.style.display = 'none';
+    grid.classList.remove('dimmed');
+    label.textContent = '已开启';
+  } else {
+    overlay.style.display = 'flex';
+    grid.classList.add('dimmed');
+    label.textContent = '已关闭';
+  }
+}
+
+function toggleTunePanel() {
+  var master = document.getElementById('tuneMaster').checked;
+  var overlay = document.getElementById('tuneDisabledOverlay');
+  var grid = document.getElementById('tuneGrid');
+  var label = document.getElementById('tuneMasterLabel');
+  if (master) {
+    overlay.style.display = 'none';
+    grid.classList.remove('dimmed');
+    label.textContent = '已开启';
+  } else {
+    overlay.style.display = 'flex';
+    grid.classList.add('dimmed');
+    label.textContent = '已关闭';
+  }
+}
+
+function resetBasicParams() {
+  document.getElementById('epochs').value = 300;
+  document.getElementById('batch').value = 16;
+  document.getElementById('imgsz').value = 640;
+  document.getElementById('device').value = '0';
+  document.getElementById('optimizer').value = 'AdamW';
+  document.getElementById('lr0').value = 0.001;
+  document.getElementById('patience').value = 100;
+  document.getElementById('cache').checked = false;
+  updateTaskName();
+  showToast('基础训练参数已恢复默认');
+}
+
+function resetAugParams() {
+  document.getElementById('aug_hsv_h').value = 0.015;
+  document.getElementById('aug_hsv_s').value = 0.70;
+  document.getElementById('aug_hsv_v').value = 0.40;
+  document.getElementById('aug_degrees').value = 0.0;
+  document.getElementById('aug_translate').value = 0.10;
+  document.getElementById('aug_scale').value = 0.50;
+  document.getElementById('aug_fliplr').value = 0.50;
+  document.getElementById('aug_erasing').value = 0.40;
+  document.getElementById('aug_mixup').value = 0.0;
+  document.getElementById('aug_mosaic').value = 1.0;
+  document.getElementById('aug_close_mosaic').value = 15;
+  document.getElementById('augMaster').checked = true;
+  toggleAugPanel();
+  showToast('数据增强参数已恢复默认');
+}
+
+function resetTuneParams() {
+  document.getElementById('boxLoss').value = 7.5;
+  document.getElementById('clsLoss').value = 0.5;
+  document.getElementById('dflLoss').value = 1.5;
+  document.getElementById('weightDecay').value = 0.0005;
+  document.getElementById('cos_lr').checked = false;
+  document.getElementById('momentum').value = 0.937;
+  document.getElementById('warmup_epochs').value = 3;
+  document.getElementById('freeze').value = 0;
+  document.getElementById('multiScale').checked = false;
+  document.getElementById('amp').checked = true;
+  document.getElementById('workers').value = 8;
+  document.getElementById('tuneMaster').checked = true;
+  toggleTunePanel();
+  showToast('辅助调优参数已恢复默认');
+}
+
+function toggleDsDropdown() {
+  document.getElementById('dsWrap').classList.toggle('open');
+  if (document.getElementById('dsWrap').classList.contains('open')) {
+    buildDsOptions();
+    renderDsDropdown();
+  }
+}
+
+function renderDsDropdown() {
+  var query = (document.getElementById('dsSearch').value || '').toLowerCase();
+  var trainOpts = dsAllOptions.length > 0 ? dsAllOptions[0].options : [];
+  var html = '', visible = 0;
+  trainOpts.forEach(function(o) {
+    var isSel = dsSelected[o.value];
+    var hidden = query && o.label.toLowerCase().indexOf(query) < 0;
+    html += '<label class="ms-option' + (hidden ? ' hidden' : '') + '" onclick="event.stopPropagation();">' +
+      '<input type="checkbox" value="' + o.value + '" ' + (isSel ? 'checked' : '') + ' onchange="onDsToggle(\'' + o.value + '\', this.checked)">' +
+      o.label + '</label>';
+    if (!hidden) visible++;
+  });
+  var list = document.getElementById('dsTrainOptions');
+  if (list) list.innerHTML = html;
+  var g1 = document.getElementById('dsGroup1');
+  if (g1) g1.style.display = visible > 0 ? '' : 'none';
+  updateDsText();
+}
+
+function onDsToggle(value, checked) {
+  if (checked) dsSelected[value] = true;
+  else delete dsSelected[value];
+  updateDsText();
+}
+
+function dsSelectAll() {
+  var trainOpts = dsAllOptions.length > 0 ? dsAllOptions[0].options : [];
+  trainOpts.forEach(function(o) { dsSelected[o.value] = true; });
+  renderDsDropdown();
+}
+
+function dsClearAll() {
+  dsSelected = {};
+  renderDsDropdown();
+}
+
+function dsFilter() { renderDsDropdown(); }
+
+function updateDsText() {
+  var sel = Object.keys(dsSelected);
+  var el = document.getElementById('dsText');
+  if (sel.length === 0) {
+    el.textContent = '— 未选择 —';
+    el.classList.add('ms-placeholder');
+  } else if (sel.length <= 2) {
+    // Find labels
+    var labels = [];
+    dsAllOptions.forEach(function(g) {
+      g.options.forEach(function(o) {
+        if (dsSelected[o.value]) labels.push(o.label);
+      });
+    });
+    el.textContent = labels.join('；');
+    el.classList.remove('ms-placeholder');
+  } else {
+    el.textContent = '已选 ' + sel.length + ' 个数据集';
+    el.classList.remove('ms-placeholder');
+  }
+}
+
+function getSelectedDsKeys() {
+  return Object.keys(dsSelected);
+}
+
+// ==================== VALIDATION DATASET MULTI-SELECT (右侧，仅 val) ====================
+function toggleValDsDropdown() {
+  var w = document.getElementById('dsValWrap');
+  w.classList.toggle('open');
+  if (w.classList.contains('open')) {
+    buildDsOptions();
+    renderValDsDropdown();
+  }
+}
+
+function renderValDsDropdown() {
+  var query = (document.getElementById('dsValSearch').value || '').toLowerCase();
+  var valOpts = dsAllOptions.length > 1 ? dsAllOptions[1].options : [];
+  var html = '', visible = 0;
+  valOpts.forEach(function(o) {
+    var hidden = query && o.label.toLowerCase().indexOf(query) < 0;
+    var isSel = dsValSelected[o.value];
+    html += '<label class="ms-option' + (hidden ? ' hidden' : '') + '" onclick="event.stopPropagation();">' +
+      '<input type="checkbox" value="' + o.value + '" ' + (isSel ? 'checked' : '') + ' onchange="onValDsToggle(\'' + o.value + '\', this.checked)">' +
+      o.label + '</label>';
+    if (!hidden) visible++;
+  });
+  var list = document.getElementById('dsValListOptions');
+  if (list) list.innerHTML = html;
+  var empty = document.getElementById('dsValEmpty');
+  if (empty) {
+    if (valOpts.length === 0) {
+      empty.textContent = '当前算法暂无验证集（val/），请先在数据中心生成';
+      empty.style.display = '';
+    } else {
+      empty.style.display = 'none';
+    }
+  }
+  updateValDsText();
+}
+
+function onValDsToggle(value, checked) {
+  if (checked) dsValSelected[value] = true;
+  else delete dsValSelected[value];
+  updateValDsText();
+}
+
+function valDsSelectAll() {
+  var valOpts = dsAllOptions.length > 1 ? dsAllOptions[1].options : [];
+  valOpts.forEach(function(o) { dsValSelected[o.value] = true; });
+  renderValDsDropdown();
+}
+
+function valDsClearAll() {
+  dsValSelected = {};
+  renderValDsDropdown();
+}
+
+function valDsFilter() { renderValDsDropdown(); }
+
+function updateValDsText() {
+  var el = document.getElementById('dsValText');
+  if (!el) return;
+  var sel = Object.keys(dsValSelected);
+  if (sel.length === 0) {
+    el.textContent = '— 未选择 —';
+    el.classList.add('ms-placeholder');
+    return;
+  }
+  var valOpts = dsAllOptions.length > 1 ? dsAllOptions[1].options : [];
+  if (sel.length <= 2) {
+    var labels = [];
+    valOpts.forEach(function(o) { if (dsValSelected[o.value]) labels.push(o.label); });
+    el.textContent = labels.join('；');
+  } else {
+    el.textContent = '已选 ' + sel.length + ' 个验证集';
+  }
+  el.classList.remove('ms-placeholder');
+}
+
+function getSelectedValDsKeys() {
+  return Object.keys(dsValSelected);
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#dsWrap')) {
+    document.getElementById('dsWrap').classList.remove('open');
+  }
+  var vw = document.getElementById('dsValWrap');
+  if (vw && !e.target.closest('#dsValWrap')) {
+    vw.classList.remove('open');
+  }
+});
+
+// ==================== CONFIRM MODAL ====================
+var _pendingConfirm = null;
+function showConfirmModal(title, msg, hint, callback) {
+  document.getElementById('confirmModalTitle').textContent = title;
+  document.getElementById('confirmModalMsg').textContent = msg;
+  document.getElementById('confirmModalHint').textContent = hint || '';
+  document.getElementById('confirmModal').style.display = 'flex';
+  _pendingConfirm = callback;
+}
+function closeConfirmModal() { document.getElementById('confirmModal').style.display = 'none'; _pendingConfirm = null; }
+function executeConfirm() { if (_pendingConfirm) { _pendingConfirm(); _pendingConfirm = null; } document.getElementById('confirmModal').style.display = 'none'; }
+
+// ==================== PRETRAINED MODEL PICKER ====================
+function openPretrainedPicker() {
+  renderPretrainedProjectList();
+  document.getElementById('pretrainedPickerModal').style.display = 'flex';
+}
+function closePretrainedPicker() {
+  document.getElementById('pretrainedPickerModal').style.display = 'none';
+}
+function renderPretrainedProjectList() {
+  var project = getProjectName(localStorage.getItem('current_project') || '');
+  var models = [];
+  try { models = JSON.parse(localStorage.getItem('platform_models')) || []; } catch(e) {}
+  models = models.filter(function(m) { return m.project === project; });
+  var box = document.getElementById('pretrainedProjectList');
+  if (models.length === 0) {
+    box.innerHTML = '<div style="padding:14px;font-size:12px;color:var(--text-muted);text-align:center;">当前项目暂无已训练模型</div>';
+    return;
+  }
+  var html = '';
+  models.forEach(function(m) {
+    var val = m.model + '_' + m.version;
+    var label = m.model + ' ' + m.version + '（mAP@50 ' + (m.mAP50 || '-') + '）';
+    var tag = (m.model.indexOf('best') === 0)
+      ? '<span class="tag tag-success" style="margin-left:4px;">best</span>'
+      : (m.model.indexOf('last') === 0 ? '<span class="tag tag-default" style="margin-left:4px;">last</span>' : '');
+    var sub = (m.pretrained || '') + ' · ' + (m.time || '') + ' · mAP@50 ' + (m.mAP50 || '-');
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);">' +
+      '<div style="font-size:12px;line-height:1.6;">' + m.model + ' ' + m.version + tag +
+      '<div style="color:var(--text-muted);font-size:11px;">' + sub + '</div></div>' +
+      '<button class="btn btn-default btn-sm" onclick="pickPretrained(this)" data-val="' + val + '" data-label="' + label + '">选择</button>' +
+      '</div>';
+  });
+  box.innerHTML = html;
+}
+function addPretrainedOption(value, label) {
+  var sel = document.getElementById('pretrainedModel');
+  for (var i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === value) { sel.selectedIndex = i; return false; }
+  }
+  var opt = document.createElement('option');
+  opt.value = value; opt.textContent = label;
+  sel.appendChild(opt);
+  sel.value = value;
+  return true;
+}
+function pickPretrained(btn) {
+  var value = btn.getAttribute('data-val');
+  var label = btn.getAttribute('data-label');
+  addPretrainedOption(value, label);
+  updateTaskName();
+  closePretrainedPicker();
+  showToast('已选择预训练模型：' + label);
+}
+function onPretrainedFile(input) {
+  var info = document.getElementById('pretrainedFileInfo');
+  if (input.files && input.files[0]) {
+    var f = input.files[0];
+    info.textContent = f.name + ' · ' + (f.size ? (f.size / 1024 / 1024).toFixed(1) + ' MB' : '');
+    info.style.display = '';
+  } else {
+    info.style.display = 'none';
+  }
+}
+function addUploadedPretrained() {
+  var input = document.getElementById('pretrainedFile');
+  if (!input.files || !input.files[0]) { showToast('请先选择 .pt 模型文件'); return; }
+  var fname = input.files[0].name;
+  var ver = document.getElementById('pretrainedUploadVersion').value.trim();
+  var label = fname + (ver ? ' (' + ver + ', 上传)' : ' (上传)');
+  addPretrainedOption(fname, label);
+  updateTaskName();
+  // reset upload form
+  input.value = '';
+  document.getElementById('pretrainedUploadVersion').value = '';
+  document.getElementById('pretrainedFileInfo').style.display = 'none';
+  closePretrainedPicker();
+  showToast('已添加并选择：' + label);
+}
+
+// ==================== TRAINING ====================
+function updateTaskName() {
+  var nameInput = document.getElementById('taskName');
+  if (!nameInput) return;
+  var projectName = getProjectName(localStorage.getItem('current_project') || '');
+  var pretrained = document.getElementById('pretrainedModel').value.replace('.pt', '');
+  var epochs = document.getElementById('epochs').value;
+  var batch = document.getElementById('batch').value;
+  nameInput.placeholder = projectName + '-' + pretrained + '-' + epochs + 'e-' + batch + 'b';
+}
+
+function submitToQueue() {
+  var dsKeys = getSelectedDsKeys();
+  if (dsKeys.length === 0) { showToast('请选择训练数据集'); return; }
+  var valKeys = getSelectedValDsKeys();
+  if (valKeys.length === 0) { showToast('请选择验证数据集'); return; }
+  var projectName = getProjectName(localStorage.getItem('current_project') || '');
+  var config = 'epochs=' + document.getElementById('epochs').value + ', batch=' + document.getElementById('batch').value + ', imgsz=' + document.getElementById('imgsz').value + ', ' + document.getElementById('optimizer').value + ', lr=' + document.getElementById('lr0').value;
+  var taskName = document.getElementById('taskName').value.trim();
+  if (!taskName) {
+    var pretrained = document.getElementById('pretrainedModel').value.replace('.pt', '');
+    var epochs = document.getElementById('epochs').value;
+    var batch = document.getElementById('batch').value;
+    taskName = projectName + '-' + pretrained + '-' + epochs + 'e-' + batch + 'b';
+  }
+  var queue = [];
+  try { queue = JSON.parse(localStorage.getItem('training_queue')) || []; } catch(e) {}
+  queue.push({
+    id: 'q_' + Date.now(),
+    project: projectName,
+    name: taskName,
+    model: document.getElementById('pretrainedModel').value,
+    version: 'v' + new Date().toISOString().slice(2,10).replace(/-/g,''),
+    config: config,
+    status: 'queued',
+    progress: 0,
+    currentEpoch: 0, totalEpochs: parseInt(document.getElementById('epochs').value) || 300,
+    submittedAt: new Date().toISOString().slice(0,16).replace('T',' ')
+  });
+  localStorage.setItem('training_queue', JSON.stringify(queue));
+  showToast('训练任务已提交到队列！当前队列共 ' + queue.length + ' 个任务');
+}
+
+// ==================== HISTORY MODAL ====================
+function openHistoryModal() { renderHistoryTable(); document.getElementById('historyModal').style.display = 'flex'; }
+function closeHistoryModal() { document.getElementById('historyModal').style.display = 'none'; }
+
+function renderHistoryTable() {
+  var project = getProjectName(localStorage.getItem('current_project') || '');
+  var body = document.getElementById('historyBody');
+  body.innerHTML = '';
+  historyResults.forEach(function(r, idx) {
+    if (r.project !== project) return;
+    var mapClass = r.status === 'done' ? 'tag-success' : r.status === 'running' ? 'tag-processing' : 'tag-error';
+    var statusLabel = r.status === 'done' ? '已完成' : r.status === 'running' ? '进行中' : '已终止';
+    body.innerHTML +=
+      '<tr><td>' + r.time + '</td><td>' + r.project + '</td><td>' + (r.taskName || '') + '</td>' +
+      '<td>train (' + r.train + ') / val (' + r.val + ')</td><td>' + r.model + '</td>' +
+      '<td>' + r.epochs + '</td><td style="color:var(--success);font-weight:600;">' + r.mAP50 + '</td>' +
+      '<td><span class="tag ' + mapClass + '">' + statusLabel + '</span></td>' +
+      '<td><button class="btn btn-text btn-sm" onclick="viewHistoryResult(' + idx + ')">查看</button>' +
+      ' <button class="btn btn-text btn-sm" onclick="deleteHistoryRow(this)" style="color:var(--danger);">删除</button></td></tr>';
+  });
+}
+
+function viewHistoryResult(idx) {
+  var r = historyResults[idx];
+  document.getElementById('resultModalTitle').textContent = '训练结果详情';
+
+  var statusMap = { done: ['已完成','done'], running: ['进行中','running'], stopped: ['已终止','stopped'] };
+  var st = statusMap[r.status] || ['未知',''];
+  document.getElementById('resultBannerTitle').innerHTML = r.taskName || (r.project + ' - ' + r.model);
+  document.getElementById('resultBannerSub').innerHTML = '<span>' + r.time + '</span><span>算法：' + r.project + '</span>';
+  document.getElementById('resultStatusBadge').innerHTML = '<span class="result-badge-dot"></span>' + st[0];
+  document.getElementById('resultStatusBadge').className = 'result-badge ' + st[1];
+
+  var m50C = r.mAP50 === '-' ? 'var(--text-muted)' : '';
+  var m95C = r.mAP5095 === '-' ? 'var(--text-muted)' : '';
+  document.getElementById('resultModalMetrics').innerHTML =
+    '<div class="result-metric-card"><div class="rm-value rm-green"' + (m50C ? ' style="color:'+m50C+'"' : '') + '>' + r.mAP50 + '</div><div class="rm-label">mAP@50</div></div>' +
+    '<div class="result-metric-card"><div class="rm-value rm-blue"' + (m95C ? ' style="color:'+m95C+'"' : '') + '>' + r.mAP5095 + '</div><div class="rm-label">mAP@50-95</div></div>' +
+    '<div class="result-metric-card"><div class="rm-value rm-purple">' + r.train + '</div><div class="rm-label">训练集</div><div class="rm-sub">' + r.epochs + ' epochs</div></div>' +
+    '<div class="result-metric-card"><div class="rm-value rm-purple">' + r.val + '</div><div class="rm-label">验证集</div><div class="rm-sub">images + labels</div></div>';
+
+  var isRunning = r.status === 'running';
+  document.getElementById('resultConfigGrid').innerHTML =
+    '<div class="result-info-item"><span class="ri-label">模型</span><span class="ri-value"><span class="ri-tag">' + r.model + '</span></span></div>' +
+    '<div class="result-info-item"><span class="ri-label">Epochs</span><span class="ri-value">' + r.epochs + ' 轮' + (isRunning ? ' <span style="color:#fa8c16;font-size:11px;">训练中…</span>' : '') + '</span></div>' +
+    '<div class="result-info-item"><span class="ri-label">训练集</span><span class="ri-value">train/（' + r.train + ' 张）</span></div>' +
+    '<div class="result-info-item"><span class="ri-label">验证集</span><span class="ri-value">val/（' + r.val + ' 张）</span></div>' +
+    '<div class="result-info-item"><span class="ri-label">图像尺寸</span><span class="ri-value">640 × 640</span></div>' +
+    '<div class="result-info-item"><span class="ri-label">优化器</span><span class="ri-value">AdamW · batch=16 · amp</span></div>';
+
+  var bestDisabled = r.status === 'running' ? ' style="opacity:0.5;pointer-events:none;"' : '';
+  document.getElementById('resultFileRow').innerHTML =
+    '<div class="result-file-card" title="历史最高精度模型"' + bestDisabled + ' onclick="closeResultModal();showToast(\'best.pt 已下载\')">' +
+    '<div class="rf-icon">📦</div><div class="rf-info"><div class="rf-name">best.pt</div><div class="rf-meta">' + r.path + '</div></div><span class="rf-dl"' + (r.status === 'running' ? ' style="color:var(--text-muted);"' : '') + '>' + (r.status === 'running' ? '—' : '下载') + '</span></div>' +
+    '<div class="result-file-card" title="最后一轮模型" onclick="closeResultModal();showToast(\'last.pt 已下载\')">' +
+    '<div class="rf-icon">📄</div><div class="rf-info"><div class="rf-name">last.pt</div><div class="rf-meta">' + r.path + '</div></div><span class="rf-dl">下载</span></div>';
+
+  document.getElementById('resultModal').style.display = 'flex';
+  setTimeout(function() { drawModalCharts(); }, 200);
+}
+
+function deleteHistoryRow(btn) {
+  var row = btn.closest('tr');
+  showConfirmModal('删除训练记录', '确定删除该训练记录吗？', '对应的模型文件也将一并删除，此操作不可撤销。', function() { if (row) row.remove(); });
+}
+
+function closeResultModal() { document.getElementById('resultModal').style.display = 'none'; }
+
+function drawModalCharts() {
+  ['resultLossChart','resultMapChart'].forEach(function(id) {
+    var canvas = document.getElementById(id);
+    if (!canvas) return;
+    canvas.width = canvas.offsetWidth * 2; canvas.height = 280;
+    var ctx = canvas.getContext('2d'), w = canvas.width, h = canvas.height;
+    var pad = { top:16,right:20,bottom:28,left:40 }, pw = w-pad.left-pad.right, ph = h-pad.top-pad.bottom;
+    ctx.clearRect(0,0,w,h);
+    ctx.strokeStyle='#f5f5f5'; ctx.lineWidth=1;
+    for (var i=0;i<=4;i++) { var gy=pad.top+ph*i/4; ctx.beginPath(); ctx.moveTo(pad.left,gy); ctx.lineTo(w-pad.right,gy); ctx.stroke(); }
+    ctx.fillStyle='#999'; ctx.font='11px sans-serif'; ctx.textAlign='right';
+    if (id==='resultLossChart') { for (var i=0;i<=4;i++) ctx.fillText((0.10-0.025*i).toFixed(2),pad.left-8,pad.top+ph*i/4+4); }
+    else { for (var i=0;i<=4;i++) ctx.fillText((1.0-0.25*i).toFixed(2),pad.left-8,pad.top+ph*i/4+4); }
+    ctx.textAlign='center';
+    for (var i=0;i<=4;i++) ctx.fillText(Math.round(i*25)+'%',pad.left+pw*i/4,h-6);
+    var curves = id==='resultLossChart'
+      ? [{c:'#ff4d4f',s:0.08,e:0.016},{c:'#1890ff',s:0.048,e:0.007},{c:'#52c41a',s:0.032,e:0.005}]
+      : [{c:'#1890ff',s:0.28,e:0.88},{c:'#52c41a',s:0.12,e:0.66}];
+    curves.forEach(function(col) {
+      ctx.strokeStyle=col.c; ctx.lineWidth=2.5; ctx.beginPath();
+      for (var i=0;i<=100;i++) {
+        var x=pad.left+(i/100)*pw;
+        var val=id==='resultLossChart' ? col.s*Math.pow(0.97,i/100*800)+col.e+(Math.random()-0.5)*0.004 : col.s+(col.e-col.s)*(1-Math.exp(-i/35))+(Math.random()-0.5)*0.02;
+        var y=pad.top+(1-val/(id==='resultLossChart'?0.12:1))*ph;
+        if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    });
+  });
+}
+
+// ==================== INIT ====================
+(function() {
+  var user = getUser();
+  if (!user) { location.href = 'login.html'; return; }
+  document.getElementById('headerUserName').textContent = user.name;
+  document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
+  var project = localStorage.getItem('current_project');
+  if (!project) { location.href = 'projects.html'; return; }
+  var sp1 = document.getElementById('sidebarProjectGroup'); if (sp1) sp1.style.display = 'block';
+  var sp2 = document.getElementById('sidebarSubPages'); if (sp2) sp2.style.display = 'block';
+  var slt = document.getElementById('sidebarLogoText'); if (slt) slt.textContent = getProjectName(project);
+  updateTaskName();
+  buildDsOptions();
+  updateDsText();
+})();
+
+(function() {
+  var user = getUser();
+  if (!user) { location.href = 'login.html'; return; }
+  document.getElementById('headerUserName').textContent = user.name;
+  document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
+  var project = localStorage.getItem('current_project');
+  if (!project) { location.href = 'projects.html'; return; }
+  mountAlgoNav('training', 'algoNavContainer');
+  renderHistoryTableInline();
+})();
+</script>
+</body>
+</html>
