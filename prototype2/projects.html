@@ -217,15 +217,27 @@ function getDatasetCount(projectId) {
   return ds.filter(function(d) { return d.project === projectId; }).length;
 }
 
+function isProjectVisible(p, username, admin) {
+  if (admin) return true;                       // 超管/管理员见全部
+  if (p.owner === username) return true;        // 自己创建的
+  return (p.members || []).some(function(m) { return m.username === username; }); // 被加为成员的
+}
 function populateTagFilter() {
-  var tags = getTags();
+  var username = (getUser() || {}).username || '';
+  var admin = isPlatformAdmin(getUser());
+  // 筛选下拉的标签 = 当前用户可见的算法卡片上实际存在的标签
+  var visible = getProjects().filter(function(p) { return isProjectVisible(p, username, admin); });
+  var tagSet = {};
+  visible.forEach(function(p) { if (p.tag) tagSet[p.tag] = true; });
   var sel = document.getElementById('filterTag');
+  var keep = sel.value;
   sel.innerHTML = '<option value="">全部标签</option>';
-  tags.forEach(function(t) {
+  Object.keys(tagSet).forEach(function(t) {
     var opt = document.createElement('option');
     opt.value = t; opt.textContent = t;
     sel.appendChild(opt);
   });
+  if (keep && tagSet[keep]) sel.value = keep;
 }
 
 function populateTagSelects(extraTag) {
@@ -239,12 +251,14 @@ function populateTagSelects(extraTag) {
 }
 
 function renderProjects() {
-  var projects = getProjects();
   var currentUsername = (getUser() || {}).username || '';
+  var admin = isPlatformAdmin(getUser());
+  var projects = getProjects();
   var q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
   var ft = document.getElementById('filterTaskType').value;
   var fg = document.getElementById('filterTag').value;
-  var list = projects.filter(function(p) {
+  var visibleAll = projects.filter(function(p) { return isProjectVisible(p, currentUsername, admin); });
+  var list = visibleAll.filter(function(p) {
     if (q && p.name.toLowerCase().indexOf(q) < 0) return false;
     if (ft && p.taskType !== ft) return false;
     if (fg && p.tag !== fg) return false;
@@ -252,7 +266,7 @@ function renderProjects() {
   });
   var grid = document.getElementById('projectGrid');
   if (list.length === 0) {
-    grid.innerHTML = '<div class="empty-state">' + (projects.length === 0 ? '还没有算法项目，点击上方「+ 新建算法」创建' : '没有匹配的算法') + '</div>';
+    grid.innerHTML = '<div class="empty-state">' + (visibleAll.length === 0 ? '暂无可见的算法项目，可点击上方「+ 新建算法」创建，或请创建者将你加为成员' : '没有匹配的算法') + '</div>';
     return;
   }
   grid.innerHTML = list.map(function(p) {
