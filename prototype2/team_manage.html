@@ -190,14 +190,14 @@ function initUsers() {
   var users = getUsers();
   if (users.length < 8) {
     users = [
-      { username:'admin', password:'123456', email:'admin@example.com', role:'admin', name:'管理员', avatar:'管' },
-      { username:'张三', password:'123456', email:'zhangsan@example.com', role:'engineer', name:'张三', avatar:'张' },
-      { username:'李四', password:'123456', email:'lisi@example.com', role:'engineer', name:'李四', avatar:'李' },
-      { username:'王五', password:'123456', email:'wangwu@example.com', role:'engineer', name:'王五', avatar:'王' },
-      { username:'赵六', password:'123456', email:'zhaoliu@example.com', role:'annotator', name:'赵六', avatar:'赵' },
-      { username:'孙七', password:'123456', email:'sunqi@example.com', role:'engineer', name:'孙七', avatar:'孙' },
-      { username:'周八', password:'123456', email:'zhouba@example.com', role:'annotator', name:'周八', avatar:'周' },
-      { username:'钱九', password:'123456', email:'qianjiu@example.com', role:'annotator', name:'钱九', avatar:'钱' },
+      { username:'admin', password:'123456', email:'admin@example.com', role:'super_admin', name:'超级管理员', avatar:'超', tags: [] },
+      { username:'张三', password:'123456', email:'zhangsan@example.com', role:'admin', name:'张三', avatar:'张', tags: [] },
+      { username:'李四', password:'123456', email:'lisi@example.com', role:'engineer', name:'李四', avatar:'李', tags: ['安防'] },
+      { username:'王五', password:'123456', email:'wangwu@example.com', role:'engineer', name:'王五', avatar:'王', tags: ['安防','交通'] },
+      { username:'赵六', password:'123456', email:'zhaoliu@example.com', role:'annotator', name:'赵六', avatar:'赵', tags: ['安防'] },
+      { username:'孙七', password:'123456', email:'sunqi@example.com', role:'engineer', name:'孙七', avatar:'孙', tags: ['工业'] },
+      { username:'周八', password:'123456', email:'zhouba@example.com', role:'annotator', name:'周八', avatar:'周', tags: ['交通'] },
+      { username:'钱九', password:'123456', email:'qianjiu@example.com', role:'customer', name:'钱九', avatar:'钱', tags: [] },
     ];
     localStorage.setItem('platform_users', JSON.stringify(users));
   }

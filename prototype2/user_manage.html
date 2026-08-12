@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>算法一体化平台 — 用户管理</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  .content { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+  .page-header h2 { font-size: 18px; font-weight: 600; }
+  .page-header .hint { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+  .role-tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+  .role-super { background: #fff0f6; color: #eb2f96; }
+  .role-admin { background: #f6ffed; color: #52c41a; }
+  .role-user { background: #f5f5f5; color: #8c8c8c; }
+
+  .tag-chip { display: inline-block; padding: 1px 7px; border-radius: 8px; font-size: 10px; background: var(--primary-light); color: var(--primary); margin-right: 4px; }
+  .tag-none { color: var(--text-muted); font-size: 11px; }
+  .tag-all { color: var(--success); font-size: 11px; font-weight: 600; }
+
+  .cat-check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; max-height: 220px; overflow-y: auto; padding: 12px; background: #fafafa; border-radius: 6px; border: 1px solid var(--border); }
+  .cat-check-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  .cat-check-item:hover { background: #f0f0f0; }
+  .cat-check-item input { accent-color: var(--primary); width: 14px; height: 14px; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">AI</div>
+    <div class="sidebar-expand-btn" onclick="toggleSidebar()"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+    <div class="logo-text">算法一体化平台</div>
+    <div class="sidebar-collapse-btn" onclick="toggleSidebar()"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="10" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
+      <a class="sidebar-item" href="projects.html"><svg viewBox="0 0 24 24"><path d="M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-8l-2-2H4a1 1 0 0 0-1 1z"/></svg><span>算法项目</span></a>
+      <a class="sidebar-item" href="models.html"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg><span>模型总览</span></a>
+      <a class="sidebar-item" href="datasets_overview.html"><svg viewBox="0 0 24 24"><path d="M4 6c0-1.1 3.6-2 8-2s8 .9 8 2-3.6 2-8 2-8-.9-8-2zM4 6v6c0 1.1 3.6 2 8 2s8-.9 8-2V6M4 12v6c0 1.1 3.6 2 8 2s8-.9 8-2v-6"/></svg><span>数据集总览</span></a>
+      <a class="sidebar-item" href="models_use.html"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M21 21l-4.3-4.3"/></svg><span>通用推理</span></a>
+      <a class="sidebar-item" href="training_queue.html"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>训练队列</span></a>
+      <a class="sidebar-item" href="deployment.html"><svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8a2 2 0 0 0-3 .8zM12 15l-3-3a22 22 0 0 1 8-10c2 0 4 2 4 4a22 22 0 0 1-9 9zM9 12H4s.5-2.8 2-4c1.3-1 3 .5 3 2v2zM12 15v5s2.8-.5 4-2c1-1.3-.5-3-2-3h-2z"/></svg><span>模型部署</span></a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
+      <a class="sidebar-item active" href="user_manage.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>用户管理</span></a>
+      <a class="sidebar-item" href="team_manage.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="15" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>算法管理</span></a>
+      <a class="sidebar-item" href="profile.html"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>个人中心</span></a>
+    </div>
+  </nav>
+</aside>
+<script>(function(){var s=document.querySelector(".sidebar");if(s&&localStorage.getItem("sidebar_collapsed")==="true"){s.classList.add("collapsed")}})()</script>
+
+<div class="main">
+  <header class="header">
+    <div class="breadcrumb"><a href="projects.html">首页</a> <span class="sep">›</span> <span>用户管理</span></div>
+    <div class="header-actions">
+      <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
+        <span style="font-size:12px;" id="headerUserName">用户</span>
+        <div class="user-avatar" id="headerUserAvatar">U</div>
+        <div class="user-dropdown" id="userDropdown"><a href="profile.html">个人中心</a><a href="#" onclick="event.stopPropagation();logout()">退出登录</a></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-header">
+      <h2>用户管理</h2>
+      <div class="hint" id="pageHint">管理平台全部用户：为用户分配可用的标签权限；超级管理员可任命或撤销管理员。</div>
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="padding:0;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:50px;">#</th>
+              <th>用户名</th>
+              <th>邮箱</th>
+              <th style="width:110px;">平台角色</th>
+              <th>标签权限</th>
+              <th style="width:190px;">操作</th>
+            </tr>
+          </thead>
+          <tbody id="userBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 分配标签弹窗 -->
+<div class="modal-overlay" id="tagModal" style="display:none;" onclick="if(event.target==this)closeTagModal()">
+  <div class="modal" style="width:440px;">
+    <div class="modal-header">分配标签权限 — <span id="tagModalName"></span><button class="modal-close" onclick="closeTagModal()">✕</button></div>
+    <div style="padding:20px 28px;">
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">勾选该用户新建/编辑算法时可使用的标签。</div>
+      <div class="cat-check-grid" id="tagCheckGrid"></div>
+      <div id="tagEmpty" style="display:none;padding:20px;text-align:center;color:var(--text-muted);font-size:12px;">暂无标签，请先在「个人中心 → 标签管理」创建。</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-default btn-sm" onclick="closeTagModal()">取消</button><button class="btn btn-primary btn-sm" onclick="saveUserTags()">保存</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="common.js"></script>
+<script>
+var USERS_KEY = 'platform_users';
+var editingUsername = '';
+
+function getUsers() { try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; } catch(e) { return []; } }
+function saveUsers(arr) { localStorage.setItem(USERS_KEY, JSON.stringify(arr)); }
+
+function roleTag(role) {
+  if (role === 'super_admin') return '<span class="role-tag role-super">超级管理员</span>';
+  if (role === 'admin') return '<span class="role-tag role-admin">管理员</span>';
+  return '<span class="role-tag role-user">普通用户</span>';
+}
+
+function tagsHtml(u) {
+  if (u.role === 'super_admin' || u.role === 'admin') return '<span class="tag-all">全部标签</span>';
+  var tags = Array.isArray(u.tags) ? u.tags : [];
+  if (!tags.length) return '<span class="tag-none">无</span>';
+  return tags.map(function(t) { return '<span class="tag-chip">' + t + '</span>'; }).join('');
+}
+
+function renderTable() {
+  var me = getUser();
+  var users = getUsers();
+  var body = document.getElementById('userBody');
+  body.innerHTML = users.map(function(u, i) {
+    var isMe = (me && u.username === me.username);
+    var isSuper = u.role === 'super_admin';
+    // 操作按钮
+    var acts = '<button class="btn btn-text btn-sm" onclick="openTagModal(\'' + u.username + '\')" style="color:var(--primary);">分配标签</button>';
+    if (isSuperAdmin(me) && !isSuper && !isMe) {
+      acts += u.role === 'admin'
+        ? ' <button class="btn btn-text btn-sm" onclick="toggleAdmin(\'' + u.username + '\')" style="color:var(--warning);">取消管理员</button>'
+        : ' <button class="btn btn-text btn-sm" onclick="toggleAdmin(\'' + u.username + '\')" style="color:var(--primary);">设为管理员</button>';
+    }
+    if (isSuper) acts += ' <span style="font-size:11px;color:var(--text-muted);">内置账号</span>';
+    var nameDisplay = u.name || u.username;
+    if (isMe) nameDisplay += ' <span style="font-size:11px;color:var(--text-muted);">（我）</span>';
+    return '<tr>' +
+      '<td>' + (i + 1) + '</td>' +
+      '<td style="font-weight:500;">' + nameDisplay + '</td>' +
+      '<td style="font-size:12px;color:var(--text-secondary);">' + (u.email || '—') + '</td>' +
+      '<td>' + roleTag(u.role) + '</td>' +
+      '<td>' + tagsHtml(u) + '</td>' +
+      '<td>' + acts + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+/* 分配标签 */
+function openTagModal(username) {
+  var users = getUsers();
+  var u = users.find(function(x) { return x.username === username; });
+  if (!u) return;
+  editingUsername = username;
+  document.getElementById('tagModalName').textContent = u.name || username;
+  var tags = getTags();
+  var grid = document.getElementById('tagCheckGrid');
+  var empty = document.getElementById('tagEmpty');
+  if (!tags.length) { grid.innerHTML = ''; grid.style.display = 'none'; empty.style.display = ''; }
+  else {
+    grid.style.display = ''; empty.style.display = 'none';
+    var granted = Array.isArray(u.tags) ? u.tags : [];
+    grid.innerHTML = tags.map(function(t) {
+      var checked = granted.indexOf(t) >= 0 ? 'checked' : '';
+      return '<label class="cat-check-item"><input type="checkbox" class="tag-cb" value="' + t + '" ' + checked + '> ' + t + '</label>';
+    }).join('');
+  }
+  document.getElementById('tagModal').style.display = 'flex';
+}
+function closeTagModal() { document.getElementById('tagModal').style.display = 'none'; }
+function saveUserTags() {
+  var users = getUsers();
+  var u = users.find(function(x) { return x.username === editingUsername; });
+  if (!u) return;
+  var cbs = document.querySelectorAll('.tag-cb:checked');
+  var tags = [];
+  cbs.forEach(function(cb) { tags.push(cb.value); });
+  u.tags = tags;
+  saveUsers(users);
+  // 若改的是自己，同步当前登录态
+  var me = getUser();
+  if (me && me.username === u.username) localStorage.setItem('current_user', JSON.stringify(u));
+  closeTagModal();
+  renderTable();
+  showToast('已更新「' + (u.name || u.username) + '」的标签权限');
+}
+
+/* 任命/撤销管理员（仅超级管理员） */
+function toggleAdmin(username) {
+  var users = getUsers();
+  var u = users.find(function(x) { return x.username === username; });
+  if (!u) return;
+  if (u.role === 'admin') {
+    u.role = 'user';
+    saveUsers(users);
+    if (getUser() && getUser().username === u.username) localStorage.setItem('current_user', JSON.stringify(u));
+    renderTable();
+    showToast('已将「' + (u.name || username) + '」撤销管理员');
+  } else {
+    u.role = 'admin';
+    saveUsers(users);
+    if (getUser() && getUser().username === u.username) localStorage.setItem('current_user', JSON.stringify(u));
+    renderTable();
+    showToast('已将「' + (u.name || username) + '」任命为管理员');
+  }
+}
+
+(function() {
+  var me = getUser();
+  if (!me) { location.href = 'login.html'; return; }
+  // 权限拦截：仅超级管理员/管理员可访问
+  if (!isPlatformAdmin(me)) { showToast('仅管理员可访问用户管理'); setTimeout(function(){ location.href = 'projects.html'; }, 800); return; }
+  document.getElementById('headerUserName').textContent = me.name;
+  document.getElementById('headerUserAvatar').textContent = me.avatar || me.name.charAt(0);
+  if (!isSuperAdmin(me)) {
+    // 普通管理员看不到"任命管理员"的提示
+    document.getElementById('pageHint').textContent = '管理平台全部用户：为用户分配可用的标签权限。任命管理员请联系超级管理员。';
+  }
+  renderTable();
+})();
+</script>
+</body>
+</html>

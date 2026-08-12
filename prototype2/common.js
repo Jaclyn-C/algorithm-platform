@@ -96,6 +96,61 @@ function _demoImages(p, n) {
   return a;
 }
 
+/* ===== 平台角色（超级管理员 / 管理员 / 普通用户）与标签授权 ===== */
+/* 平台角色与算法内角色正交：平台角色管"平台级"事务（用户、标签），
+   算法内角色（创建者/工程师/标注员/查看者）管"某个算法里"能做什么。 */
+function isPlatformAdmin(u) { u = u || getUser(); return !!u && (u.role === 'super_admin' || u.role === 'admin'); }
+function isSuperAdmin(u) { u = u || getUser(); return !!u && u.role === 'super_admin'; }
+function platformRoleLabel(u) {
+  u = u || getUser();
+  if (!u) return '普通用户';
+  if (u.role === 'super_admin') return '超级管理员';
+  if (u.role === 'admin') return '管理员';
+  return '普通用户';
+}
+/* 用户可用的标签：超管/管理员可用全部；普通用户用其被授权的 tags。 */
+function getGrantedTags(u) {
+  u = u || getUser();
+  if (!u) return [];
+  if (isPlatformAdmin(u)) return getTags();
+  return Array.isArray(u.tags) ? u.tags.slice() : [];
+}
+
+/* 确保系统存在一个超级管理员（幂等）。用于兼容旧数据：把已有 admin 提为超管，
+   否则把第一个用户提为超管。同步当前登录态。 */
+function ensureSuperAdmin() {
+  var users = [];
+  try { users = JSON.parse(localStorage.getItem('platform_users')) || []; } catch(e) {}
+  if (!users.length) return;
+  if (users.some(function(u) { return u.role === 'super_admin'; })) return;
+  var target = users.find(function(u) { return u.role === 'admin'; }) || users[0];
+  target.role = 'super_admin';
+  localStorage.setItem('platform_users', JSON.stringify(users));
+  try {
+    var cu = JSON.parse(localStorage.getItem('current_user'));
+    if (cu && cu.username === target.username) localStorage.setItem('current_user', JSON.stringify(target));
+  } catch(e) {}
+}
+
+/* 在侧边栏「系统设置」下注入「用户管理」入口（仅超管/管理员可见） */
+;(function() {
+  ensureSuperAdmin();
+  var groups = document.querySelectorAll('.sidebar-group');
+  for (var i = 0; i < groups.length; i++) {
+    var t = groups[i].querySelector('.sidebar-group-title');
+    if (!t || t.textContent.indexOf('系统设置') < 0) continue;
+    if (groups[i].querySelector('a[href="user_manage.html"]')) continue;
+    var u = getUser();
+    if (!u || !isPlatformAdmin(u)) continue;
+    var a = document.createElement('a');
+    a.className = 'sidebar-item';
+    a.href = 'user_manage.html';
+    a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>用户管理</span>';
+    var first = groups[i].querySelector('.sidebar-item');
+    if (first) groups[i].insertBefore(a, first); else groups[i].appendChild(a);
+  }
+})();
+
 /* 为“所有算法”补全演示数据集（按需、幂等）。
    修复：原先演示数据集只在进入数据集管理页(data_center)时才按当前算法生成，
    导致登录后算法卡片的“数据集”数量与“数据集总览”都为空，要点进某个算法再退出才更新。

@@ -18,6 +18,8 @@
   .role-annotator { background: #fff7e6; color: #fa8c16; }
   .role-admin { background: #f6ffed; color: #52c41a; }
   .role-customer { background: #f9f0ff; color: #722ed1; }
+  .role-super { background: #fff0f6; color: #eb2f96; }
+  .role-user { background: #f5f5f5; color: #8c8c8c; }
   .profile-main { flex: 1; }
   .profile-main h3 { font-size: 15px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
   .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
@@ -144,7 +146,14 @@
           <button class="btn btn-default" onclick="location.href='projects.html'">返回</button>
         </div>
 
-        <!-- Tag 管理（仅管理员可见） -->
+        <!-- 我的标签权限（所有人可见） -->
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border);">
+          <h3>我的标签权限</h3>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">新建/编辑算法时可为算法选择的标签。如需更多标签，请联系管理员分配。</p>
+          <div class="tag-list" id="myTagsList"></div>
+        </div>
+
+        <!-- Tag 管理（仅超级管理员/管理员可见） -->
         <div id="tagMgmtSection" class="tag-mgmt-section" style="display:none;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);">
           <h3>标签管理</h3>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">管理可供用户在新建算法时选择的标签。</p>
@@ -174,19 +183,36 @@ function loadProfile() {
   document.getElementById('profileAvatar').textContent = user.avatar || user.name.charAt(0);
   document.getElementById('profileName').textContent = user.name;
   document.getElementById('profileDate').textContent = user.createdAt || '—';
-  var roleNames = { engineer: '算法工程师', annotator: '标注人员', admin: '管理员', customer: '客户' };
-  var roleName = roleNames[user.role] || user.role;
+  var roleName = platformRoleLabel(user);
+  var roleKey = user.role === 'super_admin' ? 'super' : (user.role === 'admin' ? 'admin' : 'user');
   document.getElementById('profileRole').textContent = roleName;
-  document.getElementById('profileRole').className = 'role-tag role-' + user.role;
+  document.getElementById('profileRole').className = 'role-tag role-' + roleKey;
   document.getElementById('editUsername').value = user.username;
   document.getElementById('editName').value = user.name;
   document.getElementById('editEmail').value = user.email || '';
   document.getElementById('editRole').value = roleName;
-  // 管理员显示标签管理
-  if (user.role === 'admin') {
+  // 我的标签权限（只读展示）
+  renderMyTags();
+  // 超级管理员/管理员显示标签管理
+  if (isPlatformAdmin(user)) {
     document.getElementById('tagMgmtSection').style.display = '';
     renderTagList();
   }
+}
+
+function renderMyTags() {
+  var list = document.getElementById('myTagsList');
+  if (!list) return;
+  if (isPlatformAdmin(getUser())) {
+    list.innerHTML = '<span style="font-size:12px;color:var(--success);font-weight:600;">全部标签（管理员权限）</span>';
+    return;
+  }
+  var tags = getGrantedTags();
+  if (!tags.length) {
+    list.innerHTML = '<span style="font-size:12px;color:var(--text-muted);">暂无授权标签，请联系管理员分配。</span>';
+    return;
+  }
+  list.innerHTML = tags.map(function(t) { return '<div class="tag-item">' + t + '</div>'; }).join('');
 }
 
 function renderTagList() {

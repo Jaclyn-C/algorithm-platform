@@ -228,8 +228,10 @@ function populateTagFilter() {
   });
 }
 
-function populateTagSelects() {
-  var tags = getTags();
+function populateTagSelects(extraTag) {
+  var tags = getGrantedTags();
+  // 编辑时，若算法已有标签但当前用户无该标签权限，仍允许显示（保留已打的标签）
+  if (extraTag && tags.indexOf(extraTag) < 0) tags = tags.concat([extraTag]);
   var html = '<option value="">— 不选标签 —</option>';
   tags.forEach(function(t) { html += '<option value="' + t + '">' + t + '</option>'; });
   document.getElementById('newTag').innerHTML = html;
@@ -321,7 +323,7 @@ function openEditModal(idx) {
   var projects = getProjects();
   var p = projects[idx];
   if (!p) return;
-  populateTagSelects();
+  populateTagSelects(p.tag);
   document.getElementById('editId').value = idx;
   document.getElementById('editName').value = p.name;
   document.getElementById('editTag').value = p.tag || '';
