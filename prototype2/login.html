@@ -59,15 +59,6 @@
       <label>密码</label>
       <input type="password" id="regPassword" placeholder="请输入密码（至少 6 位）">
     </div>
-    <div class="form-group">
-      <label>角色</label>
-      <select id="regRole" style="width:100%;padding:10px 12px;border:1px solid #d9d9d9;border-radius:6px;font-size:14px;">
-        <option value="engineer">算法工程师</option>
-        <option value="annotator">标注人员</option>
-        <option value="admin">管理员</option>
-        <option value="customer">客户</option>
-      </select>
-    </div>
     <div class="error" id="regError"></div>
     <button class="btn btn-primary" onclick="register()">注 册</button>
     <button class="btn btn-text" onclick="showLogin()">已有账号？返回登录</button>
@@ -115,12 +106,11 @@ function register() {
   var u = document.getElementById('regUsername').value.trim();
   var e = document.getElementById('regEmail').value.trim();
   var p = document.getElementById('regPassword').value.trim();
-  var r = document.getElementById('regRole').value;
   if (!u || !e || !p) { showErr('regError', '请填写所有字段'); return; }
   if (p.length < 6) { showErr('regError', '密码至少 6 位'); return; }
   var users = getUsers();
   if (users.find(function(x) { return x.username === u; })) { showErr('regError', '用户名已存在'); return; }
-  var newUser = { username: u, email: e, password: p, role: r, name: u, avatar: u.charAt(0), createdAt: new Date().toISOString().slice(0,10) };
+  var newUser = { username: u, email: e, password: p, role: 'engineer', name: u, avatar: u.charAt(0), createdAt: new Date().toISOString().slice(0,10) };
   users.push(newUser);
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
   localStorage.setItem('current_user', JSON.stringify(newUser));
