@@ -86,9 +86,13 @@
       <a class="sidebar-item" href="datasets_overview.html"><svg viewBox="0 0 24 24"><path d="M4 6c0-1.1 3.6-2 8-2s8 .9 8 2-3.6 2-8 2-8-.9-8-2zM4 6v6c0 1.1 3.6 2 8 2s8-.9 8-2V6M4 12v6c0 1.1 3.6 2 8 2s8-.9 8-2v-6"/></svg><span>数据集总览</span></a>
       <a class="sidebar-item" href="models_use.html"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M21 21l-4.3-4.3"/></svg><span>通用推理</span></a>
       <a class="sidebar-item" href="training_queue.html"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>训练队列</span></a>
+      <a class="sidebar-item" href="deployment.html">
+        <svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8a2 2 0 0 0-3 .8zM12 15l-3-3a22 22 0 0 1 8-10c2 0 4 2 4 4a22 22 0 0 1-9 9zM9 12H4s.5-2.8 2-4c1.3-1 3 .5 3 2v2zM12 15v5s2.8-.5 4-2c1-1.3-.5-3-2-3h-2z"/></svg>
+        <span>模型部署</span>
+      </a>
     </div>
     <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
-      <a class="sidebar-item" href="team_manage.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="15" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>团队管理</span></a>
+      <a class="sidebar-item" href="team_manage.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="15" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>算法管理</span></a>
       <a class="sidebar-item" href="profile.html"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>个人中心</span></a>
     </div>
   </nav>
@@ -110,9 +114,6 @@
   <div class="content">
     <div id="algoNavContainer"></div>
     <div class="algo-content">
-    <div class="page-header">
-      <h2>模型评估</h2>
-    </div>
 
     <div class="eval-layout">
 
@@ -121,7 +122,7 @@
 
         <!-- Config Card (fixed, no scroll) -->
         <div class="card" style="flex-shrink:0;">
-          <div class="card-header">评估配置</div>
+          <div class="card-header">推理配置</div>
           <div class="card-body">
             <div class="form-section">
               <div class="form-section-title">模型选择</div>
@@ -160,7 +161,7 @@
 
         <!-- History Card (scrollable) -->
         <div class="card" style="flex:1;min-height:0;display:flex;flex-direction:column;">
-          <div class="card-header">评估历史</div>
+          <div class="card-header">推理历史</div>
           <div class="card-body" style="padding:0;">
             <table class="table">
               <thead>
@@ -195,7 +196,7 @@
 
       <!-- Right: Results -->
       <div class="card result-panel">
-        <div class="card-header">评估结果</div>
+        <div class="card-header">推理结果</div>
         <div class="card-body" id="resultArea">
           <div class="empty-state" id="emptyState">
             <div style="font-size:14px;margin-bottom:4px;">尚未执行评估</div>

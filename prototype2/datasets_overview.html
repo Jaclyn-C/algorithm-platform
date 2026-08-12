@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>算法一体化平台 — 数据集总览</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  .content { padding: 20px 24px; }
+
+  .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .toolbar .btn { height: 34px; padding: 0 16px; }
+  .toolbar .toolbar-hint { font-size: 11px; color: var(--text-secondary); }
+  .toolbar .toolbar-spacer { flex: 1; }
+
+  .overview-table { width: 100%; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--card-shadow); overflow: hidden; }
+  .overview-table table { width: 100%; border-collapse: collapse; }
+  .overview-table th { background: #fafafa; padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .overview-table th:first-child { width: 40px; text-align: center; }
+  .overview-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 13px; }
+  .overview-table tr:last-child td { border-bottom: none; }
+  .overview-table tbody tr { transition: var(--transition); cursor: pointer; }
+  .overview-table tbody tr:hover { background: #fafafa; }
+  .overview-table tbody tr.selected { background: var(--primary-light); }
+  .overview-table input[type="checkbox"] { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; }
+
+  .empty-state { padding: 64px 20px; text-align: center; color: var(--text-muted); }
+
+  /* Project multi-select */
+  .proj-filter { position: relative; user-select: none; }
+  .proj-filter .pf-trigger { display: flex; align-items: center; justify-content: space-between; padding: 5px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; background: #fff; cursor: pointer; min-height: 34px; box-sizing: border-box; min-width: 200px; }
+  .proj-filter .pf-trigger:hover { border-color: var(--primary); }
+  .proj-filter .pf-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .proj-filter .pf-arrow { color: var(--text-muted); font-size: 10px; margin-left: 6px; }
+  .proj-filter.open .pf-trigger { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.15); }
+  .proj-filter .pf-dropdown { display: none; position: absolute; top: 100%; left: 0; background: #fff; border: 1px solid #d9d9d9; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; max-height: 200px; overflow-y: auto; margin-top: 2px; min-width: 200px; }
+  .proj-filter.open .pf-dropdown { display: block; }
+  .proj-filter .pf-option { display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: 12px; cursor: pointer; margin: 0; font-weight: 400; }
+  .proj-filter .pf-option:hover { background: var(--primary-light); }
+  .proj-filter .pf-option input[type="checkbox"] { accent-color: var(--primary); width: 14px; height: 14px; margin: 0; flex-shrink: 0; }
+  .pf-placeholder { color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">AI</div>
+    <div class="sidebar-expand-btn" onclick="toggleSidebar()"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+    <div class="logo-text">算法一体化平台</div>
+    <div class="sidebar-collapse-btn" onclick="toggleSidebar()"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="10" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
+      <a class="sidebar-item" href="projects.html"><svg viewBox="0 0 24 24"><path d="M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-8l-2-2H4a1 1 0 0 0-1 1z"/></svg><span>算法项目</span></a>
+      <a class="sidebar-item" href="models.html"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg><span>模型总览</span></a>
+      <a class="sidebar-item active" href="#"><svg viewBox="0 0 24 24"><path d="M4 6c0-1.1 3.6-2 8-2s8 .9 8 2-3.6 2-8 2-8-.9-8-2zM4 6v6c0 1.1 3.6 2 8 2s8-.9 8-2V6M4 12v6c0 1.1 3.6 2 8 2s8-.9 8-2v-6"/></svg><span>数据集总览</span></a>
+      <a class="sidebar-item" href="models_use.html"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M21 21l-4.3-4.3"/></svg><span>通用推理</span></a>
+      <a class="sidebar-item" href="training_queue.html"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>训练队列</span></a>
+      <a class="sidebar-item" href="deployment.html">
+        <svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8a2 2 0 0 0-3 .8zM12 15l-3-3a22 22 0 0 1 8-10c2 0 4 2 4 4a22 22 0 0 1-9 9zM9 12H4s.5-2.8 2-4c1.3-1 3 .5 3 2v2zM12 15v5s2.8-.5 4-2c1-1.3-.5-3-2-3h-2z"/></svg>
+        <span>模型部署</span>
+      </a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
+      <a class="sidebar-item" href="team_manage.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="15" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>算法管理</span></a>
+      <a class="sidebar-item" href="profile.html"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>个人中心</span></a>
+    </div>
+  </nav>
+</aside>
+<script>(function(){var s=document.querySelector(".sidebar");if(s&&localStorage.getItem("sidebar_collapsed")==="true"){s.classList.add("collapsed")}})()</script>
+
+<div class="main">
+  <header class="header">
+    <div class="breadcrumb"><a href="projects.html">首页</a> <span class="sep">›</span> <span>数据集总览</span></div>
+    <div class="header-actions">
+      <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
+        <span style="font-size:12px;" id="headerUserName">用户</span>
+        <div id="headerUserAvatar" style="width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">U</div>
+        <div class="user-dropdown" id="userDropdown">
+          <a href="profile.html">个人中心</a>
+          <a href="#" onclick="event.stopPropagation();logout()">退出登录</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <div class="page-header">
+      <h2>数据集总览</h2>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <span style="font-size:12px;color:var(--text-secondary);">目标算法：</span>
+      <div class="proj-filter" id="projFilter">
+        <div class="pf-trigger" onclick="toggleProjFilter()">
+          <span class="pf-text" id="projFilterText">全部算法</span>
+          <span class="pf-arrow">▾</span>
+        </div>
+        <div class="pf-dropdown" id="projFilterDrop"></div>
+      </div>
+      <input type="text" id="searchInput" placeholder="搜索名称..." oninput="renderTable()" style="padding:6px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:12px;font-family:var(--font);width:200px;height:34px;box-sizing:border-box;">
+      <span class="toolbar-hint" id="hintCount">共 0 个数据集</span>
+    </div>
+
+    <!-- Table -->
+    <div class="overview-table">
+      <table>
+        <thead>
+          <tr>
+            <th>算法项目</th>
+            <th>名称</th>
+            <th>数据量</th>
+            <th>已标注</th>
+            <th>待审核</th>
+            <th>未标注</th>
+            <th>上传日期</th>
+            <th>上传者</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+      </table>
+      <div class="empty-state" id="emptyState" style="display:none;">没有匹配的数据集</div>
+    </div>
+
+  </div>
+</div>
+
+
+<div class="toast" id="toast"></div>
+
+<script src="common.js"></script>
+<script>
+// ==================== DATA ====================
+var allRows = [];
+var selectedProjFilter = {};
+var dsSortAsc = true;
+
+function loadAllData() {
+  var datasets = [];
+  try { datasets = JSON.parse(localStorage.getItem('dc_datasets')) || []; } catch(e) {}
+  allRows = [];
+  datasets.forEach(function(d) {
+    if (!d.project) return;
+    var pname = getProjectName(d.project);
+    var kept = d.imgs.filter(function(i) { return !i.dup; });
+    var annotated = 0, review = 0, unannotated = 0;
+    kept.forEach(function(i) {
+      var s = getImgStatus(i, d);
+      if (s === 'annotated') annotated++;
+      else if (s === 'review') review++;
+      else unannotated++;
+    });
+    allRows.push({
+      id: d.id, project: d.project, projectName: pname,
+      name: d.name, imgCount: kept.length,
+      annotated: annotated, review: review, unannotated: unannotated,
+      createdAt: d.createdAt || '', uploader: d.uploader || '—'
+    });
+  });
+}
+
+function getImgStatus(i, d) {
+  if (i.dup) return 'duplicate';
+  if (i.anno === 'review') return 'review';
+  if (i.anno === 'annotated') return 'annotated';
+  if (d.stage === 'annotated' || d.stage === 'split') return 'annotated';
+  if (d.stage === 'review') return 'review';
+  return 'unannotated';
+}
+
+function renderTable() {
+  var query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+  var activeFilters = Object.keys(selectedProjFilter);
+  var filtered = allRows;
+  if (activeFilters.length > 0) {
+    filtered = filtered.filter(function(r) { return selectedProjFilter[r.project]; });
+  }
+  if (query) {
+    filtered = filtered.filter(function(r) {
+      return r.name.toLowerCase().indexOf(query) >= 0 || r.projectName.toLowerCase().indexOf(query) >= 0;
+    });
+  }
+  filtered.sort(function(a, b) { return b.createdAt.localeCompare(a.createdAt); });
+
+  document.getElementById('hintCount').textContent = '共 ' + allRows.length + ' 个数据集' +
+    (query || activeFilters.length > 0 ? '，筛选后 ' + filtered.length + ' 个' : '');
+
+  var body = document.getElementById('tableBody');
+  var empty = document.getElementById('emptyState');
+  if (filtered.length === 0) {
+    body.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  body.innerHTML = filtered.map(function(r) {
+    return '<tr>' +
+      '<td><span style="font-weight:500;">' + r.projectName + '</span></td>' +
+      '<td>' + r.name + '</td>' +
+      '<td>' + r.imgCount + ' 张</td>' +
+      '<td style="color:var(--success);font-weight:600;">' + r.annotated + '</td>' +
+      '<td style="color:#eb2f96;font-weight:600;">' + r.review + '</td>' +
+      '<td style="color:var(--text-muted);">' + r.unannotated + '</td>' +
+      '<td style="color:var(--text-secondary);font-size:11px;">' + r.createdAt + '</td>' +
+      '<td style="font-size:11px;">' + r.uploader + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+// ---- Project filter ----
+function toggleProjFilter() {
+  document.getElementById('projFilter').classList.toggle('open');
+}
+function renderProjFilterOptions() {
+  var projects = [];
+  allRows.forEach(function(r) { if (projects.indexOf(r.project) < 0) projects.push(r.project); });
+  var drop = document.getElementById('projFilterDrop');
+  var html = '';
+  projects.forEach(function(pid) {
+    var pname = getProjectName(pid);
+    html += '<label class="pf-option" onclick="event.stopPropagation();">' +
+      '<input type="checkbox" value="' + pid + '" ' + (selectedProjFilter[pid] ? 'checked' : '') + ' onchange="onProjFilterToggle(\'' + pid + '\', this.checked)">' +
+      pname + '</label>';
+  });
+  drop.innerHTML = html;
+}
+function onProjFilterToggle(proj, checked) {
+  if (checked) selectedProjFilter[proj] = true;
+  else delete selectedProjFilter[proj];
+  updateProjFilterText();
+  renderTable();
+}
+function updateProjFilterText() {
+  var sel = Object.keys(selectedProjFilter);
+  var el = document.getElementById('projFilterText');
+  if (sel.length === 0) { el.textContent = '全部算法'; el.classList.add('pf-placeholder'); }
+  else if (sel.length <= 2) {
+    el.textContent = sel.map(function(pid) { return getProjectName(pid); }).join('，');
+    el.classList.remove('pf-placeholder');
+  } else {
+    el.textContent = '已选 ' + sel.length + ' 个算法';
+    el.classList.remove('pf-placeholder');
+  }
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#projFilter')) {
+    var pf = document.getElementById('projFilter');
+    if (pf) pf.classList.remove('open');
+  }
+});
+
+// ==================== INIT ====================
+(function() {
+  var user = getUser();
+  if (!user) { location.href = 'login.html'; return; }
+  document.getElementById('headerUserName').textContent = user.name;
+  document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
+  loadAllData();
+  renderProjFilterOptions();
+  renderTable();
+})();
+
+</script>
+</body>
+</html>
