@@ -210,10 +210,11 @@ function getLatestModel(projectName) {
   return projModels[0];
 }
 
-function getDatasetCount(projectName) {
+function getDatasetCount(projectId) {
   var ds = [];
   try { ds = JSON.parse(localStorage.getItem('dc_datasets')) || []; } catch(e) {}
-  return ds.filter(function(d) { return d.project === projectName; }).length;
+  // 数据集管理页按 project(=算法ID) 关联，这里用同样的口径计数
+  return ds.filter(function(d) { return d.project === projectId; }).length;
 }
 
 function populateTagFilter() {
@@ -257,7 +258,7 @@ function renderProjects() {
     var color = getColor(p.id);
     var isOwner = (p.owner === currentUsername);
     var model = getLatestModel(p.name);
-    var dsCount = getDatasetCount(p.name);
+    var dsCount = getDatasetCount(p.id);
     var modelStr = model ? (model.model + ' ' + model.version) : '<span style="color:var(--text-muted);">暂无</span>';
     var mapStr = model && model.mAP50 ? '<span style="color:var(--success);font-weight:600;">' + model.mAP50 + '</span>' : '<span style="color:var(--text-muted);">—</span>';
     var tagHtml = p.tag ? '<span class="tag-chip pc-tag">' + p.tag + '</span>' : '';
@@ -387,6 +388,7 @@ function executeDelete() {
     saveProjects(demo);
   }
   populateTagFilter();
+  ensureDemoDatasets(); // 先补全各算法的演示数据集，使卡片“数据集”数量即时正确
   renderProjects();
 })();
 </script>

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>算法一体化平台 — 算法管理</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  .content { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+  .manage-layout { display: flex; gap: 16px; flex: 1; min-height: 0; align-items: stretch; }
+  .info-panel { width: 240px; min-width: 240px; overflow-y: auto; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); }
+  .member-panel { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .member-panel .card-body { overflow-y: auto; flex: 1; padding: 0; }
+
+  /* 角色标签 */
+  .tag-owner { background: #fff7e6; color: #fa8c16; }
+  .tag-engineer { background: #e6f7ff; color: #1890ff; }
+  .tag-annotator { background: #f6ffed; color: #52c41a; }
+  .tag-viewer { background: #f5f5f5; color: #8c8c8c; }
+
+  /* 左侧算法列表 */
+  .algo-list { display: flex; flex-direction: column; }
+  .algo-item { padding: 14px 20px; cursor: pointer; border-bottom: 1px solid var(--border); border-left: 3px solid transparent; transition: background .15s; }
+  .algo-item:hover { background: #fafafa; }
+  .algo-item-active { background: var(--primary-light); border-left-color: var(--primary); }
+  .algo-item-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .algo-item-meta { font-size: 11px; color: var(--text-muted); line-height: 1.7; display: flex; align-items: center; gap: 6px; }
+
+  .role-legend-bar { padding: 8px 20px; font-size: 11px; color: var(--text-secondary); background: #fafafa; border-bottom: 1px solid var(--border); }
+
+  .form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+  .form-group label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+  .form-group input, .form-group select { padding: 7px 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; font-family: var(--font); }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">AI</div>
+    <div class="sidebar-expand-btn" onclick="toggleSidebar()"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="14" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+    <div class="logo-text">算法一体化平台</div>
+    <div class="sidebar-collapse-btn" onclick="toggleSidebar()"><svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="4" width="14" height="1.5" rx="0.5"/><rect x="3" y="9.25" width="10" height="1.5" rx="0.5"/><rect x="3" y="14.5" width="14" height="1.5" rx="0.5"/></svg></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-group"><div class="sidebar-group-title">平台导航</div>
+      <a class="sidebar-item" href="projects.html"><svg viewBox="0 0 24 24"><path d="M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-8l-2-2H4a1 1 0 0 0-1 1z"/></svg><span>算法项目</span></a>
+      <a class="sidebar-item" href="models.html"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg><span>模型总览</span></a>
+      <a class="sidebar-item" href="datasets_overview.html"><svg viewBox="0 0 24 24"><path d="M4 6c0-1.1 3.6-2 8-2s8 .9 8 2-3.6 2-8 2-8-.9-8-2zM4 6v6c0 1.1 3.6 2 8 2s8-.9 8-2V6M4 12v6c0 1.1 3.6 2 8 2s8-.9 8-2v-6"/></svg><span>数据集总览</span></a>
+      <a class="sidebar-item" href="models_use.html"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M21 21l-4.3-4.3"/></svg><span>通用推理</span></a>
+      <a class="sidebar-item" href="training_queue.html"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>训练队列</span></a>
+      <a class="sidebar-item" href="deployment.html"><svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8a2 2 0 0 0-3 .8zM12 15l-3-3a22 22 0 0 1 8-10c2 0 4 2 4 4a22 22 0 0 1-9 9zM9 12H4s.5-2.8 2-4c1.3-1 3 .5 3 2v2zM12 15v5s2.8-.5 4-2c1-1.3-.5-3-2-3h-2z"/></svg><span>模型部署</span></a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-group-title">系统设置</div>
+      <a class="sidebar-item active" href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="15" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>算法管理</span></a>
+      <a class="sidebar-item" href="profile.html"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>个人中心</span></a>
+    </div>
+  </nav>
+</aside>
+<script>(function(){var s=document.querySelector(".sidebar");if(s&&localStorage.getItem("sidebar_collapsed")==="true"){s.classList.add("collapsed")}})()</script>
+
+<div class="main">
+  <header class="header">
+    <div class="breadcrumb"><a href="projects.html">首页</a> <span class="sep">›</span> <span>算法管理</span></div>
+    <div class="header-actions">
+      <div class="user-menu" onclick="document.getElementById('userDropdown').classList.toggle('show')">
+        <span style="font-size:12px;" id="headerUserName">用户</span>
+        <div class="user-avatar" id="headerUserAvatar">U</div>
+        <div class="user-dropdown" id="userDropdown"><a href="profile.html">个人中心</a><a href="#" onclick="event.stopPropagation();logout()">退出登录</a></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="manage-layout">
+      <!-- Left: 算法列表 -->
+      <div class="info-panel">
+        <div class="algo-list" id="algoList"></div>
+      </div>
+
+      <!-- Right: 成员管理 -->
+      <div class="card member-panel">
+        <div class="card-header">
+          <span id="memberTitle">算法成员（<span id="memberCount">0</span>）</span>
+          <span id="myRoleTag" class="tag" style="margin-left:4px;"></span>
+          <span style="flex:1;"></span>
+          <button class="btn btn-default btn-sm" id="btnTransfer" onclick="showTransfer()" style="display:none; margin-right: 10px;">转移创建者</button>
+          <button class="btn btn-primary btn-sm" id="btnAddMember" onclick="showAddModal()" style="display:none;">+ 添加成员</button>
+        </div>
+        <div class="role-legend-bar">权限说明：创建者（全部权限） · 算法工程师（完全权限） · 标注员（数据权限） · 查看者（仅查看）</div>
+        <div class="card-body">
+          <table class="table">
+            <thead><tr><th style="width:50px;">#</th><th>用户名</th><th style="width:110px;">角色</th><th style="width:120px;">加入时间</th><th style="width:150px;">操作</th></tr></thead>
+            <tbody id="memberBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Member Modal -->
+<div class="modal-overlay" id="addModal" style="display:none;z-index:1050;" onclick="if(event.target==this)this.style.display='none'">
+  <div class="modal" style="width:420px;">
+    <div class="modal-header">添加成员<button class="modal-close" onclick="document.getElementById('addModal').style.display='none'">✕</button></div>
+    <div style="padding:20px 28px;">
+      <div class="form-group">
+        <label>用户邮箱</label>
+        <input type="email" id="addEmail" placeholder="请输入对方的注册邮箱">
+      </div>
+      <div class="form-group">
+        <label>分配角色</label>
+        <select id="addRole"></select>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);">仅创建者可将成员指定为算法工程师（管理员）。</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-default btn-sm" onclick="document.getElementById('addModal').style.display='none'">取消</button><button class="btn btn-primary btn-sm" onclick="addMember()">添加</button></div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmModal" style="display:none;z-index:1100;" onclick="if(event.target==this)this.style.display='none'">
+  <div class="modal" style="width:420px;">
+    <div class="modal-header"><span id="confirmTitle">确认</span><button class="modal-close" onclick="document.getElementById('confirmModal').style.display='none'">✕</button></div>
+    <div style="padding:20px 28px;"><div id="confirmMsg" style="font-size:13px;"></div><div id="confirmHint" style="font-size:11px;color:var(--text-muted);margin-top:6px;"></div></div>
+    <div class="modal-footer"><button class="btn btn-default btn-sm" onclick="document.getElementById('confirmModal').style.display='none'">取消</button><button class="btn btn-danger btn-sm" id="confirmOk" onclick="runConfirm()">确认</button></div>
+  </div>
+</div>
+
+<!-- Edit Role Modal -->
+<div class="modal-overlay" id="editModal" style="display:none;z-index:1050;" onclick="if(event.target==this)this.style.display='none'">
+  <div class="modal" style="width:400px;">
+    <div class="modal-header">编辑成员角色 — <span id="editName"></span><button class="modal-close" onclick="document.getElementById('editModal').style.display='none'">✕</button></div>
+    <div style="padding:20px 28px;">
+      <div class="form-group">
+        <label>角色</label>
+        <select id="editRole">
+          <option value="engineer">算法工程师（完全权限）</option>
+          <option value="annotator">标注员（数据权限）</option>
+          <option value="viewer">查看者（仅查看）</option>
+        </select>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);">将成员设为算法工程师即指定其为管理员。创建者权限仅可通过“转移创建者”变更。</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-default btn-sm" onclick="document.getElementById('editModal').style.display='none'">取消</button><button class="btn btn-primary btn-sm" onclick="saveRole()">保存</button></div>
+  </div>
+</div>
+
+<!-- Transfer Ownership Modal -->
+<div class="modal-overlay" id="transferModal" style="display:none;z-index:1050;" onclick="if(event.target==this)this.style.display='none'">
+  <div class="modal" style="width:420px;">
+    <div class="modal-header" >转移创建者权限<button class="modal-close" onclick="document.getElementById('transferModal').style.display='none'">✕</button></div>
+    <div style="padding:20px 28px;">
+      <div style="font-size:13px;margin-bottom:12px;">请选择新的创建者，转移后您将自动成为 <b>算法工程师（管理员）</b>。</div>
+      <div class="form-group">
+        <label>新创建者</label>
+        <select id="transferTarget"></select>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);">提示：创建者拥有最高权限，可管理全部成员与权限，此操作不可撤销。</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-default btn-sm" onclick="document.getElementById('transferModal').style.display='none'">取消</button><button class="btn btn-danger btn-sm" onclick="doTransfer()">确认转移</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="common.js"></script>
+<script>
+/* ===== 全局状态 ===== */
+var currentUser = '';
+var managedProjects = [];   // 当前用户作为创建者或算法工程师（管理员）的全部算法
+var currentProject = null;  // 当前选中的算法
+var editingMember = '';
+var _confirmCb = null;
+
+/* 角色定义：算法工程师即管理员，仅名称不同 */
+var ROLES = {
+  owner:     { label: '创建者',     cls: 'tag-owner' },
+  engineer:  { label: '算法工程师', cls: 'tag-engineer' },
+  annotator: { label: '标注员',     cls: 'tag-annotator' },
+  viewer:    { label: '查看者',     cls: 'tag-viewer' }
+};
+
+/* ===== 存储 ===== */
+function getProjects() { try { return JSON.parse(localStorage.getItem('personal_projects')) || []; } catch(e) { return []; } }
+function saveProjects(arr) { localStorage.setItem('personal_projects', JSON.stringify(arr)); }
+function getUsers() { try { return JSON.parse(localStorage.getItem('platform_users')) || []; } catch(e) { return []; } }
+
+function initUsers() {
+  var users = getUsers();
+  if (users.length < 8) {
+    users = [
+      { username:'admin', password:'123456', email:'admin@example.com', role:'admin', name:'管理员', avatar:'管' },
+      { username:'张三', password:'123456', email:'zhangsan@example.com', role:'engineer', name:'张三', avatar:'张' },
+      { username:'李四', password:'123456', email:'lisi@example.com', role:'engineer', name:'李四', avatar:'李' },
+      { username:'王五', password:'123456', email:'wangwu@example.com', role:'engineer', name:'王五', avatar:'王' },
+      { username:'赵六', password:'123456', email:'zhaoliu@example.com', role:'annotator', name:'赵六', avatar:'赵' },
+      { username:'孙七', password:'123456', email:'sunqi@example.com', role:'engineer', name:'孙七', avatar:'孙' },
+      { username:'周八', password:'123456', email:'zhouba@example.com', role:'annotator', name:'周八', avatar:'周' },
+      { username:'钱九', password:'123456', email:'qianjiu@example.com', role:'annotator', name:'钱九', avatar:'钱' },
+    ];
+    localStorage.setItem('platform_users', JSON.stringify(users));
+  }
+}
+
+/* ===== 演示数据：补齐“我作为创建者/管理员”的算法 ===== */
+/* 成员候选池（演示数据）：与 platform_users 中的演示账号一致 */
+var MEMBER_POOL = [
+  { username: '张三', role: 'engineer' },
+  { username: '李四', role: 'engineer' },
+  { username: '王五', role: 'engineer' },
+  { username: '赵六', role: 'annotator' },
+  { username: '周八', role: 'annotator' },
+  { username: '孙七', role: 'viewer' },
+  { username: '钱九', role: 'viewer' },
+];
+
+/* 为某算法首次补全演示成员，按算法序号轮转，使各算法成员略有差异 */
+function ensureMembers(p, idx) {
+  if (p.members && p.members.length) return p;
+  idx = idx || 0;
+  var shifted = MEMBER_POOL.slice(idx).concat(MEMBER_POOL.slice(0, idx)) // 轮转，避免重复
+    .filter(function(m) { return m.username !== p.owner; });
+  var take = 4 + (idx % 2); // 4~5 名成员，不同算法略有差异
+  var base = shifted.slice(0, take).map(function(m) {
+    return { username: m.username, role: m.role, joinedAt: p.createdAt || '2026-07-20' };
+  });
+  p.members = [{ username: p.owner, role: 'owner', joinedAt: p.createdAt || '2026-07-15' }].concat(base);
+  return p;
+}
+
+/* 清理历史版本注入的演示算法（mg_shared_*），使列表与算法项目页保持一致 */
+function cleanupLegacy() {
+  var projects = getProjects();
+  var filtered = projects.filter(function(p) { return p.id !== 'mg_shared_1' && p.id !== 'mg_shared_2'; });
+  if (filtered.length !== projects.length) saveProjects(filtered);
+}
+
+/* 若算法项目页尚未初始化，用与 projects.html 完全一致的演示数据打底（保证同步） */
+function ensureDemoProjects() {
+  if (getProjects().length) return;
+  saveProjects([
+    { id: 'my_1', name: '保安服检测', tag: '安防', taskType: 'detection', createdAt: '2026-07-20', owner: currentUser },
+    { id: 'my_2', name: '烟火检测', tag: '安防', taskType: 'detection', createdAt: '2026-07-25', owner: currentUser },
+    { id: 'my_3', name: '路面裂缝分割', tag: '交通', taskType: 'segment', createdAt: '2026-08-01', owner: currentUser },
+  ]);
+}
+
+/* 同步算法项目页的数据：复用其中我创建的算法，并为其补全成员 */
+function seedManagedData() {
+  cleanupLegacy();
+  ensureDemoProjects();
+  var projects = getProjects();
+  projects.forEach(function(p, i) {
+    if (p.owner === currentUser && (!p.members || !p.members.length)) ensureMembers(p, i);
+  });
+  saveProjects(projects);
+}
+
+/* ===== 我管理的算法：创建者 或 算法工程师 ===== */
+function getManagedProjects() {
+  var projects = getProjects();
+  return projects.filter(function(p) {
+    if (p.owner === currentUser) return true; // 创建者
+    var me = (p.members || []).find(function(m) { return m.username === currentUser; });
+    return !!(me && me.role === 'engineer');  // 算法工程师（管理员）
+  });
+}
+
+/* ===== 权限判断（基于某个算法） ===== */
+function myRole(p) {
+  if (!p) return null;
+  if (p.owner === currentUser) return 'owner';
+  var me = (p.members || []).find(function(m) { return m.username === currentUser; });
+  return me ? me.role : null;
+}
+function isCreator(p) { return !!p && p.owner === currentUser; }
+function isEngineer(p) { return myRole(p) === 'engineer'; }
+function canManage(p) { return isCreator(p) || isEngineer(p); } // 创建者或管理员
+
+function taskTypeLabel(t) { return t === 'segment' ? '分割模型' : '目标检测（YOLO）'; }
+function taskTypeMiniTag(t) {
+  return t === 'segment'
+    ? '<span class="tag" style="background:#f9f0ff;color:#722ed1;">分割</span>'
+    : '<span class="tag" style="background:#e6f7ff;color:#1890ff;">目标检测</span>';
+}
+
+/* ===== 渲染：左侧算法列表 ===== */
+function renderAlgoList() {
+  var box = document.getElementById('algoList');
+  if (!managedProjects.length) {
+    box.innerHTML = '<div style="padding:24px 8px;text-align:center;color:var(--text-muted);font-size:12px;">暂无您管理的算法</div>';
+    return;
+  }
+  box.innerHTML = managedProjects.map(function(p) {
+    var active = (currentProject && p.id === currentProject.id) ? ' algo-item-active' : '';
+    return '<div class="algo-item' + active + '" onclick="selectProject(\'' + p.id + '\')">' +
+      '<div class="algo-item-name">' + p.name + '</div>' +
+      '<div class="algo-item-meta">创建于 ' + (p.createdAt || '—') + '</div>' +
+      '<div class="algo-item-meta">' + taskTypeMiniTag(p.taskType) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+/* ===== 渲染：右侧成员 ===== */
+function renderMembers() {
+  var body = document.getElementById('memberBody');
+  var btnAdd = document.getElementById('btnAddMember');
+  var btnTransfer = document.getElementById('btnTransfer');
+  var roleTag = document.getElementById('myRoleTag');
+
+  if (!currentProject) {
+    document.getElementById('memberTitle').innerHTML = '算法成员（<span id="memberCount">0</span>）';
+    roleTag.style.display = 'none';
+    btnAdd.style.display = 'none';
+    btnTransfer.style.display = 'none';
+    body.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:48px;color:var(--text-muted);">请选择左侧算法查看成员</td></tr>';
+    return;
+  }
+
+  var p = currentProject;
+  var members = p.members || [];
+  document.getElementById('memberTitle').innerHTML = p.name + ' 成员（<span id="memberCount">' + members.length + '</span>）';
+
+  // 我的角色
+  var role = myRole(p);
+  roleTag.style.display = '';
+  roleTag.className = 'tag ' + ROLES[role].cls;
+  roleTag.textContent = '我是' + ROLES[role].label;
+
+  btnAdd.style.display = canManage(p) ? 'inline-flex' : 'none';
+  btnTransfer.style.display = isCreator(p) ? 'inline-flex' : 'none';
+
+  body.innerHTML = members.map(function(m, i) {
+    var r = ROLES[m.role] || ROLES.viewer;
+    var name = m.username + (m.username === currentUser ? ' <span style="font-size:11px;color:var(--text-muted);">（我）</span>' : '');
+    return '<tr>' +
+      '<td>' + (i + 1) + '</td>' +
+      '<td style="font-weight:500;">' + name + '</td>' +
+      '<td><span class="tag ' + r.cls + '">' + r.label + '</span></td>' +
+      '<td style="font-size:11px;color:var(--text-muted);">' + (m.joinedAt || '—') + '</td>' +
+      '<td>' + memberActions(m) + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+/* 成员行操作按钮（依据当前用户在该算法中的权限） */
+function memberActions(m) {
+  if (m.role === 'owner') return '<span style="font-size:11px;color:var(--text-muted);">—</span>';
+  if (isCreator(currentProject)) {
+    // 创建者：可调整任意成员角色（指定/取消管理员）、可移除
+    return '<button class="btn btn-text btn-sm" onclick="editRole(\'' + m.username + '\')" style="color:var(--primary);">编辑角色</button> ' +
+           '<button class="btn btn-text btn-sm" onclick="askRemove(\'' + m.username + '\')" style="color:var(--danger);">移除</button>';
+  }
+  if (isEngineer(currentProject)) {
+    // 管理员：可移除标注员/查看者，不能管理同级工程师
+    if (m.role === 'engineer') return '<span style="font-size:11px;color:var(--text-muted);">—</span>';
+    return '<button class="btn btn-text btn-sm" onclick="askRemove(\'' + m.username + '\')" style="color:var(--danger);">移除</button>';
+  }
+  return '';
+}
+
+/* ===== 选择算法 ===== */
+function selectProject(id) {
+  currentProject = managedProjects.find(function(p) { return p.id === id; }) || null;
+  if (currentProject) localStorage.setItem('current_project', currentProject.id);
+  renderAlgoList();
+  renderMembers();
+}
+
+/* 刷新：重读存储并保持选中 */
+function refresh() {
+  managedProjects = getManagedProjects();
+  if (currentProject) {
+    currentProject = managedProjects.find(function(p) { return p.id === currentProject.id; }) || managedProjects[0] || null;
+  } else {
+    currentProject = managedProjects[0] || null;
+  }
+  renderAlgoList();
+  renderMembers();
+}
+
+/* ===== 添加成员（按邮箱） ===== */
+function showAddModal() {
+  document.getElementById('addEmail').value = '';
+  var sel = document.getElementById('addRole');
+  // 管理员不能指定他人为工程师，仅创建者可
+  if (isCreator(currentProject)) {
+    sel.innerHTML = '<option value="engineer">算法工程师（完全权限）</option><option value="annotator" selected>标注员（数据权限）</option><option value="viewer">查看者（仅查看）</option>';
+  } else {
+    sel.innerHTML = '<option value="annotator" selected>标注员（数据权限）</option><option value="viewer">查看者（仅查看）</option>';
+  }
+  document.getElementById('addModal').style.display = 'flex';
+}
+
+function addMember() {
+  var email = document.getElementById('addEmail').value.trim();
+  var role = document.getElementById('addRole').value;
+  if (!email) { showToast('请输入邮箱'); return; }
+  var users = getUsers();
+  var found = users.find(function(u) { return u.email === email; });
+  if (!found) { showToast('未找到该邮箱对应的用户'); return; }
+  if (currentProject.members.find(function(m) { return m.username === found.username; })) { showToast(found.username + ' 已是成员'); return; }
+  currentProject.members.push({ username: found.username, role: role, joinedAt: new Date().toISOString().slice(0, 10) });
+  saveProjects(getProjects().map(function(p) { return p.id === currentProject.id ? currentProject : p; }));
+  document.getElementById('addModal').style.display = 'none';
+  renderMembers();
+  showToast(found.username + ' 已加入');
+}
+
+/* ===== 编辑角色（仅创建者） ===== */
+function editRole(username) {
+  var m = currentProject.members.find(function(x) { return x.username === username; });
+  if (!m) return;
+  editingMember = username;
+  document.getElementById('editName').textContent = username;
+  document.getElementById('editRole').value = (m.role === 'owner') ? 'engineer' : m.role;
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+function saveRole() {
+  var role = document.getElementById('editRole').value;
+  var m = currentProject.members.find(function(x) { return x.username === editingMember; });
+  if (!m) return;
+  m.role = role;
+  saveProjects(getProjects().map(function(p) { return p.id === currentProject.id ? currentProject : p; }));
+  document.getElementById('editModal').style.display = 'none';
+  renderMembers();
+  showToast(editingMember + ' 的角色已更新');
+}
+
+/* ===== 移除成员 ===== */
+function askRemove(username) {
+  showConfirm('移除成员', '确定将 <b>' + username + '</b> 从「' + currentProject.name + '」中移除吗？', '移除后该成员将失去此算法的所有访问权限。', function() {
+    currentProject.members = currentProject.members.filter(function(m) { return m.username !== username; });
+    saveProjects(getProjects().map(function(p) { return p.id === currentProject.id ? currentProject : p; }));
+    renderMembers();
+    showToast(username + ' 已移除');
+  });
+}
+
+/* ===== 转移创建者（仅创建者） ===== */
+function showTransfer() {
+  var opts = currentProject.members.filter(function(m) { return m.role !== 'owner'; })
+    .map(function(m) { return '<option value="' + m.username + '">' + m.username + '（' + ROLES[m.role].label + '）</option>'; }).join('');
+  if (!opts) { showToast('没有可转移的成员'); return; }
+  document.getElementById('transferTarget').innerHTML = opts;
+  document.getElementById('transferModal').style.display = 'flex';
+}
+
+function doTransfer() {
+  var target = document.getElementById('transferTarget').value;
+  if (!target) { showToast('请选择新创建者'); return; }
+  var p = currentProject;
+  var oldOwner = p.owner;
+  // 原创建者降为算法工程师（管理员）
+  var oldMember = p.members.find(function(m) { return m.username === oldOwner; });
+  if (oldMember) oldMember.role = 'engineer';
+  else p.members.push({ username: oldOwner, role: 'engineer', joinedAt: new Date().toISOString().slice(0, 10) });
+  // 新创建者
+  var tm = p.members.find(function(m) { return m.username === target; });
+  if (tm) tm.role = 'owner';
+  p.owner = target;
+  saveProjects(getProjects().map(function(x) { return x.id === p.id ? p : x; }));
+  document.getElementById('transferModal').style.display = 'none';
+  showToast('创建者已转移给 ' + target + '，您已成为管理员');
+  refresh();
+}
+
+/* ===== 通用确认框 ===== */
+function showConfirm(title, msg, hint, cb) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').innerHTML = msg;
+  document.getElementById('confirmHint').textContent = hint || '';
+  _confirmCb = cb;
+  document.getElementById('confirmModal').style.display = 'flex';
+}
+function runConfirm() { var cb = _confirmCb; _confirmCb = null; document.getElementById('confirmModal').style.display = 'none'; if (cb) cb(); }
+
+/* ===== 初始化 ===== */
+(function() {
+  var user = getUser();
+  if (!user) { location.href = 'login.html'; return; }
+  currentUser = user.username;
+  document.getElementById('headerUserName').textContent = user.name;
+  document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
+  initUsers();
+  seedManagedData();
+
+  managedProjects = getManagedProjects();
+  // 记忆上次选中的算法（若仍在我管理的范围内）
+  var lastId = localStorage.getItem('current_project') || '';
+  currentProject = managedProjects.find(function(p) { return p.id === lastId; }) || managedProjects[0] || null;
+  if (currentProject) localStorage.setItem('current_project', currentProject.id);
+
+  renderAlgoList();
+  renderMembers();
+})();
+</script>
+</body>
+</html>

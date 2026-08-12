@@ -262,6 +262,7 @@ document.addEventListener('click', function(e) {
   if (!user) { location.href = 'login.html'; return; }
   document.getElementById('headerUserName').textContent = user.name;
   document.getElementById('headerUserAvatar').textContent = user.avatar || user.name.charAt(0);
+  ensureDemoDatasets(); // 先补全演示数据集，使总览进入即有数据
   loadAllData();
   renderProjFilterOptions();
   renderTable();

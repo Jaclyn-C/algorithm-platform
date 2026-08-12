@@ -86,3 +86,44 @@ function mountAlgoNav(activeKey, containerId) {
   var el = document.getElementById(containerId);
   if (el) el.innerHTML = renderAlgoNav(activeKey);
 }
+
+/* 演示图片生成（与 data_center 的 genImages 同构） */
+function _demoImages(p, n) {
+  var a = [];
+  for (var i = 0; i < n; i++) {
+    a.push({ id: p + '_' + (i + 1), name: p + '_' + String(i + 1).padStart(3, '0') + '.jpg', hue: (i * 23) % 360, dup: false, tag: null });
+  }
+  return a;
+}
+
+/* 为“所有算法”补全演示数据集（按需、幂等）。
+   修复：原先演示数据集只在进入数据集管理页(data_center)时才按当前算法生成，
+   导致登录后算法卡片的“数据集”数量与“数据集总览”都为空，要点进某个算法再退出才更新。
+   现在在算法项目页 / 数据集总览页加载时即补全，口径与 data_center 一致：数据集按 project(=算法ID) 关联。*/
+function ensureDemoDatasets() {
+  var projects = [];
+  try { projects = JSON.parse(localStorage.getItem('personal_projects')) || []; } catch(e) {}
+  if (!projects.length) return;
+  var ds = [];
+  try { ds = JSON.parse(localStorage.getItem('dc_datasets')) || []; } catch(e) {}
+  var changed = false;
+  var vids = ['路段A监控.mp4', '厂区夜间.mp4'];
+  var cfg = [['·抽样', 60, 'deduped'], ['·夜间片段', 40, 'extracted']];
+  projects.forEach(function(p) {
+    if (ds.some(function(d) { return d.project === p.id; })) return; // 该算法已有数据集，跳过
+    var pfx = (p.id || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 8) || 'ds';
+    cfg.forEach(function(c, i) {
+      var id = pfx + '_' + (i + 1);
+      if (ds.some(function(d) { return d.id === id; })) return; // 避免 id 冲突
+      var imgs = _demoImages(id, c[1]);
+      if (i === 0) for (var k = 0; k < 15 && k < imgs.length; k++) imgs[k].dup = true;
+      ds.push({
+        id: id, name: p.name + c[0], videoName: vids[i] || '视频',
+        createdAt: '2026-08-0' + (2 + i), stage: c[2], splitRatio: null,
+        project: p.id, uploader: '—', imgs: imgs
+      });
+    });
+    changed = true;
+  });
+  if (changed) localStorage.setItem('dc_datasets', JSON.stringify(ds));
+}
