@@ -87,17 +87,30 @@
         </table>
       </div>
     </div>
+
+    <!-- 标签管理（全局标签库的新增/删除） -->
+    <div class="card" id="tagMgmtCard">
+      <div class="card-header">标签管理</div>
+      <div class="card-body" style="padding:16px 20px;">
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">维护全局标签库，供上方"分配标签"与算法打标使用。</div>
+        <div id="tagMgmtList" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;"></div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="newTagInput" placeholder="输入新标签名称" style="flex:1;padding:6px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:13px;font-family:var(--font);" onkeydown="if(event.key==='Enter')addTagMgmt()">
+          <button class="btn btn-primary btn-sm" onclick="addTagMgmt()">添加</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- 分配标签弹窗 -->
 <div class="modal-overlay" id="tagModal" style="display:none;" onclick="if(event.target==this)closeTagModal()">
   <div class="modal" style="width:440px;">
-    <div class="modal-header">分配标签权限 — <span id="tagModalName"></span><button class="modal-close" onclick="closeTagModal()">✕</button></div>
+    <div class="modal-header">分配标签权限<span id="tagModalName"></span><button class="modal-close" onclick="closeTagModal()">✕</button></div>
     <div style="padding:20px 28px;">
       <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">勾选该用户新建/编辑算法时可使用的标签。</div>
       <div class="cat-check-grid" id="tagCheckGrid"></div>
-      <div id="tagEmpty" style="display:none;padding:20px;text-align:center;color:var(--text-muted);font-size:12px;">暂无标签，请先在「个人中心 → 标签管理」创建。</div>
+      <div id="tagEmpty" style="display:none;padding:20px;text-align:center;color:var(--text-muted);font-size:12px;">暂无标签，请先在下方「标签管理」中创建。</div>
     </div>
     <div class="modal-footer"><button class="btn btn-default btn-sm" onclick="closeTagModal()">取消</button><button class="btn btn-primary btn-sm" onclick="saveUserTags()">保存</button></div>
   </div>
@@ -213,6 +226,38 @@ function toggleAdmin(username) {
   }
 }
 
+/* 标签管理（全局标签库新增/删除） */
+function renderTagMgmt() {
+  var tags = getTags();
+  var box = document.getElementById('tagMgmtList');
+  if (!tags.length) { box.innerHTML = '<span style="font-size:12px;color:var(--text-muted);">暂无标签</span>'; return; }
+  box.innerHTML = tags.map(function(t, i) {
+    return '<span class="tag-chip" style="padding:4px 10px;font-size:12px;">' + t + '<span style="margin-left:6px;cursor:pointer;color:var(--danger);" onclick="removeTagMgmt(' + i + ')">✕</span></span>';
+  }).join('');
+}
+function addTagMgmt() {
+  var input = document.getElementById('newTagInput');
+  var name = input.value.trim();
+  if (!name) { showToast('请输入标签名称'); return; }
+  var tags = getTags();
+  if (tags.indexOf(name) >= 0) { showToast('该标签已存在'); return; }
+  tags.push(name);
+  saveTags(tags);
+  input.value = '';
+  renderTagMgmt();
+  showToast('标签「' + name + '」已添加');
+}
+function removeTagMgmt(idx) {
+  var tags = getTags();
+  if (idx >= 0 && idx < tags.length) {
+    var name = tags[idx];
+    tags.splice(idx, 1);
+    saveTags(tags);
+    renderTagMgmt();
+    showToast('标签「' + name + '」已删除');
+  }
+}
+
 (function() {
   var me = getUser();
   if (!me) { location.href = 'login.html'; return; }
@@ -225,6 +270,7 @@ function toggleAdmin(username) {
     document.getElementById('pageHint').textContent = '管理平台全部用户：为用户分配可用的标签权限。任命管理员请联系超级管理员。';
   }
   renderTable();
+  renderTagMgmt();
 })();
 </script>
 </body>

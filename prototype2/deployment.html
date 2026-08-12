@@ -311,12 +311,16 @@ function deployNow() {
   var user = getUser();
   var now = new Date();
   var timeStr = now.toISOString().slice(0,16).replace('T',' ');
-  keys.forEach(function(key) {
-    var taskName = key.split('|')[1];
-    deployHistory.unshift({ time: timeStr, model: taskName, version: version, script: uploadedScriptName, size: document.getElementById('pkgSize').textContent, deployer: user ? user.name : '—' });
-  });
+  // 无论选了几个项目/模型，一键部署只生成一个部署包、只追加一条历史记录
+  var names = keys.map(function(key) { return key.split('|')[1]; });
+  if (uploadedCustomModel) names.push(uploadedCustomModel.name);
+  var modelLabel;
+  if (names.length === 0) modelLabel = '自定义模型';
+  else if (names.length === 1) modelLabel = names[0];
+  else modelLabel = names[0] + ' 等 ' + names.length + ' 个模型';
+  deployHistory.unshift({ time: timeStr, model: modelLabel, version: version, script: uploadedScriptName, size: document.getElementById('pkgSize').textContent, deployer: user ? user.name : '—' });
   renderHistory();
-  showToast('部署成功：' + keys.length + ' 个模型');
+  showToast('部署成功：已生成 1 个部署包（含 ' + names.length + ' 个模型）');
 }
 function downloadZip() { if (!pkgGenerated) { showToast('请先打包'); return; } showToast('ZIP 下载已开始'); }
 function renderHistory() {

@@ -153,16 +153,6 @@
           <div class="tag-list" id="myTagsList"></div>
         </div>
 
-        <!-- Tag 管理（仅超级管理员/管理员可见） -->
-        <div id="tagMgmtSection" class="tag-mgmt-section" style="display:none;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);">
-          <h3>标签管理</h3>
-          <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">管理可供用户在新建算法时选择的标签。</p>
-          <div class="tag-list" id="tagList"></div>
-          <div class="tag-add-row">
-            <input type="text" id="newTagName" placeholder="输入新标签名称" onkeydown="if(event.key==='Enter')addTag()">
-            <button class="btn btn-primary btn-sm" onclick="addTag()">添加</button>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -191,13 +181,8 @@ function loadProfile() {
   document.getElementById('editName').value = user.name;
   document.getElementById('editEmail').value = user.email || '';
   document.getElementById('editRole').value = roleName;
-  // 我的标签权限（只读展示）
+  // 我的标签权限（只读展示，所有人一致）
   renderMyTags();
-  // 超级管理员/管理员显示标签管理
-  if (isPlatformAdmin(user)) {
-    document.getElementById('tagMgmtSection').style.display = '';
-    renderTagList();
-  }
 }
 
 function renderMyTags() {
@@ -213,36 +198,6 @@ function renderMyTags() {
     return;
   }
   list.innerHTML = tags.map(function(t) { return '<div class="tag-item">' + t + '</div>'; }).join('');
-}
-
-function renderTagList() {
-  var tags = getTags();
-  document.getElementById('tagList').innerHTML = tags.map(function(t, i) {
-    return '<div class="tag-item">' + t + '<span class="tag-del" onclick="removeTag(' + i + ')">✕</span></div>';
-  }).join('');
-}
-
-function addTag() {
-  var name = document.getElementById('newTagName').value.trim();
-  if (!name) { showToast('请输入标签名称'); return; }
-  var tags = getTags();
-  if (tags.indexOf(name) >= 0) { showToast('该标签已存在'); return; }
-  tags.push(name);
-  saveTags(tags);
-  document.getElementById('newTagName').value = '';
-  renderTagList();
-  showToast('标签「' + name + '」已添加');
-}
-
-function removeTag(idx) {
-  var tags = getTags();
-  if (idx >= 0 && idx < tags.length) {
-    var name = tags[idx];
-    tags.splice(idx, 1);
-    saveTags(tags);
-    renderTagList();
-    showToast('标签「' + name + '」已删除');
-  }
 }
 
 function saveProfile() {
